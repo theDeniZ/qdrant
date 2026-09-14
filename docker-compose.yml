@@ -17,6 +17,13 @@ services:
     volumes:
       # Holds keys.db (API keys) and the fastembed model cache.
       - qdrant-mcp-data:/data
+    networks:
+      # Traefik can only reach containers on a network it is attached to. Without
+      # this the service sits alone on the project's default network and every
+      # request to the public host dies at Traefik (404 / 502 / timeout) while
+      # the container itself looks perfectly healthy.
+      - traefik
+      - default
     expose:
       - "8765"            # MCP — reached through Traefik only
     ports:
@@ -26,6 +33,8 @@ services:
       - "127.0.0.1:8081:8081"
     labels:
       - "traefik.enable=true"
+      # Which of the container's networks Traefik should use (it has two).
+      - "traefik.docker.network=${TRAEFIK_NETWORK:-proxy}"
       - "traefik.http.routers.qdrantmcp.rule=Host(`qdrant.thedeniz.dev`)"
       - "traefik.http.routers.qdrantmcp.entrypoints=websecure"
       - "traefik.http.routers.qdrantmcp.tls=true"
@@ -36,3 +45,11 @@ services:
 
 volumes:
   qdrant-mcp-data:
+
+networks:
+  traefik:
+    # The existing network your Traefik container is on. Find it with:
+    #   docker inspect <traefik-container> --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+    # then set TRAEFIK_NETWORK in .env (or replace the default below).
+    external: true
+    name: ${TRAEFIK_NETWORK:-proxy}

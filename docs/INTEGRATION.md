@@ -141,6 +141,7 @@ and the rules from Block A.
 
 | Symptom | Cause |
 |---|---|
+| No response / Traefik 404 or 502, and the container log shows **no** requests except `/healthz` | Container is not on Traefik's Docker network. Set `TRAEFIK_NETWORK` (see `docker-compose.yml`) and `docker compose up -d` |
 | `401 unauthorized` | Key missing, mistyped, or revoked. Check "Last used" in the admin UI |
 | `421 Invalid Host header` | `MCP_ALLOWED_HOSTS` is set but does not include the public host |
 | First `sop_lookup` / `bible_search` slow | Embedding model still loading after a restart (`WARM_EMBEDDER=1` preloads it) |

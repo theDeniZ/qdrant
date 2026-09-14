@@ -1,0 +1,38 @@
+services:
+  qdrant-mcp:
+    build: .
+    container_name: qdrant-mcp
+    restart: unless-stopped
+    environment:
+      # The existing Qdrant instance — only read calls (search/scroll/GET) are made.
+      - QDRANT_URL=http://10.10.10.10:6333
+      # Password for the key-management UI (any username). REQUIRED.
+      - ADMIN_PASSWORD=change-me
+      # Public base URL, used to print ready-to-paste connector URLs in the UI.
+      - PUBLIC_URL=https://qdrant.thedeniz.dev
+      # Optional: restrict accepted Host headers (DNS-rebinding protection).
+      # - MCP_ALLOWED_HOSTS=qdrant.thedeniz.dev
+      # Load the ~2 GB embedding model at startup instead of on the first query.
+      - WARM_EMBEDDER=1
+    volumes:
+      # Holds keys.db (API keys) and the fastembed model cache.
+      - qdrant-mcp-data:/data
+    expose:
+      - "8765"            # MCP — reached through Traefik only
+    ports:
+      # Admin UI: bound to the host's loopback only. Open it on the host
+      # (http://127.0.0.1:8081) or through an SSH tunnel. Change to
+      # "10.10.10.x:8081:8081" if you want it on the LAN.
+      - "127.0.0.1:8081:8081"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qdrantmcp.rule=Host(`qdrant.thedeniz.dev`)"
+      - "traefik.http.routers.qdrantmcp.entrypoints=websecure"
+      - "traefik.http.routers.qdrantmcp.tls=true"
+      - "traefik.http.routers.qdrantmcp.tls.certresolver=myresolver"
+      # Only the MCP port is routed; the admin port is never exposed publicly.
+      - "traefik.http.routers.qdrantmcp.service=qdrantmcp"
+      - "traefik.http.services.qdrantmcp.loadbalancer.server.port=8765"
+
+volumes:
+  qdrant-mcp-data:

@@ -1,0 +1,9 @@
+.git
+.claude-plugin
+plugin
+references
+docs
+scripts
+dist
+**/__pycache__
+*.md

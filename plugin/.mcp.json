@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "bible-sop": {
+      "type": "http",
+      "url": "${BIBLE_SOP_MCP_URL:-https://qdrant.thedeniz.dev/mcp}",
+      "headers": {
+        "Authorization": "Bearer ${BIBLE_SOP_MCP_KEY}"
+      }
+    }
+  }
+}

@@ -1,0 +1,3740 @@
+{
+ "de": {
+  "AB1": {
+   "en_code": "1SM",
+   "titles": [
+    "Ausgewählte Botschaften",
+    "Ausgewählte Botschaften — Band 1"
+   ]
+  },
+  "BDH": {
+   "en_code": "CM",
+   "titles": [
+    "Botschafter der Hoffnung"
+   ]
+  },
+  "BE": {
+   "en_code": "CD",
+   "titles": [
+    "Bewußt essen"
+   ]
+  },
+  "BEBL": {
+   "en_code": "CD",
+   "titles": [
+    "Bewußt essen — Bewußt leben"
+   ]
+  },
+  "BH": {
+   "en_code": "SL",
+   "titles": [
+    "Biblische Heiligung"
+   ]
+  },
+  "BJL": {
+   "en_code": "LYL",
+   "titles": [
+    "Briefe an junge Liebende"
+   ]
+  },
+  "BK": {
+   "en_code": "7BC",
+   "titles": [
+    "Bibelkommentar"
+   ]
+  },
+  "BL": {
+   "en_code": "MB",
+   "titles": [
+    "Das bessere Leben"
+   ]
+  },
+  "BRG": {
+   "en_code": "COL",
+   "titles": [
+    "Bilder vom Reiche Gottes"
+   ]
+  },
+  "BW": {
+   "en_code": "SC",
+   "titles": [
+    "Der bessere Weg zu einem neuen Leben"
+   ]
+  },
+  "CGl": {
+   "en_code": "COL",
+   "titles": [
+    "Christi Gleichnisse"
+   ]
+  },
+  "CKB": {
+   "en_code": "LDE",
+   "titles": [
+    "Christus kommt bald!"
+   ]
+  },
+  "CLG": {
+   "en_code": "COL",
+   "titles": [
+    "Christus lehrt durch Gleichnisse"
+   ]
+  },
+  "CS": {
+   "en_code": "CTr",
+   "titles": [
+    "Christus ist Sieger"
+   ]
+  },
+  "ChM": {
+   "en_code": "CTBH",
+   "titles": [
+    "Christliche Mäßigkeit"
+   ]
+  },
+  "DAp": {
+   "en_code": "AA",
+   "titles": [
+    "Die Apostel"
+   ]
+  },
+  "DC": {
+   "en_code": "ChS",
+   "titles": [
+    "Im Dienst für Christus"
+   ]
+  },
+  "DE": {
+   "en_code": "GW",
+   "titles": [
+    "Diener des Evangeliums"
+   ]
+  },
+  "DG": {
+   "en_code": "Pr",
+   "titles": [
+    "Das Gebet"
+   ]
+  },
+  "DGK": {
+   "en_code": "GC88",
+   "titles": [
+    "Der große Konflikt"
+   ]
+  },
+  "DKn": {
+   "en_code": "PK",
+   "titles": [
+    "Die Könige"
+   ]
+  },
+  "DM": {
+   "en_code": "DA",
+   "titles": [
+    "Der Messias"
+   ]
+  },
+  "DPa": {
+   "en_code": "PP",
+   "titles": [
+    "Die Patriarchen"
+   ]
+  },
+  "EA": {
+   "en_code": "SA",
+   "titles": [
+    "Ein ernster Aufruf an die Mütter"
+   ]
+  },
+  "EAG": {
+   "en_code": "CME",
+   "titles": [
+    "Ein Aufruf zur Gesundheitsevangelisation"
+   ]
+  },
+  "EG": {
+   "en_code": "EW",
+   "titles": [
+    "Erfahrungen und Gesichte sowie Geistliche Gaben"
+   ]
+  },
+  "EGH": {
+   "en_code": "AH",
+   "titles": [
+    "Ein glückliches Heim"
+   ]
+  },
+  "ERZ": {
+   "en_code": "Ed",
+   "titles": [
+    "Erziehung",
+    "Erziehung 1998"
+   ]
+  },
+  "EWD": {
+   "titles": [
+    "Erweckung",
+    "Erweckung — Was dann?"
+   ]
+  },
+  "En": {
+   "en_code": "TA",
+   "titles": [
+    "Die Engel"
+   ]
+  },
+  "Ev": {
+   "en_code": "Ev",
+   "titles": [
+    "Evangelisation"
+   ]
+  },
+  "Ez54": {
+   "en_code": "Ed",
+   "titles": [
+    "Erziehung 1954"
+   ]
+  },
+  "FA": {
+   "en_code": "MH",
+   "titles": [
+    "In den Fußspuren des großen Arztes"
+   ]
+  },
+  "FG1": {
+   "en_code": "1SM",
+   "titles": [
+    "Für die Gemeinde geschrieben",
+    "Für die Gemeinde geschrieben — Band 1"
+   ]
+  },
+  "FG2": {
+   "en_code": "2SM",
+   "titles": [
+    "Für die Gemeinde geschrieben — Band 2"
+   ]
+  },
+  "FS": {
+   "en_code": "EW",
+   "titles": [
+    "Frühe Schriften von Ellen G. White"
+   ]
+  },
+  "GBD": {
+   "titles": [
+    "Gedanken über das Buch Daniel"
+   ]
+  },
+  "GBO": {
+   "titles": [
+    "Gedanken über das Buch Offenbarung"
+   ]
+  },
+  "GE": {
+   "en_code": "SR",
+   "titles": [
+    "Die Geschichte der Erlösung"
+   ]
+  },
+  "GFH": {
+   "en_code": "AH",
+   "titles": [
+    "Glück fängt zu Hause an"
+   ]
+  },
+  "GK": {
+   "en_code": "GC",
+   "titles": [
+    "Der große Kampf"
+   ]
+  },
+  "GL": {
+   "en_code": "HL",
+   "titles": [
+    "Gesundes Leben"
+   ]
+  },
+  "GMG": {
+   "titles": [
+    "Gemeinschaft mit Gott"
+   ]
+  },
+  "GNA": {
+   "en_code": "AA",
+   "titles": [
+    "Gute Nachricht für alle"
+   ]
+  },
+  "GW": {
+   "en_code": "FW",
+   "titles": [
+    "Glaube und Werke"
+   ]
+  },
+  "HEW": {
+   "titles": [
+    "Hier in Europa muss ein großes Werk getan werden"
+   ]
+  },
+  "ICP1": {
+   "en_code": "1MCP",
+   "titles": [
+    "Intellekt, Charakter und Persönlichkeit",
+    "Intellekt, Charakter und Persönlichkeit — Band 1"
+   ]
+  },
+  "ICP2": {
+   "en_code": "2MCP",
+   "titles": [
+    "Intellekt, Charakter und Persönlichkeit — Band 2"
+   ]
+  },
+  "KVU": {
+   "titles": [
+    "Die Krise vor uns"
+   ]
+  },
+  "LC": {
+   "titles": [
+    "Die Leiden Christi"
+   ]
+  },
+  "LJ": {
+   "en_code": "DA",
+   "titles": [
+    "Das Leben Jesu"
+   ]
+  },
+  "LL": {
+   "en_code": "CL",
+   "titles": [
+    "Leben auf dem Land"
+   ]
+  },
+  "LW": {
+   "en_code": "LS",
+   "titles": [
+    "Leben und Wirken von Ellen G. White"
+   ]
+  },
+  "LW88": {
+   "en_code": "LS",
+   "titles": [
+    "Leben und Wirken"
+   ]
+  },
+  "LWH": {
+   "en_code": "LLE",
+   "titles": [
+    "Lebe wie Henoch"
+   ]
+  },
+  "MEH": {
+   "en_code": "CM",
+   "titles": [
+    "Mit dem Evangelium von Haus zu Haus"
+   ]
+  },
+  "Mar": {
+   "en_code": "Mar",
+   "titles": [
+    "Maranatha",
+    "Maranatha — Der Herr kommt"
+   ]
+  },
+  "Neh": {
+   "titles": [
+    "Nehemia, Der Wiederaufbau der Mauer"
+   ]
+  },
+  "PK": {
+   "en_code": "PK",
+   "titles": [
+    "Propheten und Könige"
+   ]
+  },
+  "PP": {
+   "en_code": "PP",
+   "titles": [
+    "Patriarchen und Propheten"
+   ]
+  },
+  "RJ": {
+   "en_code": "MYP",
+   "titles": [
+    "Ruf an die Jugend"
+   ]
+  },
+  "RSs": {
+   "en_code": "CSW",
+   "titles": [
+    "Ratschläge für die Sabbatschule"
+   ]
+  },
+  "RSw": {
+   "en_code": "CSW",
+   "titles": [
+    "Ratschläge für das Sabbatschulwerk"
+   ]
+  },
+  "SGA": {
+   "en_code": "MH",
+   "titles": [
+    "Auf den Spuren des großen Arztes"
+   ]
+  },
+  "Sch1": {
+   "en_code": "1TT",
+   "titles": [
+    "Aus der Schatzkammer der Zeugnisse",
+    "Aus der Schatzkammer der Zeugnisse — Band 1"
+   ]
+  },
+  "Sch2": {
+   "en_code": "2TT",
+   "titles": [
+    "Aus der Schatzkammer der Zeugnisse — Band 2"
+   ]
+  },
+  "Sch3": {
+   "en_code": "3TT",
+   "titles": [
+    "Aus der Schatzkammer der Zeugnisse — Band 3"
+   ]
+  },
+  "Ssw": {
+   "en_code": "TSS",
+   "titles": [
+    "Das Sabbatschulwerk"
+   ]
+  },
+  "TH": {
+   "en_code": "Te",
+   "titles": [
+    "Ein Tempel des Heiligen Geistes"
+   ]
+  },
+  "VA": {
+   "titles": [
+    "Die Vollendung unserer Aufgabe"
+   ]
+  },
+  "VE": {
+   "en_code": "EV",
+   "titles": [
+    "Verkündigt das Evangelium"
+   ]
+  },
+  "WA": {
+   "en_code": "AA",
+   "titles": [
+    "Das Wirken der Apostel"
+   ]
+  },
+  "WFK": {
+   "en_code": "CG",
+   "titles": [
+    "Wie führe ich mein Kind?"
+   ]
+  },
+  "WFK08": {
+   "en_code": "CG",
+   "titles": [
+    "Wie führe ich mein Kind"
+   ]
+  },
+  "WHF": {
+   "titles": [
+    "Wir haben einen Fürsprecher"
+   ]
+  },
+  "WHG": {
+   "en_code": "YRP",
+   "titles": [
+    "Das Wirken des Heiligen Geistes"
+   ]
+  },
+  "WKH": {
+   "en_code": "WLF",
+   "titles": [
+    "Ein Wort an die kleine Herde"
+   ]
+  },
+  "WZC": {
+   "en_code": "SC",
+   "titles": [
+    "Der Weg zu Christus"
+   ]
+  },
+  "Z1": {
+   "en_code": "1T",
+   "titles": [
+    "Zeugnisse für die Gemeinde",
+    "Zeugnisse für die Gemeinde — Band 1"
+   ]
+  },
+  "Z2": {
+   "en_code": "2T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 2"
+   ]
+  },
+  "Z3": {
+   "en_code": "3T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 3"
+   ]
+  },
+  "Z4": {
+   "en_code": "4T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 4"
+   ]
+  },
+  "Z5": {
+   "en_code": "5T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 5"
+   ]
+  },
+  "Z6": {
+   "en_code": "6T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 6"
+   ]
+  },
+  "Z7": {
+   "en_code": "7T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 7"
+   ]
+  },
+  "Z8": {
+   "en_code": "8T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 8"
+   ]
+  },
+  "Z9": {
+   "en_code": "9T",
+   "titles": [
+    "Zeugnisse für die Gemeinde — Band 9"
+   ]
+  },
+  "ZP": {
+   "en_code": "TM",
+   "titles": [
+    "Zeugnisse für Prediger und Evangeliumsarbeiter"
+   ]
+  }
+ },
+ "en": {
+  "101Q": {
+   "titles": [
+    "101 Questions - About Ellen White and Her Writings"
+   ]
+  },
+  "10MR": {
+   "titles": [
+    "Manuscript Releases, vol. 10 [Nos. 771-850]"
+   ]
+  },
+  "11MR": {
+   "titles": [
+    "Manuscript Releases, vol. 11 [Nos. 851-920]"
+   ]
+  },
+  "12MR": {
+   "titles": [
+    "Manuscript Releases, vol. 12 [Nos. 921-999]"
+   ]
+  },
+  "13MR": {
+   "titles": [
+    "Manuscript Releases, vol. 13 [Nos. 1000-1080]"
+   ]
+  },
+  "14MR": {
+   "titles": [
+    "Manuscript Releases, vol. 14 [Nos. 1081-1135]"
+   ]
+  },
+  "15MR": {
+   "titles": [
+    "Manuscript Releases, vol. 15 [Nos. 1136-1185]"
+   ]
+  },
+  "16MR": {
+   "titles": [
+    "Manuscript Releases, vol. 16 [Nos. 1186-1235]"
+   ]
+  },
+  "17MR": {
+   "titles": [
+    "Manuscript Releases, vol. 17 [Nos. 1236-1300]"
+   ]
+  },
+  "1856V": {
+   "titles": [
+    "The Predictions of the 1856 Vision"
+   ]
+  },
+  "1888": {
+   "titles": [
+    "The Ellen G. White 1888 Materials"
+   ]
+  },
+  "1888FI": {
+   "titles": [
+    "Minneapolis - 1888: The “Forgotten” Issue"
+   ]
+  },
+  "18MR": {
+   "titles": [
+    "Manuscript Releases, vol. 18 [Nos. 1301-1359]"
+   ]
+  },
+  "1911GC": {
+   "titles": [
+    "The 1911 Edition of “The Great Controversy”"
+   ]
+  },
+  "19MR": {
+   "titles": [
+    "Manuscript Releases, vol. 19 [Nos. 1360-1419]"
+   ]
+  },
+  "1BC": {
+   "titles": [
+    "Bible Commentary Volume 1",
+    "SDA Bible Commentary Volume 1",
+    "The SDA Bible Commentary Volume 1",
+    "SDA Bible Commentary, vol. 1 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 1"
+   ]
+  },
+  "1BIO": {
+   "titles": [
+    "Ellen G. White: The Early Years: 1827-1862 (vol. 1)"
+   ]
+  },
+  "1MCP": {
+   "titles": [
+    "Mind, Character, and Personality, vol. 1",
+    "Mind, Character, and Personality Volume 1"
+   ]
+  },
+  "1MR": {
+   "titles": [
+    "Manuscript Releases, vol. 1 [Nos. 19-96]"
+   ]
+  },
+  "1NL": {
+   "titles": [
+    "Notebook Leaflets from the Elmshaven Library, vol. 1"
+   ]
+  },
+  "1Red": {
+   "titles": [
+    "Redemption Or The First Advent Of Christ With His Life And Ministry"
+   ]
+  },
+  "1SAT": {
+   "titles": [
+    "Sermons and Talks, vol. 1"
+   ]
+  },
+  "1SG": {
+   "titles": [
+    "Spiritual Gifts, vol. 1"
+   ]
+  },
+  "1SM": {
+   "titles": [
+    "Selected Messages Book 1"
+   ]
+  },
+  "1SP": {
+   "titles": [
+    "The Spirit of Prophecy, vol. 1"
+   ]
+  },
+  "1T": {
+   "titles": [
+    "Testimonies for the Church, vol. 1",
+    "Testimonies for the Church Volume 1"
+   ]
+  },
+  "1TT": {
+   "titles": [
+    "Testimony Treasures, vol. 1",
+    "Testimony Treasures Volume 1"
+   ]
+  },
+  "20MR": {
+   "titles": [
+    "Manuscript Releases, vol. 20 [Nos. 1420-1500]"
+   ]
+  },
+  "21MR": {
+   "titles": [
+    "Manuscript Releases, vol. 21 [Nos. 1501-1598]"
+   ]
+  },
+  "2BC": {
+   "titles": [
+    "Bible Commentary Volume 2",
+    "SDA Bible Commentary Volume 2",
+    "The SDA Bible Commentary Volume 2",
+    "SDA Bible Commentary, vol. 2 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 2"
+   ]
+  },
+  "2BIO": {
+   "titles": [
+    "Ellen G. White: The Progressive Years: 1862-1876 (vol. 2)"
+   ]
+  },
+  "2MCP": {
+   "titles": [
+    "Mind, Character, and Personality, vol. 2",
+    "Mind, Character, and Personality Volume 2"
+   ]
+  },
+  "2MR": {
+   "titles": [
+    "Manuscript Releases, vol. 2 [Nos. 97-161]"
+   ]
+  },
+  "2NL": {
+   "titles": [
+    "Notebook Leaflets from the Elmshaven Library, vol. 2"
+   ]
+  },
+  "2Red": {
+   "titles": [
+    "Redemption; or the Temptation of Christ in The Wilderness"
+   ]
+  },
+  "2SAT": {
+   "titles": [
+    "Sermons and Talks, vol. 2"
+   ]
+  },
+  "2SG": {
+   "titles": [
+    "Spiritual Gifts, vol. 2"
+   ]
+  },
+  "2SM": {
+   "titles": [
+    "Selected Messages Book 2"
+   ]
+  },
+  "2SP": {
+   "titles": [
+    "The Spirit of Prophecy, vol. 2"
+   ]
+  },
+  "2T": {
+   "titles": [
+    "Testimonies for the Church, vol. 2",
+    "Testimonies for the Church Volume 2"
+   ]
+  },
+  "2TT": {
+   "titles": [
+    "Testimony Treasures, vol. 2",
+    "Testimony Treasures Volume 2"
+   ]
+  },
+  "3BC": {
+   "titles": [
+    "Bible Commentary Volume 3",
+    "SDA Bible Commentary Volume 3",
+    "The SDA Bible Commentary Volume 3",
+    "SDA Bible Commentary, vol. 3 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 3"
+   ]
+  },
+  "3BIO": {
+   "titles": [
+    "Ellen G. White: The Lonely Years: 1876-1891 (vol. 3)"
+   ]
+  },
+  "3MR": {
+   "titles": [
+    "Manuscript Releases, vol. 3 [Nos. 162-209]"
+   ]
+  },
+  "3Red": {
+   "titles": [
+    "Redemption: Or the Miracles of Christ, the Mighty One"
+   ]
+  },
+  "3SG": {
+   "titles": [
+    "Spiritual Gifts, vol. 3"
+   ]
+  },
+  "3SM": {
+   "titles": [
+    "Selected Messages Book 3"
+   ]
+  },
+  "3SM-SG": {
+   "titles": [
+    "Selected Messages, Book 3 -- Study Guide"
+   ]
+  },
+  "3SP": {
+   "titles": [
+    "The Spirit of Prophecy, vol. 3"
+   ]
+  },
+  "3T": {
+   "titles": [
+    "Testimonies for the Church, vol. 3",
+    "Testimonies for the Church Volume 3"
+   ]
+  },
+  "3TT": {
+   "titles": [
+    "Testimony Treasures, vol. 3",
+    "Testimony Treasures Volume 3"
+   ]
+  },
+  "4BC": {
+   "titles": [
+    "Bible Commentary Volume 4",
+    "SDA Bible Commentary Volume 4",
+    "The SDA Bible Commentary Volume 4",
+    "SDA Bible Commentary, vol. 4 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 4"
+   ]
+  },
+  "4BIO": {
+   "titles": [
+    "Ellen G. White: The Australian Years: 1891-1900 (vol. 4)"
+   ]
+  },
+  "4MR": {
+   "titles": [
+    "Manuscript Releases, vol. 4 [Nos. 210-259]"
+   ]
+  },
+  "4Red": {
+   "titles": [
+    "Redemption: or the Teachings of Christ, the Anointed One"
+   ]
+  },
+  "4SP": {
+   "titles": [
+    "The Spirit of Prophecy, vol. 4"
+   ]
+  },
+  "4T": {
+   "titles": [
+    "Testimonies for the Church, vol. 4",
+    "Testimonies for the Church Volume 4"
+   ]
+  },
+  "4aSG": {
+   "titles": [
+    "Spiritual Gifts, vol. 4a"
+   ]
+  },
+  "4bSG": {
+   "titles": [
+    "Spiritual Gifts, vol. 4b"
+   ]
+  },
+  "5BC": {
+   "titles": [
+    "Bible Commentary Volume 5",
+    "SDA Bible Commentary Volume 5",
+    "The SDA Bible Commentary Volume 5",
+    "SDA Bible Commentary, vol. 5 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 5"
+   ]
+  },
+  "5BIO": {
+   "titles": [
+    "Ellen G. White: The Early Elmshaven Years: 1900-1905 (vol. 5)"
+   ]
+  },
+  "5MR": {
+   "titles": [
+    "Manuscript Releases, vol. 5 [Nos. 260-346]"
+   ]
+  },
+  "5Red": {
+   "titles": [
+    "Redemption Or The Sufferings Of Christ His Trial And Crucifixion"
+   ]
+  },
+  "5T": {
+   "titles": [
+    "Testimonies for the Church, vol. 5",
+    "Testimonies for the Church Volume 5"
+   ]
+  },
+  "6BC": {
+   "titles": [
+    "Bible Commentary Volume 6",
+    "SDA Bible Commentary Volume 6",
+    "The SDA Bible Commentary Volume 6",
+    "SDA Bible Commentary, vol. 6 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 6"
+   ]
+  },
+  "6BIO": {
+   "titles": [
+    "Ellen G. White: The Later Elmshaven Years: 1905-1915 (vol. 6)"
+   ]
+  },
+  "6MR": {
+   "titles": [
+    "Manuscript Releases, vol. 6 [Nos. 347-418]"
+   ]
+  },
+  "6Red": {
+   "titles": [
+    "Redemption: or the Resurrection of Christ; and His Ascension"
+   ]
+  },
+  "6T": {
+   "titles": [
+    "Testimonies for the Church, vol. 6",
+    "Testimonies for the Church Volume 6"
+   ]
+  },
+  "7ABC": {
+   "titles": [
+    "SDA Bible Commentary, vol. 7A (EGW)"
+   ]
+  },
+  "7BC": {
+   "titles": [
+    "Bible Commentary",
+    "Bible Commentary Volume 7",
+    "SDA Bible Commentary Volume 7",
+    "The SDA Bible Commentary Volume 7",
+    "SDA Bible Commentary, vol. 7 (EGW)",
+    "The SDA Bible Commentary [E. G. White Comments] Volume 7"
+   ]
+  },
+  "7MR": {
+   "titles": [
+    "Manuscript Releases, vol. 7 [Nos. 419-525]"
+   ]
+  },
+  "7Red": {
+   "titles": [
+    "Redemption: or the Ministry of Peter and the Conversion of Saul"
+   ]
+  },
+  "7T": {
+   "titles": [
+    "Testimonies for the Church, vol. 7",
+    "Testimonies for the Church Volume 7"
+   ]
+  },
+  "88IOL": {
+   "titles": [
+    "1888—Issues, Outcomes, Lessons"
+   ]
+  },
+  "8MR": {
+   "titles": [
+    "Manuscript Releases, vol. 8 [Nos. 526-663]"
+   ]
+  },
+  "8Red": {
+   "titles": [
+    "Redemption: or the Teachings of Paul, and his Mission to the Gentiles"
+   ]
+  },
+  "8T": {
+   "titles": [
+    "Testimonies for the Church, vol. 8",
+    "Testimonies for the Church Volume 8"
+   ]
+  },
+  "9MR": {
+   "titles": [
+    "Manuscript Releases, vol. 9 [Nos. 664-770]"
+   ]
+  },
+  "9T": {
+   "titles": [
+    "Testimonies for the Church, vol. 9",
+    "Testimonies for the Church Volume 9"
+   ]
+  },
+  "AA": {
+   "titles": [
+    "The Acts of the Apostles"
+   ]
+  },
+  "AA-SG": {
+   "titles": [
+    "Acts of the Apostles -- Study Guide"
+   ]
+  },
+  "AC": {
+   "titles": [
+    "A Call to Stand Apart"
+   ]
+  },
+  "ACWF": {
+   "titles": [
+    "The Ark of the Covenant, Will It Be Found?"
+   ]
+  },
+  "AG": {
+   "titles": [
+    "God’s Amazing Grace"
+   ]
+  },
+  "AGOL": {
+   "titles": [
+    "A Gift of Light"
+   ]
+  },
+  "AGP": {
+   "titles": [
+    "The Abiding Gift of Prophecy"
+   ]
+  },
+  "AH": {
+   "titles": [
+    "The Adventist Home"
+   ]
+  },
+  "AH-SG": {
+   "titles": [
+    "The Adventist Home -- Study Guide"
+   ]
+  },
+  "AOT": {
+   "titles": [
+    "Angel Over Her Tent"
+   ]
+  },
+  "APAY": {
+   "titles": [
+    "A Prophet Among You"
+   ]
+  },
+  "ASM": {
+   "titles": [
+    "Will There Be Another Special Messenger?"
+   ]
+  },
+  "ATJEJW": {
+   "titles": [
+    "What Became of A. T. Jones and E. J. Waggoner?"
+   ]
+  },
+  "AWLF": {
+   "titles": [
+    "A Word to the “Little Flock”"
+   ]
+  },
+  "AY": {
+   "titles": [
+    "An Appeal to the Youth"
+   ]
+  },
+  "AdEx": {
+   "titles": [
+    "Advent Experience"
+   ]
+  },
+  "Amal": {
+   "titles": [
+    "Amalgamation"
+   ]
+  },
+  "ApM": {
+   "titles": [
+    "An Appeal to Mothers"
+   ]
+  },
+  "BCL": {
+   "titles": [
+    "Battle Creek Letters"
+   ]
+  },
+  "BHOTV1": {
+   "titles": [
+    "Bible History Old Testament Vol.1"
+   ]
+  },
+  "BHOTV2": {
+   "titles": [
+    "Bible History Old Testament Vol.2"
+   ]
+  },
+  "BHOTV3": {
+   "titles": [
+    "Bible History Old Testament Vol.3"
+   ]
+  },
+  "BHOTV4": {
+   "titles": [
+    "Bible History Old Testament Vol.4"
+   ]
+  },
+  "BHOTV5": {
+   "titles": [
+    "Bible History Old Testament Vol.5"
+   ]
+  },
+  "BHOTV6": {
+   "titles": [
+    "Bible History Old Testament Vol.6"
+   ]
+  },
+  "BHOTV7": {
+   "titles": [
+    "Bible History Old Testament Vol.7"
+   ]
+  },
+  "BHP": {
+   "titles": [
+    "Believe His Prophets"
+   ]
+  },
+  "BLJ": {
+   "titles": [
+    "To Be Like Jesus"
+   ]
+  },
+  "BOE": {
+   "titles": [
+    "Beginning of the End"
+   ]
+  },
+  "BPUEGW": {
+   "titles": [
+    "Basic Principles of Understanding Ellen G. White’s Writings"
+   ]
+  },
+  "BR-ASI9": {
+   "titles": [
+    "Bible Readings — Bible Questions Answered"
+   ]
+  },
+  "BRIIE": {
+   "titles": [
+    "Basic Rules of Interpretation-Internal and External"
+   ]
+  },
+  "BSAE": {
+   "titles": [
+    "The Bible, Science, and Age of the Earth"
+   ]
+  },
+  "BSRWEGW": {
+   "titles": [
+    "Brief Statements Regarding the Writings of Ellen G. White"
+   ]
+  },
+  "CABP": {
+   "titles": [
+    "Can All Be Prophets?"
+   ]
+  },
+  "CBPH": {
+   "titles": [
+    "A Critique of the Book Prophetess of Health"
+   ]
+  },
+  "CC": {
+   "titles": [
+    "Conflict and Courage"
+   ]
+  },
+  "CCh": {
+   "titles": [
+    "Counsels for the Church"
+   ]
+  },
+  "CCh-SG": {
+   "titles": [
+    "Counsels for the Church -- Study Guide"
+   ]
+  },
+  "CD": {
+   "titles": [
+    "Counsels on Diet and Foods"
+   ]
+  },
+  "CD-SG": {
+   "titles": [
+    "Counsels On Diet and Foods -- Study Guide"
+   ]
+  },
+  "CE": {
+   "titles": [
+    "Christian Education"
+   ]
+  },
+  "CEESDAH": {
+   "titles": [
+    "Charismatic Experiences In Early Seventh-day Adventist History"
+   ]
+  },
+  "CESDAC": {
+   "titles": [
+    "Charismatic Experiences in the Seventh-Day Adventist Church"
+   ]
+  },
+  "CET": {
+   "titles": [
+    "Christian Experience and Teachings of Ellen G. White"
+   ]
+  },
+  "CEv": {
+   "titles": [
+    "The Colporteur Evangelist"
+   ]
+  },
+  "CFJS": {
+   "titles": [
+    "Campfire Junior Stories from the days of S.D.A. Pioneers"
+   ]
+  },
+  "CG": {
+   "titles": [
+    "Child Guidance"
+   ]
+  },
+  "CG-SG": {
+   "titles": [
+    "Child Guidance -- Study Guide"
+   ]
+  },
+  "CGLSJST": {
+   "titles": [
+    "Calamities and God’s Love; Sin, Judgment, and the Shortness of Time"
+   ]
+  },
+  "CH": {
+   "titles": [
+    "Counsels on Health"
+   ]
+  },
+  "CH-SG": {
+   "titles": [
+    "Counsels on Health -- Study Guide"
+   ]
+  },
+  "CIHS": {
+   "titles": [
+    "Christ in His Sanctuary"
+   ]
+  },
+  "CL": {
+   "titles": [
+    "Country Living"
+   ]
+  },
+  "CLD": {
+   "titles": [
+    "Conflicts in the Last Days"
+   ]
+  },
+  "CM": {
+   "titles": [
+    "Colporteur Ministry"
+   ]
+  },
+  "CME": {
+   "titles": [
+    "A Call to Medical Evangelism and Health Education"
+   ]
+  },
+  "COL": {
+   "titles": [
+    "Christ’s Object Lessons"
+   ]
+  },
+  "CR144": {
+   "titles": [
+    "Counsel Regarding the Question of the 144,000"
+   ]
+  },
+  "CS": {
+   "titles": [
+    "Counsels on Stewardship"
+   ]
+  },
+  "CS-SG": {
+   "titles": [
+    "Counsels on Stewardship -- Study Guide"
+   ]
+  },
+  "CSA": {
+   "titles": [
+    "A Call To Stand Apart"
+   ]
+  },
+  "CSPLUC": {
+   "titles": [
+    "Counsels from the Spirit of Prophecy on Labor Unions and Confederacies"
+   ]
+  },
+  "CSW": {
+   "titles": [
+    "Counsels on Sabbath School Work"
+   ]
+  },
+  "CT": {
+   "titles": [
+    "Counsels to Parents, Teachers, and Students"
+   ]
+  },
+  "CTBH": {
+   "titles": [
+    "Christian Temperance and Bible Hygiene"
+   ]
+  },
+  "CTr": {
+   "titles": [
+    "Christ Triumphant"
+   ]
+  },
+  "CUW": {
+   "titles": [
+    "Common or Uninspired Writings"
+   ]
+  },
+  "CW": {
+   "titles": [
+    "Counsels to Writers and Editors"
+   ]
+  },
+  "CWAWAN": {
+   "titles": [
+    "Compilations—What They Are and What They Are Not"
+   ]
+  },
+  "ChL": {
+   "titles": [
+    "Christian Leadership"
+   ]
+  },
+  "ChS": {
+   "titles": [
+    "Christian Service"
+   ]
+  },
+  "ChS-SG": {
+   "titles": [
+    "Christian Service -- Study Guide"
+   ]
+  },
+  "Con": {
+   "titles": [
+    "Confrontation"
+   ]
+  },
+  "Con-SG": {
+   "titles": [
+    "Confrontation -- Study Guide"
+   ]
+  },
+  "DA": {
+   "titles": [
+    "The Desire of Ages"
+   ]
+  },
+  "DA-SG": {
+   "titles": [
+    "The Desire of Ages -- Study Guide"
+   ]
+  },
+  "DATM": {
+   "titles": [
+    "The Development of Adventist Thinking on Clean and Unclean Meats"
+   ]
+  },
+  "DD": {
+   "titles": [
+    "Darkness Before Dawn"
+   ]
+  },
+  "DDAEW": {
+   "titles": [
+    "Doctrinal Development, Authority, and Ellen White"
+   ]
+  },
+  "DG": {
+   "titles": [
+    "Daughters of God"
+   ]
+  },
+  "DGRGC": {
+   "titles": [
+    "Divine Guidance in the Remnant of God’s Church"
+   ]
+  },
+  "DPSDAI": {
+   "titles": [
+    "Dramatic Productions In SDA Institutions"
+   ]
+  },
+  "EA": {
+   "titles": [
+    "Experiences in Australia"
+   ]
+  },
+  "EGWATHW": {
+   "titles": [
+    "Ellen G. White’s Attitude Toward Her Work"
+   ]
+  },
+  "EGWBB": {
+   "titles": [
+    "Ellen G. White: A Brief Biography"
+   ]
+  },
+  "EGWC": {
+   "titles": [
+    "Ellen G. White and Her Critics"
+   ]
+  },
+  "EGWCPT": {
+   "titles": [
+    "Ellen G. White’s Counsel and Practice on Tithe"
+   ]
+  },
+  "EGWCRR": {
+   "titles": [
+    "Ellen G. White and Church Race Relations"
+   ]
+  },
+  "EGWCUTF": {
+   "titles": [
+    "Ellen G. White Comments on the Use of Tithe Funds"
+   ]
+  },
+  "EGWCVB": {
+   "titles": [
+    "The E. G. White Counsel on Versions of the Bible"
+   ]
+  },
+  "EGWE": {
+   "titles": [
+    "Ellen G. White in Europe 1885-1887"
+   ]
+  },
+  "EGWMR": {
+   "titles": [
+    "Ellen G. White - Messenger to the Remnant"
+   ]
+  },
+  "EGWP": {
+   "titles": [
+    "Ellen G. White the Person"
+   ]
+  },
+  "EGWPlag": {
+   "titles": [
+    "Was Ellen G. White A Plagiarist?"
+   ]
+  },
+  "EGWRWJP": {
+   "titles": [
+    "Ellen Gould White Speaks Out Regarding The Work For The Jewish People"
+   ]
+  },
+  "EGWSCC": {
+   "titles": [
+    "Ellen G. White Statements Concerning Cancer"
+   ]
+  },
+  "EGWSDQ": {
+   "titles": [
+    "Ellen G. White and the Shut Door Question"
+   ]
+  },
+  "EGWSRGES": {
+   "titles": [
+    "Ellen G. White Statements Relating to Geology and Earth Sciences"
+   ]
+  },
+  "EGWSROCHG": {
+   "titles": [
+    "Ellen G. White statements related to the observance of Christmas and holiday gifts"
+   ]
+  },
+  "EGWT": {
+   "titles": [
+    "Ellen G. White and the Tithe"
+   ]
+  },
+  "EGWUTRW": {
+   "titles": [
+    "Ellen G. White’s Use Of The Term “Race War”, and Related Insights"
+   ]
+  },
+  "EGWVRWSDA": {
+   "titles": [
+    "Ellen G. White’s View of the Role of Women in the SDA Church"
+   ]
+  },
+  "EGWW": {
+   "titles": [
+    "The Ellen G. White Writings"
+   ]
+  },
+  "EP": {
+   "titles": [
+    "From Eternity Past"
+   ]
+  },
+  "EROW": {
+   "titles": [
+    "Exhibits Relating to the Ordination of Women"
+   ]
+  },
+  "EV": {
+   "titles": [
+    "Evangelism"
+   ]
+  },
+  "EW": {
+   "titles": [
+    "Early Writings"
+   ]
+  },
+  "EW-SG": {
+   "titles": [
+    "Early Writings -- Study Guide"
+   ]
+  },
+  "EWIT": {
+   "titles": [
+    "Ellen White’s Integrative Themes"
+   ]
+  },
+  "EWLFB": {
+   "titles": [
+    "Ellen White’s Last Four Books"
+   ]
+  },
+  "EWP": {
+   "titles": [
+    "Ellen White’s Predictions"
+   ]
+  },
+  "EWRWC": {
+   "titles": [
+    "Ellen White and the Role of Women in the Church"
+   ]
+  },
+  "EWV": {
+   "titles": [
+    "Ellen White and Vegetarianism"
+   ]
+  },
+  "Ed": {
+   "titles": [
+    "Education"
+   ]
+  },
+  "Ed-SG": {
+   "titles": [
+    "Education -- Study Guide"
+   ]
+  },
+  "Ev": {
+   "titles": [
+    "Evangelism"
+   ]
+  },
+  "Ev-SG": {
+   "titles": [
+    "Evangelism -- Study Guide"
+   ]
+  },
+  "ExV": {
+   "titles": [
+    "A Sketch of the Christian Experience and Views of Ellen G. White"
+   ]
+  },
+  "ExV53": {
+   "titles": [
+    "Notes of Explanation"
+   ]
+  },
+  "ExV54": {
+   "titles": [
+    "Supplement to the Christian Experience and Views of Ellen G. White"
+   ]
+  },
+  "FBM": {
+   "titles": [
+    "The First Battle of Manassas, July 21, 1861"
+   ]
+  },
+  "FBS": {
+   "titles": [
+    "The Fannie Bolton Story"
+   ]
+  },
+  "FE": {
+   "titles": [
+    "Fundamentals of Christian Education"
+   ]
+  },
+  "FH": {
+   "titles": [
+    "From the Heart"
+   ]
+  },
+  "FLB": {
+   "titles": [
+    "The Faith I Live By"
+   ]
+  },
+  "FW": {
+   "titles": [
+    "Faith and Works"
+   ]
+  },
+  "FW-SG": {
+   "titles": [
+    "Faith and Works -- Study Guide"
+   ]
+  },
+  "GC": {
+   "titles": [
+    "The Great Controversy"
+   ]
+  },
+  "GC-SG": {
+   "titles": [
+    "The Great Controversy -- Study Guide"
+   ]
+  },
+  "GC88": {
+   "titles": [
+    "The Great Controversy",
+    "The Great Controversy 1888"
+   ]
+  },
+  "GEGW": {
+   "titles": [
+    "The Genealogy of Ellen G. White"
+   ]
+  },
+  "GI": {
+   "titles": [
+    "The Gathering of Israel"
+   ]
+  },
+  "GPDR": {
+   "titles": [
+    "Guiding Principles in Dress Reform"
+   ]
+  },
+  "GRC": {
+   "titles": [
+    "God’s Remnant Church (The Remnant Church)"
+   ]
+  },
+  "GVEGW": {
+   "titles": [
+    "The Great Visions of Ellen G. White"
+   ]
+  },
+  "GW": {
+   "titles": [
+    "Gospel Workers",
+    "Gospel Workers 1915"
+   ]
+  },
+  "GW92": {
+   "titles": [
+    "Gospel Workers 1892"
+   ]
+  },
+  "GrH_a": {
+   "titles": [
+    "The Great Hope (Adapted)"
+   ]
+  },
+  "GrH_c": {
+   "titles": [
+    "The Great Hope (Condensed)"
+   ]
+  },
+  "HB": {
+   "titles": [
+    "Homeward Bound"
+   ]
+  },
+  "HBTS": {
+   "titles": [
+    "Highlights of the Beginning of the Tithing System"
+   ]
+  },
+  "HDAW": {
+   "titles": [
+    "How The Desire of Ages Was Written"
+   ]
+  },
+  "HDL": {
+   "titles": [
+    "Help In Daily Living"
+   ]
+  },
+  "HEWBW": {
+   "titles": [
+    "How Ellen White’s Books Were Written"
+   ]
+  },
+  "HF": {
+   "titles": [
+    "From Here to Forever"
+   ]
+  },
+  "HFM": {
+   "titles": [
+    "The Health Food Ministry"
+   ]
+  },
+  "HH": {
+   "titles": [
+    "Humble Hero"
+   ]
+  },
+  "HIPSA": {
+   "titles": [
+    "Hermeneutics Interpreting a 19th-Century Prophet in the Space Age"
+   ]
+  },
+  "HL": {
+   "titles": [
+    "Healthful Living"
+   ]
+  },
+  "HLv": {
+   "titles": [
+    "From Heaven With Love"
+   ]
+  },
+  "HMes": {
+   "titles": [
+    "His Messenger"
+   ]
+  },
+  "HONL": {
+   "titles": [
+    "Heralds of New Light"
+   ]
+  },
+  "HP": {
+   "titles": [
+    "In Heavenly Places"
+   ]
+  },
+  "HPEGWW": {
+   "titles": [
+    "Some Hermeneutical Principles Bearing On the Ellen G. White Writings"
+   ]
+  },
+  "HS": {
+   "titles": [
+    "Historical Sketches of the Foreign Missions of the Seventh-day Adventists"
+   ]
+  },
+  "HUT": {
+   "titles": [
+    "The History and Use of the Tithe"
+   ]
+  },
+  "Hvn": {
+   "titles": [
+    "Heaven"
+   ]
+  },
+  "IEGWEHC": {
+   "titles": [
+    "Interpreting Ellen G. White’s Earth History Comments"
+   ]
+  },
+  "IJHK": {
+   "titles": [
+    "The 1907 Interview with John Harvey Kellogg"
+   ]
+  },
+  "IJWEGW": {
+   "titles": [
+    "The Investigative Judgment in the Writings of Ellen G. White"
+   ]
+  },
+  "IRI": {
+   "titles": [
+    "Issues on Revelation and Inspiration"
+   ]
+  },
+  "IRWHW": {
+   "titles": [
+    "Inspiration/Revelation: What It Is and How It Works"
+   ]
+  },
+  "IST": {
+   "titles": [
+    "The Integrity of the Sanctuary Truth"
+   ]
+  },
+  "ITC": {
+   "titles": [
+    "The Integrity of the Testimonies to the Church"
+   ]
+  },
+  "KC": {
+   "titles": [
+    "The Kress Collection"
+   ]
+  },
+  "KTEWCE": {
+   "titles": [
+    "Some Key Thoughts from Ellen White on City Evangelism"
+   ]
+  },
+  "LASW": {
+   "titles": [
+    "“I’d Like To Ask Sister White ...”"
+   ]
+  },
+  "LDE": {
+   "titles": [
+    "Last Day Events"
+   ]
+  },
+  "LDE-SG": {
+   "titles": [
+    "Last Day Events  -- Study Guide"
+   ]
+  },
+  "LF": {
+   "titles": [
+    "Love Under Fire"
+   ]
+  },
+  "LHU": {
+   "titles": [
+    "Lift Him Up"
+   ]
+  },
+  "LLE": {
+   "titles": [
+    "Living the Life of Enoch"
+   ]
+  },
+  "LLM": {
+   "titles": [
+    "Loma Linda Messages"
+   ]
+  },
+  "LP": {
+   "titles": [
+    "Sketches from the Life of Paul"
+   ]
+  },
+  "LS": {
+   "titles": [
+    "Life Sketches of Ellen G. White"
+   ]
+  },
+  "LS80": {
+   "titles": [
+    "Life Sketches of James White and Ellen G. White 1880"
+   ]
+  },
+  "LS88": {
+   "titles": [
+    "Life Sketches of James White and Ellen G. White 1888"
+   ]
+  },
+  "LSMS": {
+   "titles": [
+    "Life Sketches Manuscript"
+   ]
+  },
+  "LSS": {
+   "titles": [
+    "The Light Still Shines"
+   ]
+  },
+  "LYL": {
+   "titles": [
+    "Letters to Young Lovers"
+   ]
+  },
+  "MB": {
+   "titles": [
+    "Thoughts From the Mount of Blessing",
+    "Thoughts from the Mount of Blessing"
+   ]
+  },
+  "MB-SG": {
+   "titles": [
+    "Thoughts from the Mount of Blessing -- Study Guide"
+   ]
+  },
+  "MC": {
+   "titles": [
+    "Manual for Canvassers"
+   ]
+  },
+  "MCP-SG": {
+   "titles": [
+    "Mind, Character, and Personality -- Study Guide"
+   ]
+  },
+  "MFSS": {
+   "titles": [
+    "Mr. Faulkhead and the Secret Sign"
+   ]
+  },
+  "MH": {
+   "titles": [
+    "The Ministry of Healing"
+   ]
+  },
+  "MH-SG": {
+   "titles": [
+    "The Ministry of Healing -- Study Guide"
+   ]
+  },
+  "MHH": {
+   "titles": [
+    "The Ministry of Health and Healing"
+   ]
+  },
+  "ML": {
+   "titles": [
+    "My Life Today"
+   ]
+  },
+  "MM": {
+   "titles": [
+    "Medical Ministry"
+   ]
+  },
+  "MOL": {
+   "titles": [
+    "Messenger of the Lord"
+   ]
+  },
+  "MR1033": {
+   "titles": [
+    "Manuscript Release No 1033"
+   ]
+  },
+  "MR311": {
+   "titles": [
+    "The Remnant Church; Its Organization, Authority, Unity, and Triumph"
+   ]
+  },
+  "MR728": {
+   "titles": [
+    "Manuscript Release No. 728"
+   ]
+  },
+  "MR760": {
+   "titles": [
+    "Manuscript Release No. 760"
+   ]
+  },
+  "MR852": {
+   "titles": [
+    "Manuscript Release No. 852"
+   ]
+  },
+  "MR926": {
+   "titles": [
+    "Manuscript Release No. 926"
+   ]
+  },
+  "MRQI": {
+   "titles": [
+    "Music—Its Role, Qualities, and Influence"
+   ]
+  },
+  "MTC": {
+   "titles": [
+    "Ministry to the Cities"
+   ]
+  },
+  "MWI": {
+   "titles": [
+    "Mrs. White’s Indebtedness"
+   ]
+  },
+  "MYP": {
+   "titles": [
+    "Messages to Young People"
+   ]
+  },
+  "Mar": {
+   "titles": [
+    "Maranatha"
+   ]
+  },
+  "NADEGW": {
+   "titles": [
+    "A Nutrition Authority Discusses Mrs. E. G. White"
+   ]
+  },
+  "NL": {
+   "titles": [
+    "A New Life (Revival and Beyond)"
+   ]
+  },
+  "NL-SG": {
+   "titles": [
+    "A New Life (Revival and Beyond) -- Study Guide"
+   ]
+  },
+  "OFC": {
+   "titles": [
+    "Our Father Cares"
+   ]
+  },
+  "OHC": {
+   "titles": [
+    "Our High Calling"
+   ]
+  },
+  "OMS": {
+   "titles": [
+    "Over My Shoulder"
+   ]
+  },
+  "PBORWEW": {
+   "titles": [
+    "The Position of “The Bible, and the Bible Only” and the Relationship of This to the Writings of Ellen White"
+   ]
+  },
+  "PC": {
+   "titles": [
+    "The Paulson Collection of Ellen G. White Letters"
+   ]
+  },
+  "PCO": {
+   "titles": [
+    "A Place Called Oakwood"
+   ]
+  },
+  "PCP": {
+   "titles": [
+    "Peter’s Counsel to Parents"
+   ]
+  },
+  "PH001": {
+   "titles": [
+    "An Appeal"
+   ]
+  },
+  "PH002": {
+   "titles": [
+    "Appeal and Suggestions to Conference Officers"
+   ]
+  },
+  "PH004": {
+   "titles": [
+    "An Appeal for Missions"
+   ]
+  },
+  "PH005": {
+   "titles": [
+    "An Appeal for Self-supporting Laborers to Enter Unworked Fields"
+   ]
+  },
+  "PH007": {
+   "titles": [
+    "An Appeal to Our Churches in Behalf of Home Missionary Work"
+   ]
+  },
+  "PH008": {
+   "titles": [
+    "An Appeal in Behalf of Our Work in Scandinavia"
+   ]
+  },
+  "PH009": {
+   "titles": [
+    "An Appeal in Behalf of Our New Medical College"
+   ]
+  },
+  "PH010": {
+   "titles": [
+    "An Appeal to Ministers and Church Officers"
+   ]
+  },
+  "PH011": {
+   "titles": [
+    "Appeal to the Battle Creek Church"
+   ]
+  },
+  "PH012": {
+   "titles": [
+    "An Appeal to Seventh-day Adventists to Fulfil Their Duty to the South"
+   ]
+  },
+  "PH013": {
+   "titles": [
+    "Appeal to the Young"
+   ]
+  },
+  "PH014": {
+   "titles": [
+    "Appeals for Unity"
+   ]
+  },
+  "PH015": {
+   "titles": [
+    "Brother Aldrich"
+   ]
+  },
+  "PH016": {
+   "titles": [
+    "To Brother J. N. Andrews And Sister H. N. Smith"
+   ]
+  },
+  "PH019": {
+   "titles": [
+    "A Call to Service in the Masters Harvest Field"
+   ]
+  },
+  "PH020": {
+   "titles": [
+    "A Call to the Watchmen"
+   ]
+  },
+  "PH022": {
+   "titles": [
+    "Choice Thoughts on Dress"
+   ]
+  },
+  "PH026": {
+   "titles": [
+    "Do You Eat Flesh?"
+   ]
+  },
+  "PH028": {
+   "titles": [
+    "Elder Daniels and the Fresno Church"
+   ]
+  },
+  "PH029": {
+   "titles": [
+    "The Enlargement of Our Work"
+   ]
+  },
+  "PH030": {
+   "titles": [
+    "An Exposure of Fanaticism and Wickedness"
+   ]
+  },
+  "PH031": {
+   "titles": [
+    "Extracts from Unpublished Testimonies in Regard to Flesh Foods"
+   ]
+  },
+  "PH036": {
+   "titles": [
+    "Guiding Principles for the Young"
+   ]
+  },
+  "PH037": {
+   "titles": [
+    "Hillcrest School Farm"
+   ]
+  },
+  "PH038": {
+   "titles": [
+    "Important Testimony"
+   ]
+  },
+  "PH039": {
+   "titles": [
+    "An Important Testimony to our Brethren and Sisters in New York"
+   ]
+  },
+  "PH040": {
+   "titles": [
+    "Instruction Concerning Education"
+   ]
+  },
+  "PH043": {
+   "titles": [
+    "The Judgment"
+   ]
+  },
+  "PH045": {
+   "titles": [
+    "Knowing and Obeying the Lord"
+   ]
+  },
+  "PH048": {
+   "titles": [
+    "Living by Principle"
+   ]
+  },
+  "PH049": {
+   "titles": [
+    "Loma Linda’s Work"
+   ]
+  },
+  "PH050": {
+   "titles": [
+    "Messages to Young People"
+   ]
+  },
+  "PH054": {
+   "titles": [
+    "I Will Guide Thee"
+   ]
+  },
+  "PH055": {
+   "titles": [
+    "Our Work in Washington D. C."
+   ]
+  },
+  "PH058": {
+   "titles": [
+    "Perils Increase Till Jesus Comes"
+   ]
+  },
+  "PH061": {
+   "titles": [
+    "Progress of Work at Loma Linda"
+   ]
+  },
+  "PH066": {
+   "titles": [
+    "Health, Philanthropic, and Medical Missionary Work"
+   ]
+  },
+  "PH067": {
+   "titles": [
+    "The Removal to Washington"
+   ]
+  },
+  "PH068": {
+   "titles": [
+    "Rolling Back the Reproach"
+   ]
+  },
+  "PH069": {
+   "titles": [
+    "The Sanitarium Patients at Goguac Lake"
+   ]
+  },
+  "PH070": {
+   "titles": [
+    "The Selection of Articles for our Papers"
+   ]
+  },
+  "PH078": {
+   "titles": [
+    "Sowing Beside All Waters"
+   ]
+  },
+  "PH079": {
+   "titles": [
+    "Special Instruction Regarding Royalties"
+   ]
+  },
+  "PH080": {
+   "titles": [
+    "Special Instruction Relating to The Review and Herald Office, and The Work in Battle Creek"
+   ]
+  },
+  "PH081": {
+   "titles": [
+    "Special Testimonies on Church Schools"
+   ]
+  },
+  "PH082": {
+   "titles": [
+    "Special Testimonies Relating to Medical Missionary Work"
+   ]
+  },
+  "PH083": {
+   "titles": [
+    "Special Testimony Relative to Tract and Missionary Societies and Our Preachers"
+   ]
+  },
+  "PH084": {
+   "titles": [
+    "Special Testimonies - Relating to Various Matters in Battle Creek"
+   ]
+  },
+  "PH085": {
+   "titles": [
+    "Special Testimony for the Battle Creek Church"
+   ]
+  },
+  "PH086": {
+   "titles": [
+    "Special Testimony to Battle Creek Church"
+   ]
+  },
+  "PH087": {
+   "titles": [
+    "Special Testimony to Battle Creek Church"
+   ]
+  },
+  "PH088": {
+   "titles": [
+    "Special Testimony to the Managers and Workers in our Institutions"
+   ]
+  },
+  "PH089": {
+   "titles": [
+    "Spiritual Advancement the Object of Camp-Meetings"
+   ]
+  },
+  "PH090": {
+   "titles": [
+    "Statement and Appeal"
+   ]
+  },
+  "PH092": {
+   "titles": [
+    "Suggestions to Those Holding Missionary Conventions"
+   ]
+  },
+  "PH093": {
+   "titles": [
+    "The Temperance Work"
+   ]
+  },
+  "PH094": {
+   "titles": [
+    "Testimonies and Experiences Connected with the Loma Linda Sanitarium and College of Medical Evangelists"
+   ]
+  },
+  "PH095": {
+   "titles": [
+    "Testimonies and Experiences Connected With The Loma Linda Sanitarium and College of Medical Evangelists"
+   ]
+  },
+  "PH096": {
+   "titles": [
+    "Testimonies on the Case of Elder E. P. Daniels"
+   ]
+  },
+  "PH097": {
+   "titles": [
+    "Testimony for the Church at Battle Creek"
+   ]
+  },
+  "PH098": {
+   "titles": [
+    "Testimony for the Church at Olcott, N. Y."
+   ]
+  },
+  "PH099": {
+   "titles": [
+    "Testimony for the Churches at Allegan & Monterey"
+   ]
+  },
+  "PH100": {
+   "titles": [
+    "Testimony for the Physicians and Helpers of the Sanitarium"
+   ]
+  },
+  "PH101": {
+   "titles": [
+    "Testimony Relative to Marriage Duties, and Extremes in The Health Reform"
+   ]
+  },
+  "PH102": {
+   "titles": [
+    "Testimonies on Fair Dealing and Book Royalties"
+   ]
+  },
+  "PH104": {
+   "titles": [
+    "Testimony To the Brethren in Western New York"
+   ]
+  },
+  "PH105": {
+   "titles": [
+    "There Is Help in God"
+   ]
+  },
+  "PH107": {
+   "titles": [
+    "To Whom it May Concern"
+   ]
+  },
+  "PH109": {
+   "titles": [
+    "A View of the Conflict"
+   ]
+  },
+  "PH113": {
+   "titles": [
+    "Words of Encouragement to Self-supporting Workers"
+   ]
+  },
+  "PH114": {
+   "titles": [
+    "The Work Among the Jews"
+   ]
+  },
+  "PH116": {
+   "titles": [
+    "The Writing and Sending Out of the Testimonies to the Church"
+   ]
+  },
+  "PH117": {
+   "titles": [
+    "Testimony for the Battle Creek Church"
+   ]
+  },
+  "PH118": {
+   "titles": [
+    "Address To Ministers"
+   ]
+  },
+  "PH119": {
+   "titles": [
+    "An Appeal for the Madison School"
+   ]
+  },
+  "PH120": {
+   "titles": [
+    "The Time and The Work"
+   ]
+  },
+  "PH122": {
+   "titles": [
+    "To Our Bookmen"
+   ]
+  },
+  "PH123": {
+   "titles": [
+    "Testimony to the Church at Battle Creek"
+   ]
+  },
+  "PH124": {
+   "titles": [
+    "What Shall We Teach?"
+   ]
+  },
+  "PH126": {
+   "titles": [
+    "And Their Cry Came Up Unto God"
+   ]
+  },
+  "PH127": {
+   "titles": [
+    "Appeal To Our People in America in Behalf of the Nashville Publishing House"
+   ]
+  },
+  "PH128": {
+   "titles": [
+    "Backsliding in Health Reform"
+   ]
+  },
+  "PH129": {
+   "titles": [
+    "A Big Surprise Party"
+   ]
+  },
+  "PH130": {
+   "titles": [
+    "Camp-Meetings Their Object, and How to Conduct Them"
+   ]
+  },
+  "PH131": {
+   "titles": [
+    "Church Schools"
+   ]
+  },
+  "PH132": {
+   "titles": [
+    "The Curse of the Liquor Traffic"
+   ]
+  },
+  "PH133": {
+   "titles": [
+    "Danger in Adopting Worldly Policy in the Work of God"
+   ]
+  },
+  "PH134": {
+   "titles": [
+    "The Dress Reform"
+   ]
+  },
+  "PH135": {
+   "titles": [
+    "God’s Plan for the Relief of Avondale School"
+   ]
+  },
+  "PH136": {
+   "titles": [
+    "Gospel Temperance Work"
+   ]
+  },
+  "PH137": {
+   "titles": [
+    "Health and Healing"
+   ]
+  },
+  "PH138": {
+   "titles": [
+    "The Health Reform and the Health Institute"
+   ]
+  },
+  "PH139": {
+   "titles": [
+    "The Relief of the Schools"
+   ]
+  },
+  "PH140": {
+   "titles": [
+    "Home and Church School Manual"
+   ]
+  },
+  "PH141": {
+   "titles": [
+    "The Liquor Traffic Working Counter to Christ"
+   ]
+  },
+  "PH142": {
+   "titles": [
+    "Notes on Health and Temperance Topics"
+   ]
+  },
+  "PH143": {
+   "titles": [
+    "The $150,000 Fund"
+   ]
+  },
+  "PH144": {
+   "titles": [
+    "The Place of Herbs in Rational Therapy"
+   ]
+  },
+  "PH145": {
+   "titles": [
+    "Recreation"
+   ]
+  },
+  "PH146": {
+   "titles": [
+    "Report of Special Meeting"
+   ]
+  },
+  "PH147": {
+   "titles": [
+    "The Sanitarium Must Not be Cramped"
+   ]
+  },
+  "PH148": {
+   "titles": [
+    "The Second Tithe"
+   ]
+  },
+  "PH149": {
+   "titles": [
+    "Selections from Testimonies to the Managers and Workers in our Institutions"
+   ]
+  },
+  "PH150": {
+   "titles": [
+    "Selections from the Testimonies Setting forth Important Principles Relating to Our Work in General, the Publishing Work in Particular, and the Relatio"
+   ]
+  },
+  "PH151": {
+   "titles": [
+    "Selections from the Testimonies for the Church For the Study of Those Attending the General Conference in Oakland, Ca., March 27, 1903"
+   ]
+  },
+  "PH152": {
+   "titles": [
+    "Special Testimonies Concerning the Work and Workers in the Pacific Press"
+   ]
+  },
+  "PH153": {
+   "titles": [
+    "Special Testimony on Canvassing for Christ’s Object Lessons"
+   ]
+  },
+  "PH154": {
+   "titles": [
+    "Special Testimony to Battle Creek Church"
+   ]
+  },
+  "PH155": {
+   "titles": [
+    "Special Testimony to the Battle Creek Church"
+   ]
+  },
+  "PH156": {
+   "titles": [
+    "Special Testimony to the Brethren in Battle Creek"
+   ]
+  },
+  "PH157": {
+   "titles": [
+    "Special Testimony to the Oakland and Battle Creek Churches"
+   ]
+  },
+  "PH158": {
+   "titles": [
+    "Testimonies Relating to Emmanuel Missionary College and Its Work"
+   ]
+  },
+  "PH159": {
+   "titles": [
+    "Testimony to the Church"
+   ]
+  },
+  "PH160": {
+   "titles": [
+    "To Conference Officers"
+   ]
+  },
+  "PH161": {
+   "titles": [
+    "To Conference Officers and Managers of Our Schools"
+   ]
+  },
+  "PH162": {
+   "titles": [
+    "To the Leading Men of Our Churches"
+   ]
+  },
+  "PH163": {
+   "titles": [
+    "To Those in Charge of the Colored Orphanage Enterprise"
+   ]
+  },
+  "PH164": {
+   "titles": [
+    "Words of Encouragement to Workers in the Home Missionary Field"
+   ]
+  },
+  "PH165": {
+   "titles": [
+    "Extracts from Recent Letters from Sister White Relative to Medical Missionary Work"
+   ]
+  },
+  "PH166": {
+   "titles": [
+    "Special on Tithing"
+   ]
+  },
+  "PH167": {
+   "titles": [
+    "Counsels to Physicians and Medical Students"
+   ]
+  },
+  "PH169": {
+   "titles": [
+    "The Sufferings of Christ"
+   ]
+  },
+  "PK": {
+   "titles": [
+    "Prophets and Kings"
+   ]
+  },
+  "PK-SG": {
+   "titles": [
+    "Prophets and Kings -- Study Guide"
+   ]
+  },
+  "PM": {
+   "titles": [
+    "The Publishing Ministry"
+   ]
+  },
+  "POSDAI": {
+   "titles": [
+    "Purpose and Objectives of Seventh-day Adventist Institutions"
+   ]
+  },
+  "PP": {
+   "titles": [
+    "Patriarchs and Prophets"
+   ]
+  },
+  "PP-SG": {
+   "titles": [
+    "Patriarchs and Prophets -- Study Guide"
+   ]
+  },
+  "PaM": {
+   "titles": [
+    "Pastoral Ministry"
+   ]
+  },
+  "Pr": {
+   "titles": [
+    "Prayer"
+   ]
+  },
+  "QSEW": {
+   "titles": [
+    "101 Questions on the Sanctuary and on Ellen White"
+   ]
+  },
+  "RC": {
+   "titles": [
+    "Reflecting Christ"
+   ]
+  },
+  "RIEWWE": {
+   "titles": [
+    "Revelation-Inspiration—Ellen White’s Witness and Experience"
+   ]
+  },
+  "RR": {
+   "titles": [
+    "Royalty and Ruin"
+   ]
+  },
+  "RRPCI": {
+   "titles": [
+    "The Ramik Report (Plagiarism/Copyright Issue)"
+   ]
+  },
+  "RRe": {
+   "titles": [
+    "Radiant Religion"
+   ]
+  },
+  "RVSE": {
+   "titles": [
+    "The Right To Vote—Shall I Exercise It?"
+   ]
+  },
+  "RY": {
+   "titles": [
+    "The Retirement Years"
+   ]
+  },
+  "SA": {
+   "titles": [
+    "A Solemn Appeal"
+   ]
+  },
+  "SC": {
+   "titles": [
+    "Steps to Christ"
+   ]
+  },
+  "SC-SG": {
+   "titles": [
+    "Steps to Christ -- Study Guide"
+   ]
+  },
+  "SD": {
+   "titles": [
+    "Sons and Daughters of God"
+   ]
+  },
+  "SDACBB": {
+   "titles": [
+    "Has the Seventh-day Adventist Church Become Babylon?"
+   ]
+  },
+  "SDALI": {
+   "titles": [
+    "Seventh-day Adventists and Life Insurance"
+   ]
+  },
+  "SDARD": {
+   "titles": [
+    "Seventh-day Adventists and the Reform Dress"
+   ]
+  },
+  "SDASBC": {
+   "titles": [
+    "Seventh-day Adventism—The Spirit Behind the Church"
+   ]
+  },
+  "SDD": {
+   "titles": [
+    "The “Shut Door” Documents"
+   ]
+  },
+  "SHM-SG": {
+   "titles": [
+    "The Story of Our Health Message -- Study Guide"
+   ]
+  },
+  "SHM-apx": {
+   "titles": [
+    "The Story of Our Health Message"
+   ]
+  },
+  "SJ": {
+   "titles": [
+    "The Story of Jesus"
+   ]
+  },
+  "SL": {
+   "titles": [
+    "The Sanctified Life"
+   ]
+  },
+  "SL-SG": {
+   "titles": [
+    "The Sanctified Life -- Study Guide"
+   ]
+  },
+  "SMG": {
+   "titles": [
+    "Stories of My Grandmother"
+   ]
+  },
+  "SPCCSR": {
+   "titles": [
+    "Spirit of Prophecy Counsels Relating To Church-State Relationships"
+   ]
+  },
+  "SPCSSW": {
+   "titles": [
+    "Spirit of Prophecy Counsels on Self-Supporting Work"
+   ]
+  },
+  "SPIAM": {
+   "titles": [
+    "The Spirit of Prophecy in the Advent Movement"
+   ]
+  },
+  "SPMS": {
+   "titles": [
+    "The Spirit of Prophecy and Military Service"
+   ]
+  },
+  "SR": {
+   "titles": [
+    "The Story of Redemption"
+   ]
+  },
+  "SR-SG": {
+   "titles": [
+    "The Story of Redemption -- Study Guide"
+   ]
+  },
+  "SS": {
+   "titles": [
+    "From Splendor to Shadow"
+   ]
+  },
+  "STJ": {
+   "titles": [
+    "Steps to Jesus"
+   ]
+  },
+  "STSB": {
+   "titles": [
+    "Special Testimonies, Series B"
+   ]
+  },
+  "SUFF": {
+   "titles": [
+    "Shall We Use Flesh Foods?"
+   ]
+  },
+  "SVD": {
+   "titles": [
+    "The Salamanca Vision and the 1890 Diary"
+   ]
+  },
+  "SWR": {
+   "titles": [
+    "Slavery—Will It Be Revived?"
+   ]
+  },
+  "SWhite": {
+   "titles": [
+    "Sister White"
+   ]
+  },
+  "SWk": {
+   "titles": [
+    "The Southern Work"
+   ]
+  },
+  "SpM": {
+   "titles": [
+    "Spalding and Magan Collection"
+   ]
+  },
+  "SpTA01a": {
+   "titles": [
+    "Special Testimony for Our Ministers"
+   ]
+  },
+  "SpTA01b": {
+   "titles": [
+    "An Appeal to Our Ministers and Conference Committees"
+   ]
+  },
+  "SpTA02a": {
+   "titles": [
+    "Special Testimony to Our Ministers—No. 2"
+   ]
+  },
+  "SpTA02b": {
+   "titles": [
+    "Danger in Adopting Worldly Policy in the Work of God"
+   ]
+  },
+  "SpTA03": {
+   "titles": [
+    "Special Testimonies to Ministers and Workers—No. 3"
+   ]
+  },
+  "SpTA04": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 4"
+   ]
+  },
+  "SpTA05": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 5"
+   ]
+  },
+  "SpTA06": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 6"
+   ]
+  },
+  "SpTA07": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 7"
+   ]
+  },
+  "SpTA08": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 8"
+   ]
+  },
+  "SpTA09": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 9"
+   ]
+  },
+  "SpTA10": {
+   "titles": [
+    "Special Testimonies for Ministers and Workers—No. 10"
+   ]
+  },
+  "SpTA11": {
+   "titles": [
+    "Special Testimony for Ministers and Workers—No. 11"
+   ]
+  },
+  "SpTA12": {
+   "titles": [
+    "A Message to Our Physicians"
+   ]
+  },
+  "SpTB01": {
+   "titles": [
+    "Letters to Physicians and Ministers"
+   ]
+  },
+  "SpTB02": {
+   "titles": [
+    "Testimonies for the Church Containing Letters to Physicians and Ministers Instruction to Seventh-Day Adventists"
+   ]
+  },
+  "SpTB03a": {
+   "titles": [
+    "Letters to Sanitarium Workers in Southern California"
+   ]
+  },
+  "SpTB03b": {
+   "titles": [
+    "Letters from Ellen G. White to Sanitarium Workers in Southern California—b"
+   ]
+  },
+  "SpTB03c": {
+   "titles": [
+    "Letters From Ellen G. White To Sanitarium Workers in Southern California—c"
+   ]
+  },
+  "SpTB04": {
+   "titles": [
+    "Testimonies for the Church Regarding the Spirit of Unity"
+   ]
+  },
+  "SpTB05": {
+   "titles": [
+    "Record of Progress and An Appeal In Behalf of the Boulder-Colorado Sanitarium"
+   ]
+  },
+  "SpTB06": {
+   "titles": [
+    "Testimonies to the Church Regarding our Youth Going to Battle Creek Obtain An Education"
+   ]
+  },
+  "SpTB07": {
+   "titles": [
+    "Testimonies for the Church Containing Messages of Warning and Instruction to Seventh-day Adventists"
+   ]
+  },
+  "SpTB08": {
+   "titles": [
+    "Testimonies to the Church Regarding The Strengthening of Our Institutions and Training Centers"
+   ]
+  },
+  "SpTB09": {
+   "titles": [
+    "Testimonies to the Church Regarding Individual Responsibility and Christian Unity"
+   ]
+  },
+  "SpTB10": {
+   "titles": [
+    "Jehovah Is Our King"
+   ]
+  },
+  "SpTB11": {
+   "titles": [
+    "The Madison School"
+   ]
+  },
+  "SpTB12": {
+   "titles": [
+    "The Oakwood Manual Training School"
+   ]
+  },
+  "SpTB12x": {
+   "titles": [
+    "The Huntsville School"
+   ]
+  },
+  "SpTB13": {
+   "titles": [
+    "The New England Sanitarium"
+   ]
+  },
+  "SpTB14": {
+   "titles": [
+    "The Paradise Valley Sanitarium"
+   ]
+  },
+  "SpTB15": {
+   "titles": [
+    "Letters from Ellen G. White to Sanitarium Workers"
+   ]
+  },
+  "SpTB16": {
+   "titles": [
+    "Selections from the Testimonies for Students and Workers of our Sanitariums"
+   ]
+  },
+  "SpTB17a": {
+   "titles": [
+    "The Unwise Use of Money and the Spirit of Speculation"
+   ]
+  },
+  "SpTB17b": {
+   "titles": [
+    "The Purchase of Land at Loma Linda and Letters from Mrs. E. G. White"
+   ]
+  },
+  "SpTB18": {
+   "titles": [
+    "The Nashville Sanitarium"
+   ]
+  },
+  "SpTB19": {
+   "titles": [
+    "The Spirit of Sacrifice"
+   ]
+  },
+  "SpTEd": {
+   "titles": [
+    "Special Testimonies On Education"
+   ]
+  },
+  "T01": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.1"
+   ]
+  },
+  "T02": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 2"
+   ]
+  },
+  "T03": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 3"
+   ]
+  },
+  "T04": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 4"
+   ]
+  },
+  "T05": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 5"
+   ]
+  },
+  "T06": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH — No. 6"
+   ]
+  },
+  "T07": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 7"
+   ]
+  },
+  "T08": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.8"
+   ]
+  },
+  "T09": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.9"
+   ]
+  },
+  "T10": {
+   "titles": [
+    "TESTIMONY FOE THE CHURCH. — No.10"
+   ]
+  },
+  "T11": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 11"
+   ]
+  },
+  "T12": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 12"
+   ]
+  },
+  "T13": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 13"
+   ]
+  },
+  "T14": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 14"
+   ]
+  },
+  "T15": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 15"
+   ]
+  },
+  "T16": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 16"
+   ]
+  },
+  "T17": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 17"
+   ]
+  },
+  "T18": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 18"
+   ]
+  },
+  "T19": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 19"
+   ]
+  },
+  "T20": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 20"
+   ]
+  },
+  "T21a": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 21a"
+   ]
+  },
+  "T22": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.22"
+   ]
+  },
+  "T23": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.23"
+   ]
+  },
+  "T24": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No. 24"
+   ]
+  },
+  "T25a": {
+   "titles": [
+    "TESTIMONY FOR, THE CHURCH. — No.25a"
+   ]
+  },
+  "T26": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.26"
+   ]
+  },
+  "T27": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.27"
+   ]
+  },
+  "T28": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.28"
+   ]
+  },
+  "T29": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.29"
+   ]
+  },
+  "T30": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.30"
+   ]
+  },
+  "T31": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.31"
+   ]
+  },
+  "T32": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.32"
+   ]
+  },
+  "T33": {
+   "titles": [
+    "TESTIMONY FOR THE CHURCH. — No.33"
+   ]
+  },
+  "TA": {
+   "titles": [
+    "The Truth About Angels"
+   ]
+  },
+  "TAWL": {
+   "titles": [
+    "The Truth About The White Lie"
+   ]
+  },
+  "TDG": {
+   "titles": [
+    "This Day With God"
+   ]
+  },
+  "TEd": {
+   "titles": [
+    "True Education"
+   ]
+  },
+  "TM": {
+   "titles": [
+    "Testimonies to Ministers and Gospel Workers"
+   ]
+  },
+  "TMK": {
+   "titles": [
+    "That I May Know Him"
+   ]
+  },
+  "TOJ": {
+   "titles": [
+    "The Testimony of Jesus"
+   ]
+  },
+  "TR": {
+   "titles": [
+    "True Revival"
+   ]
+  },
+  "TSA": {
+   "titles": [
+    "Testimonies to Southern Africa"
+   ]
+  },
+  "TSAL": {
+   "titles": [
+    "There Shines A Light"
+   ]
+  },
+  "TSB": {
+   "titles": [
+    "Testimonies on Sexual Behavior, Adultery, and Divorce"
+   ]
+  },
+  "TSDF": {
+   "titles": [
+    "Testimony Studies on Diet and Foods"
+   ]
+  },
+  "TSS": {
+   "titles": [
+    "Testimonies on Sabbath-School Work"
+   ]
+  },
+  "TT": {
+   "titles": [
+    "From Trials to Triumph"
+   ]
+  },
+  "Te": {
+   "titles": [
+    "Temperance"
+   ]
+  },
+  "Te-SG": {
+   "titles": [
+    "Temperance -- Study Guide"
+   ]
+  },
+  "TithPG": {
+   "titles": [
+    "Tithing Principles and Guidelines"
+   ]
+  },
+  "UEGW": {
+   "titles": [
+    "Understanding Ellen White"
+   ]
+  },
+  "UL": {
+   "titles": [
+    "The Upward Look"
+   ]
+  },
+  "ULe": {
+   "titles": [
+    "Unlikely Leaders"
+   ]
+  },
+  "VFEGWV": {
+   "titles": [
+    "Variation and Frequency of the Ellen G. White Visions"
+   ]
+  },
+  "VOTS": {
+   "titles": [
+    "The Voice of The Spirit"
+   ]
+  },
+  "VSS": {
+   "titles": [
+    "The Voice in Speech and Song"
+   ]
+  },
+  "ViOSe": {
+   "titles": [
+    "Visions Or Seizures"
+   ]
+  },
+  "WBEGW": {
+   "titles": [
+    "Why I Believe in Mrs. E. G. White"
+   ]
+  },
+  "WBEGWSDAC": {
+   "titles": [
+    "The Wedding Band, Ellen G. White, and the Seventh-Day Adventist Church"
+   ]
+  },
+  "WDEGWB": {
+   "titles": [
+    "Why Did Ellen G. White Borrow?"
+   ]
+  },
+  "WEGW": {
+   "titles": [
+    "The World of Ellen G. White"
+   ]
+  },
+  "WEWMM": {
+   "titles": [
+    "What Ellen White has Meant to Me"
+   ]
+  },
+  "WGD": {
+   "titles": [
+    "With God at Dawn"
+   ]
+  },
+  "WLF": {
+   "titles": [
+    "A Word to the Little Flock",
+    "A Word to the “Little Flock”"
+   ]
+  },
+  "WM": {
+   "titles": [
+    "Welfare Ministry"
+   ]
+  },
+  "WM-SG": {
+   "titles": [
+    "Welfare Ministry -- Study Guide"
+   ]
+  },
+  "WOR": {
+   "titles": [
+    "Waggoner on Romans"
+   ]
+  },
+  "WV": {
+   "titles": [
+    "Ellen White: Woman of Vision"
+   ]
+  },
+  "WWPGC": {
+   "titles": [
+    "W. W. Prescott and the 1911 Edition of The Great Controversy"
+   ]
+  },
+  "YRP": {
+   "titles": [
+    "Ye Shall Receive Power"
+   ]
+  }
+ },
+ "ja": {
+  "AA": {
+   "en_code": "AA",
+   "titles": [
+    "患難から栄光へ"
+   ]
+  },
+  "COL": {
+   "en_code": "COL",
+   "titles": [
+    "キリストの実物教訓"
+   ]
+  },
+  "DA": {
+   "en_code": "DA",
+   "titles": [
+    "各時代の希望"
+   ]
+  },
+  "GC": {
+   "en_code": "GC",
+   "titles": [
+    "キリストとキリストの天使たちサタンとサタンの天使たちとの間の大闘争"
+   ]
+  },
+  "MB": {
+   "en_code": "MB",
+   "titles": [
+    "祝福の山"
+   ]
+  },
+  "PK": {
+   "en_code": "PK",
+   "titles": [
+    "国と指導者"
+   ]
+  },
+  "PP": {
+   "en_code": "PP",
+   "titles": [
+    "人類のあけぼの"
+   ]
+  },
+  "SC": {
+   "en_code": "SC",
+   "titles": [
+    "キリストへの道"
+   ]
+  }
+ },
+ "ko": {
+  "1MCP": {
+   "en_code": "1MCP",
+   "titles": [
+    "그리스도인의 마음과 품성과 인격 1"
+   ]
+  },
+  "1SM": {
+   "en_code": "1SM",
+   "titles": [
+    "가려뽑은 기별 1"
+   ]
+  },
+  "1T": {
+   "en_code": "1T",
+   "titles": [
+    "교회증언 1"
+   ]
+  },
+  "1TT": {
+   "en_code": "1TT",
+   "titles": [
+    "증언보감 1"
+   ]
+  },
+  "2MCP": {
+   "en_code": "2MCP",
+   "titles": [
+    "그리스도인의 마음과 품성과 인격 2"
+   ]
+  },
+  "2SM": {
+   "en_code": "2SM",
+   "titles": [
+    "가려뽑은 기별 2"
+   ]
+  },
+  "2T": {
+   "en_code": "2T",
+   "titles": [
+    "교회증언 2"
+   ]
+  },
+  "2TT": {
+   "en_code": "2TT",
+   "titles": [
+    "증언보감 2"
+   ]
+  },
+  "3T": {
+   "en_code": "3T",
+   "titles": [
+    "교회증언 3"
+   ]
+  },
+  "3TT": {
+   "en_code": "3TT",
+   "titles": [
+    "증언보감 3"
+   ]
+  },
+  "4T": {
+   "en_code": "4T",
+   "titles": [
+    "교회증언 4"
+   ]
+  },
+  "5T": {
+   "en_code": "5T",
+   "titles": [
+    "교회증언 5"
+   ]
+  },
+  "6T": {
+   "en_code": "6T",
+   "titles": [
+    "교회증언 6"
+   ]
+  },
+  "7T": {
+   "en_code": "7T",
+   "titles": [
+    "교회증언 7"
+   ]
+  },
+  "8T": {
+   "en_code": "8T",
+   "titles": [
+    "교회증언 8"
+   ]
+  },
+  "9T": {
+   "en_code": "9T",
+   "titles": [
+    "교회증언 9"
+   ]
+  },
+  "AA": {
+   "en_code": "AA",
+   "titles": [
+    "사도행적"
+   ]
+  },
+  "AH": {
+   "en_code": "AH",
+   "titles": [
+    "재림신도의 가정"
+   ]
+  },
+  "CD": {
+   "en_code": "CD",
+   "titles": [
+    "식생활과 음식물에 관한 권면"
+   ]
+  },
+  "CG": {
+   "en_code": "CG",
+   "titles": [
+    "새자녀 지도법"
+   ]
+  },
+  "CM": {
+   "en_code": "CM",
+   "titles": [
+    "문서전도봉사"
+   ]
+  },
+  "COL": {
+   "en_code": "COL",
+   "titles": [
+    "실물교훈"
+   ]
+  },
+  "CSW": {
+   "en_code": "CSW",
+   "titles": [
+    "안식일학교 사업에 관한 권면"
+   ]
+  },
+  "ChS": {
+   "en_code": "ChS",
+   "titles": [
+    "그리스도인 선교봉사"
+   ]
+  },
+  "DA": {
+   "en_code": "DA",
+   "titles": [
+    "시대의 소망"
+   ]
+  },
+  "EW": {
+   "en_code": "EW",
+   "titles": [
+    "초기문집"
+   ]
+  },
+  "Ed": {
+   "en_code": "Ed",
+   "titles": [
+    "교육"
+   ]
+  },
+  "Ev": {
+   "en_code": "Ev",
+   "titles": [
+    "복음전도"
+   ]
+  },
+  "FW": {
+   "en_code": "FW",
+   "titles": [
+    "믿음과 행함"
+   ]
+  },
+  "GC": {
+   "en_code": "GC",
+   "titles": [
+    "각 시대의 대쟁투"
+   ]
+  },
+  "GW": {
+   "en_code": "GW",
+   "titles": [
+    "복음교역자"
+   ]
+  },
+  "LDE": {
+   "en_code": "LDE",
+   "titles": [
+    "마지막 날의 사건들"
+   ]
+  },
+  "LS": {
+   "en_code": "LS",
+   "titles": [
+    "엘렌 지 화잇 자서전"
+   ]
+  },
+  "MB": {
+   "en_code": "MB",
+   "titles": [
+    "산상보훈"
+   ]
+  },
+  "MH": {
+   "en_code": "MH",
+   "titles": [
+    "치료봉사"
+   ]
+  },
+  "MYP": {
+   "en_code": "MYP",
+   "titles": [
+    "청년에게 보내는 기별"
+   ]
+  },
+  "PK": {
+   "en_code": "PK",
+   "titles": [
+    "선지자와 왕"
+   ]
+  },
+  "PP": {
+   "en_code": "PP",
+   "titles": [
+    "부조와 선지자"
+   ]
+  },
+  "Pr": {
+   "en_code": "Pr",
+   "titles": [
+    "기도"
+   ]
+  },
+  "SC": {
+   "en_code": "SC",
+   "titles": [
+    "정로의 계단"
+   ]
+  },
+  "SL": {
+   "en_code": "SL",
+   "titles": [
+    "성화된 생애"
+   ]
+  },
+  "SR": {
+   "en_code": "SR",
+   "titles": [
+    "살아남는 이들"
+   ]
+  },
+  "TM": {
+   "en_code": "TM",
+   "titles": [
+    "목사와 복음 교역자에게 보내는 권면"
+   ]
+  },
+  "Te": {
+   "en_code": "Te",
+   "titles": [
+    "절제생활"
+   ]
+  }
+ }
+}

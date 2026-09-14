@@ -66,7 +66,8 @@ enable the `bible-sop` connector and skills.
 1. Enable the `bible-sop` connector next to the project's own connector.
 2. Install the `bible-sop` skills next to the project's skills.
 3. Append **Block B** of [PROJECT-INSTRUCTIONS.md](PROJECT-INSTRUCTIONS.md) to the
-   project instructions.
+   project instructions. (The sbl project instructions in
+   `plugins/PROJECT-INSTRUCTIONS.md` already contain it; skip this step there.)
 
 For **sbl** specifically: its `lesson-translate`, `plan-*` and `sermon-prep`
 skills call "the connected Bible and SoP lookup tools"

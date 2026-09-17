@@ -15,7 +15,7 @@ Tools::
     sop_list_books(lang?, search?)               — languages, or books (codes + titles)
     sop_context(code, para_key, lang?, ...)      — a few paragraphs either side of an anchor
     sop_parallel(code, para_key, lang?, ...)     — paragraph-level de<->en alignment
-    sop_by_bible_ref(osis, lang?, limit?)        — paragraphs quoting a given verse (needs backfill)
+    sop_by_bible_ref(osis, lang?, limit?)        — paragraphs quoting a given verse (edition numbering)
 
 Configuration: set ``QDRANT_URL`` to override the default ``http://localhost:6333``.
 """
@@ -129,7 +129,7 @@ def sop_lookup(query: str | None = None, codes: list[str] | None = None,
         lang:      Index language to query: "de", "en", "es", "fr", "it", "ja",
                    "ko", "pt", "ro", "ru", "uk", "zh" — coverage varies widely
                    (``sop_list_books()`` lists paragraph counts). Default "de".
-        min_score: Pass-1 threshold. Default 0.55 (per AGENT-translator.md).
+        min_score: Pass-1 threshold. Default 0.55 (per generator/docs/AGENT-translator.md).
         limit:     Top-N results to return per pass. Default 1; clamp 1..20.
                    Use 3 when you need to compare alternative DE editions
                    (e.g. BW vs WZC for the same SC passage).

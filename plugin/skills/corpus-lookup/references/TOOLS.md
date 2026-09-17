@@ -118,12 +118,23 @@ Find SoP paragraphs that quote or cite a given Bible verse.
 - `osis`: a single exact OSIS reference (e.g. `"John.3.16"`) — no range
   expansion; a paragraph citing `"John.3.16-18"` is only found by that exact key.
 - `limit`: default 20; clamp 1..200.
-- **Needs an offline backfill that has not been run yet.** Until the corpus's
-  `bible_refs` payload field is populated, this tool returns
-  `{"error": "..."}` explaining that plainly — never an empty `results: []`.
-  Treat that error as "cannot answer yet", **not** as "no paragraph comments
-  on this verse" — do not report the latter to the user.
-- Once indexed, returns
+- **The `bible_refs` backfill has run.** 69,527 paragraphs carry the payload
+  field and are searchable. 120 paragraphs in 9 never-vectorised books
+  (`4aSG, 4bSG, PH045, PH083, PH088, PH141, PH153, Te-SG, TithPG`) have no
+  vector-index point at all and stay invisible to this tool — that is a
+  separate `build_sop_vector_index` gap, not a backfill state.
+- **`bible_refs` numbering follows the edition parsed, not KJV.** A German
+  paragraph citing a KJV-numbered verse is indexed under Luther/Masoretic
+  numbering (KJV `Ps.51.1` → indexed `Ps.51.3`). Querying with a raw
+  KJV-numbered `osis` (e.g. an SBL lesson's `sOsis`) against `lang="de"`
+  will miss or mis-hit for the ~63 offset Psalms and ~40 OT
+  chapter-boundary shifts — remap first (see
+  [VERSIFICATION.md](VERSIFICATION.md)) or query `lang="en"`, where KJV
+  numbering holds. Extraction is text-pattern based and occasionally
+  produces a spurious extra ref (a stray trailing digit after a citation) —
+  treat `bible_refs` as a high-recall discovery index and confirm each hit
+  by reading the paragraph, not as a curated citation list.
+- Returns
   `{"results": [{book_code, page, para, para_key, text, bible_refs}, ...]}`.
 
 ## Reading scores (`multilingual-e5-large`)

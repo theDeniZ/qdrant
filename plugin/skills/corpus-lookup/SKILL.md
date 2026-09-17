@@ -54,9 +54,13 @@ question touches them.
    (cheaper — prefer it over pulling a whole page range), or
    `sop_book_paragraphs` for an explicit page range.
 6. Which paragraphs discuss a given verse → `sop_by_bible_ref(osis, lang,
-   limit)`. It needs an offline backfill that has not run everywhere yet — a
-   `{"error": ...}` means "cannot answer yet" for that corpus, **not** "no
-   paragraph quotes this verse"; say so rather than reporting an empty result.
+   limit)`. The backfill has run, but `bible_refs` is numbered in the edition
+   the paragraph was parsed from, not KJV — a `lang="de"` query needs the ref
+   remapped to Luther/Masoretic numbering first (see VERSIFICATION.md) or it
+   will miss/mis-hit for offset Psalms and shifted OT chapters; `lang="en"`
+   stays KJV-numbered throughout. 120 paragraphs in 9 never-vectorised books
+   are still invisible to it regardless of ref. Confirm any hit by reading the
+   paragraph — extraction is pattern-based and occasionally over-matches.
 
 ## Citing
 

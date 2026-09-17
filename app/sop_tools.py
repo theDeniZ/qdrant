@@ -485,10 +485,22 @@ def sop_parallel(book_code: str, para_key: str, lang: str = "de",
 def sop_by_bible_ref(osis: str, lang: str = "en", limit: int = 20) -> dict:
     """Find SoP paragraphs that quote a given Bible reference.
 
-    Needs the ``bible_refs`` payload field created by the offline backfill
-    (``sdarm.tools.extract_sop_refs --qdrant-backfill``) — most of the corpus
-    does not carry it yet, so this returns a clear, actionable error instead
-    of a silently-empty result when the field isn't indexed at all.
+    Backed by the ``bible_refs`` payload field, which is populated: 69,527
+    paragraphs carry it. 120 paragraphs in 9 books (4aSG, 4bSG, PH045, PH083,
+    PH088, PH141, PH153, Te-SG, TithPG) are absent from the vector index
+    entirely and so cannot be found by this or any other Qdrant SoP tool.
+
+    **Numbering warning.** ``bible_refs`` records each reference in the
+    numbering of the edition that was parsed, not in KJV. German volumes cite
+    Luther/Masoretic, so a German paragraph quoting KJV Psalm 51:1-2 is indexed
+    as ``Ps.51.3``/``Ps.51.4``. Passing a KJV-numbered ``sOsis`` straight from an
+    SBL lesson with ``lang="de"`` will miss or mis-hit across the ~63 offset
+    Psalms and ~40 OT chapter-boundary shifts — remap it to the target edition's
+    numbering first, or query ``lang="en"``, where KJV numbering holds.
+
+    Extraction is text-pattern based, so an occasional spurious ref slips in.
+    Treat this as a high-recall discovery index and confirm each hit by reading
+    the paragraph, not as a curated citation list.
 
     Args:
         osis:  A single OSIS reference, e.g. ``"John.3.16"`` or ``"1Cor.15.3"``
@@ -500,7 +512,8 @@ def sop_by_bible_ref(osis: str, lang: str = "en", limit: int = 20) -> dict:
 
     Returns:
         ``{"results": [{book_code, page, para, para_key, text, bible_refs}, ...]}``.
-        ``{"error": "..."}`` if ``bible_refs`` is not indexed yet.
+        ``{"error": "..."}`` if ``bible_refs`` is not indexed at all (it is, on
+        the deployed collection — this guards a fresh or rebuilt instance).
     """
     info = requests.get(f"{_QDRANT_URL}/collections/{_COLLECTION}", timeout=_TIMEOUT_S)
     info.raise_for_status()

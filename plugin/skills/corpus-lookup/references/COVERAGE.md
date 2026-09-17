@@ -65,11 +65,26 @@ published counterpart instead of translating one. No other language pair is
 aligned — in particular **ja and ko carry no alignment data at all**, so
 `sop_parallel` returns an explicit error for them rather than a guess.
 
-**`sop_by_bible_ref` depends on a backfill that has not run yet.** Finding
-which EGW paragraphs cite a given verse needs a `bible_refs` payload field
-built by a one-off offline extraction; most of the corpus does not carry it
-yet. Until that backfill runs, the tool returns an actionable error, not an
-empty result — do not read that error as "no paragraph quotes this verse".
+**`sop_by_bible_ref` is live.** The `bible_refs` backfill has run: 69,527 SoP
+paragraphs carry the payload field and are searchable by verse. 120
+paragraphs are still invisible to it because they have no vector-index point
+at all (9 never-indexed books: `4aSG, 4bSG, PH045, PH083, PH088, PH141,
+PH153, Te-SG, TithPG`) — that gap needs a `build_sop_vector_index` run for
+those books, not another backfill.
+
+**`bible_refs` are numbered in the edition that was parsed, not in KJV.**
+The extractor read each paragraph's own citation, so a German paragraph
+quoting a KJV-numbered verse is indexed under the **Luther/Masoretic**
+number for that verse (KJV Ps.51.1-2 → indexed as `Ps.51.3`, `Ps.51.4`).
+Querying `sop_by_bible_ref(osis=…, lang="de")` with the KJV-numbered `sOsis`
+straight from an SBL lesson will miss or mis-hit for the ~63 offset Psalms
+and ~40 OT chapter-boundary shifts — remap the ref to the target edition's
+numbering first (see [VERSIFICATION.md](VERSIFICATION.md)), or query
+`lang="en"` where KJV numbering holds throughout. Extraction is also
+text-pattern based, so an occasional spurious ref slips in (a stray trailing
+digit after a citation can register as its own verse) — treat `bible_refs`
+as a high-recall discovery index and confirm every hit by reading the
+paragraph, not as a curated citation list.
 
 ## Pagination is per language
 

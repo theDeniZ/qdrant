@@ -13,6 +13,9 @@ Tools::
     sop_lookup(query | queries, codes?)          — semantic Pass 1 + Pass 2 cascade (batchable)
     sop_book_paragraphs(code, p1, p2?, lang?)    — explicit book page-range fetch (paged)
     sop_list_books(lang?, search?)               — languages, or books (codes + titles)
+    sop_context(code, para_key, lang?, ...)      — a few paragraphs either side of an anchor
+    sop_parallel(code, para_key, lang?, ...)     — paragraph-level de<->en alignment
+    sop_by_bible_ref(osis, lang?, limit?)        — paragraphs quoting a given verse (needs backfill)
 
 Configuration: set ``QDRANT_URL`` to override the default ``http://localhost:6333``.
 """
@@ -311,6 +314,217 @@ def sop_list_books(lang: str | None = None, search: str | None = None) -> dict:
     if not books:
         out["error"] = f"no SoP books match lang={lang!r} search={search!r}"
     return out
+
+
+
+def _de_codes_for_en(en_code: str) -> list[str]:
+    """DE book codes whose ``en_code`` matches (can be >1 — e.g. BW and WZC
+    both map to SC)."""
+    titles = _book_titles()
+    return sorted(code for code, meta in titles.get("de", {}).items()
+                  if meta.get("en_code") == en_code)
+
+
+def _en_code_for_de(de_code: str) -> str | None:
+    titles = _book_titles()
+    return titles.get("de", {}).get(de_code, {}).get("en_code")
+
+
+@mcp.tool()
+def sop_context(book_code: str, para_key: str, lang: str = "en",
+                before: int = 2, after: int = 2) -> dict:
+    """Neighbouring paragraphs around one SoP paragraph.
+
+    Cheaper than ``sop_book_paragraphs`` when you only need a few paragraphs
+    either side of a paragraph you already have — for example to read more
+    context around a verified Qdrant hit — rather than fetching a whole
+    explicit page range.
+
+    Args:
+        book_code: Book code in the *lang* corpus (DE code for lang="de", the
+                   English code for every other language).
+        para_key:  The anchor paragraph's "PAGE.PARA" key.
+        lang:      Index language. Default "en".
+        before:    Paragraphs to include before the anchor. Default 2; clamp 0..20.
+        after:     Paragraphs to include after the anchor. Default 2; clamp 0..20.
+
+    Returns:
+        ``{"context": [{book_code, page, para, para_key, text, is_target}, ...]}``
+        ordered by page then paragraph, with exactly one entry carrying
+        ``is_target: true``. May return fewer than requested near a book's
+        first or last page. ``{"error": "..."}`` if `para_key` isn't found.
+    """
+    before = max(0, min(int(before), 20))
+    after = max(0, min(int(after), 20))
+    try:
+        page = int(para_key.split(".", 1)[0])
+    except (ValueError, AttributeError):
+        return {"error": f"not a PAGE.PARA para_key: {para_key!r}"}
+
+    # Generous page-window fetch — a page can hold as few as one paragraph,
+    # so `before`/`after` paragraphs can span more pages than that many. Still
+    # far cheaper than a whole-book fetch, which is what this tool avoids.
+    margin = before + after + 3
+    page_from, page_to = max(1, page - margin), page + margin
+    must = [
+        {"key": "lang",      "match": {"value": lang}},
+        {"key": "book_code", "match": {"value": book_code}},
+        {"key": "page",      "range": {"gte": page_from, "lte": page_to}},
+    ]
+    body = {"limit": _MAX_PARAGRAPHS, "with_payload": True, "filter": {"must": must}}
+    points = _qdrant("points/scroll", body).get("points", [])
+    paragraphs = sorted(
+        ({"book_code": p["payload"]["book_code"], "page": p["payload"]["page"],
+          "para": p["payload"]["para"], "para_key": p["payload"]["para_key"],
+          "text": p["payload"]["raw_text"]}
+         for p in points),
+        key=lambda x: (x["page"], x["para"]),
+    )
+
+    idx = next((i for i, p in enumerate(paragraphs) if p["para_key"] == para_key), None)
+    if idx is None:
+        return {"error": f"para_key {para_key!r} not found for lang={lang!r} "
+                          f"book_code={book_code!r} (or outside the fetch window)"}
+
+    window = paragraphs[max(0, idx - before): idx + after + 1]
+    for p in window:
+        p["is_target"] = (p["para_key"] == para_key)
+    return {"context": window}
+
+
+@mcp.tool()
+def sop_parallel(book_code: str, para_key: str, lang: str = "de",
+                 target_lang: str = "en") -> dict:
+    """Paragraph-level de<->en alignment for one SoP paragraph.
+
+    Uses the ``aligned`` field Qdrant stores on every point (the paragraph-
+    level de<->en cross-reference the German index carries — see
+    docs/SOP-INDEX.md's ``en_ref`` / ``en_reverse``, which ``aligned`` mirrors
+    into the vector index) plus the book-code cross-reference table
+    (``sop_list_books``'s ``en_code``). Only the de<->en direction is
+    populated in the corpus — ja/ko carry no alignment at all (their Qdrant
+    points have ``aligned: null``), so any other (lang, target_lang) pair
+    returns an error rather than a silently-empty result. This is
+    **paragraph-level** alignment, not the book/page-level lookup
+    ``book_map.json`` alone would give — it is the more precise of the two,
+    where the corpus has it.
+
+    Args:
+        book_code:   Book code in the *lang* corpus (DE code for lang="de",
+                     EN code for lang="en").
+        para_key:    The paragraph's "PAGE.PARA" key in the *lang* edition.
+        lang:        Source language. Default "de".
+        target_lang: Language to align into. Default "en".
+
+    Returns:
+        ``{"source": {...}, "target": [{...}, ...]}`` — `target` may hold more
+        than one paragraph (a single paragraph sometimes maps to several on
+        the other side). ``{"error": "..."}`` if the language pair is
+        unsupported or the source paragraph doesn't resolve.
+    """
+    if lang == target_lang:
+        return {"error": "lang and target_lang must differ"}
+    if {lang, target_lang} != {"de", "en"}:
+        return {"error": "only de<->en alignment is available in this corpus "
+                          "(ja/ko carry no paragraph-level alignment)"}
+
+    must = [
+        {"key": "lang",      "match": {"value": lang}},
+        {"key": "book_code", "match": {"value": book_code}},
+        {"key": "para_key",  "match": {"value": para_key}},
+    ]
+    points = _qdrant("points/scroll",
+                     {"limit": 1, "with_payload": True, "filter": {"must": must}}).get("points", [])
+    if not points:
+        return {"error": f"no point found for lang={lang!r} book_code={book_code!r} "
+                          f"para_key={para_key!r}"}
+    src = points[0]["payload"]
+    source = {"book_code": src.get("book_code"), "lang": lang, "page": src.get("page"),
+              "para": src.get("para"), "para_key": src.get("para_key"),
+              "text": src.get("raw_text", "")}
+
+    if lang == "de":  # de -> en: read the forward `aligned` list directly
+        aligned_keys = src.get("aligned") or []
+        if not aligned_keys:
+            return {"source": source, "target": [],
+                    "note": "this paragraph carries no 'aligned' EN reference"}
+        en_code = _en_code_for_de(book_code)
+        if not en_code:
+            return {"error": f"no EN counterpart known for DE book_code={book_code!r}"}
+        must_t = [
+            {"key": "lang",      "match": {"value": "en"}},
+            {"key": "book_code", "match": {"value": en_code}},
+            {"key": "para_key",  "match": {"any": aligned_keys}},
+        ]
+        pts = _qdrant("points/scroll", {"limit": len(aligned_keys) + 5, "with_payload": True,
+                                        "filter": {"must": must_t}}).get("points", [])
+    else:  # en -> de: no reverse field on the EN point — find DE points whose
+           # `aligned` list contains this EN para_key (array-membership match).
+        de_codes = _de_codes_for_en(book_code)
+        if not de_codes:
+            return {"error": f"no DE counterpart known for EN book_code={book_code!r}"}
+        must_t = [
+            {"key": "lang",      "match": {"value": "de"}},
+            {"key": "book_code", "match": {"any": de_codes}},
+            {"key": "aligned",   "match": {"value": para_key}},
+        ]
+        pts = _qdrant("points/scroll", {"limit": _MAX_PARAGRAPHS, "with_payload": True,
+                                        "filter": {"must": must_t}}).get("points", [])
+
+    target = sorted(
+        ({"book_code": p["payload"].get("book_code"), "lang": target_lang,
+          "page": p["payload"].get("page"), "para": p["payload"].get("para"),
+          "para_key": p["payload"].get("para_key"), "text": p["payload"].get("raw_text", "")}
+         for p in pts),
+        key=lambda x: (x["page"] or 0, x["para"] or 0),
+    )
+    return {"source": source, "target": target}
+
+
+@mcp.tool()
+def sop_by_bible_ref(osis: str, lang: str = "en", limit: int = 20) -> dict:
+    """Find SoP paragraphs that quote a given Bible reference.
+
+    Needs the ``bible_refs`` payload field created by the offline backfill
+    (``sdarm.tools.extract_sop_refs --qdrant-backfill``) — most of the corpus
+    does not carry it yet, so this returns a clear, actionable error instead
+    of a silently-empty result when the field isn't indexed at all.
+
+    Args:
+        osis:  A single OSIS reference, e.g. ``"John.3.16"`` or ``"1Cor.15.3"``
+               (exact match — no range expansion; a paragraph citing
+               ``"John.3.16-18"`` is only found if the backfill recorded that
+               exact key).
+        lang:  Index language to search. Default "en".
+        limit: Max rows to return. Default 20; clamp 1..200.
+
+    Returns:
+        ``{"results": [{book_code, page, para, para_key, text, bible_refs}, ...]}``.
+        ``{"error": "..."}`` if ``bible_refs`` is not indexed yet.
+    """
+    info = requests.get(f"{_QDRANT_URL}/collections/{_COLLECTION}", timeout=_TIMEOUT_S)
+    info.raise_for_status()
+    schema = info.json().get("result", {}).get("payload_schema", {})
+    if "bible_refs" not in schema:
+        return {"error": "The 'bible_refs' payload field is not indexed on the 'sop' "
+                          "collection yet — sop_by_bible_ref needs the offline backfill. "
+                          "Run `python -m sdarm.tools.extract_sop_refs --lang de,en "
+                          "--qdrant-backfill --no-dry-run` (see "
+                          "generator/src/sdarm/tools/extract_sop_refs.py) first."}
+
+    must = [
+        {"key": "lang",       "match": {"value": lang}},
+        {"key": "bible_refs", "match": {"value": osis}},
+    ]
+    body = {"limit": max(1, min(int(limit), 200)), "with_payload": True, "filter": {"must": must}}
+    points = _qdrant("points/scroll", body).get("points", [])
+    results = [
+        {"book_code": p["payload"].get("book_code"), "page": p["payload"].get("page"),
+         "para": p["payload"].get("para"), "para_key": p["payload"].get("para_key"),
+         "text": p["payload"].get("raw_text", ""), "bible_refs": p["payload"].get("bible_refs", [])}
+        for p in points
+    ]
+    return {"results": results}
 
 
 def main() -> None:

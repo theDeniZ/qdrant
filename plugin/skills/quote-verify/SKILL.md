@@ -44,6 +44,10 @@ Batch lookups: `bible_lookup` takes a `;`-list, `sop_lookup` takes `queries`.
 - Nothing matches in the cited work → search corpus-wide in the same language
   (drop `codes`), then in English if the quotation is a translation.
 - A cited page → `sop_book_paragraphs` on that page (±1) to confirm the page.
+- The quotation looks trimmed, merged, or cut mid-sentence against the hit →
+  pull a few paragraphs of surrounding text with `sop_context(book_code,
+  para_key, lang, before, after)` rather than a whole page range — it is the
+  cheap way to see what precedes/follows a hit.
 - Attributed to someone else → say the corpus cannot check it (Ellen White only).
 
 ## 3. Classify each quotation

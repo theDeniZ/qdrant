@@ -37,15 +37,25 @@ Use the user's or project's rule if one is given. Otherwise:
    returned text and **print its `osis` number** in the target language's
    reference style.
 3. **Ellen White** →
+   - If the source paragraph's `para_key` is already known and the pair is
+     German↔English, try `sop_parallel(book_code, para_key, lang=<source>,
+     target_lang=<target>)` **first** — it retrieves the published counterpart
+     paragraph directly, which is cheaper and more certain than a fresh
+     semantic search. It only covers de↔en (ja/ko have no alignment data and
+     the tool errors rather than guessing); fall through to the steps below
+     whenever it errors or the pair isn't de↔en.
    - Resolve target-language codes: `sop_list_books(search=<work>)`.
    - `sop_lookup(query=…, codes=<target codes>, lang=<target>, limit=3)`. Query
      with a rough target-language rendering of the sentence when you can: a
      target-language query scores far better than the English one. Batch with
      `queries` for many quotations.
    - Accept only a hit whose text **says the same thing** as the source sentence.
-     Read neighbouring paragraphs with `sop_book_paragraphs` if the quotation spans
-     paragraphs, and cut the target text to the same extent as the source quotation.
-   - Cite the **target edition's** title and the page `sop_lookup` returned.
+     Read neighbouring paragraphs with `sop_context` (cheap, a few paragraphs
+     either side) or `sop_book_paragraphs` (an explicit page range) if the
+     quotation spans paragraphs, and cut the target text to the same extent as
+     the source quotation.
+   - Cite the **target edition's** title and the page `sop_lookup` (or
+     `sop_parallel`) returned.
 4. **Nothing canonical found.** Only after steps 2–3 came back empty or unrelated:
    - Bible: say which translations were checked. For Romanian (no Bible index),
      try `sop_lookup(lang="ro")` on the verse; EGW's Romanian books quote

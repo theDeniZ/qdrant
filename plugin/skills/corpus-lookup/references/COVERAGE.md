@@ -58,6 +58,19 @@ mean the book you need is present. The real negative signal is: unrelated hits
 (below ~0.85, or text that says something else) **and** no plausible
 `fallbacks` after querying in that language.
 
+**Paragraph-level alignment (`sop_parallel`) is de↔en only.** The corpus
+carries a paragraph-to-paragraph cross-reference between the German and
+English editions of the same work, which is what lets you *retrieve* a
+published counterpart instead of translating one. No other language pair is
+aligned — in particular **ja and ko carry no alignment data at all**, so
+`sop_parallel` returns an explicit error for them rather than a guess.
+
+**`sop_by_bible_ref` depends on a backfill that has not run yet.** Finding
+which EGW paragraphs cite a given verse needs a `bible_refs` payload field
+built by a one-off offline extraction; most of the corpus does not carry it
+yet. Until that backfill runs, the tool returns an actionable error, not an
+empty result — do not read that error as "no paragraph quotes this verse".
+
 ## Pagination is per language
 
 `page` is the page of **that language's edition**. Romanian tracks English

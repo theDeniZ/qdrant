@@ -48,8 +48,15 @@ question touches them.
 3. Known page → `sop_book_paragraphs(book_code, page_from, page_to, lang)`.
 4. **Judge the hit by its text, not its score** (unrelated text scores ≈0.80).
    Prefer the original book over compilations that reprint it.
-5. Read the neighbouring paragraphs (`sop_book_paragraphs`) when the quotation
-   runs across a paragraph boundary or you need context.
+5. Read the neighbouring paragraphs when the quotation runs across a paragraph
+   boundary or you need context: `sop_context(book_code, para_key, lang,
+   before, after)` for a few paragraphs either side of a hit you already have
+   (cheaper — prefer it over pulling a whole page range), or
+   `sop_book_paragraphs` for an explicit page range.
+6. Which paragraphs discuss a given verse → `sop_by_bible_ref(osis, lang,
+   limit)`. It needs an offline backfill that has not run everywhere yet — a
+   `{"error": ...}` means "cannot answer yet" for that corpus, **not** "no
+   paragraph quotes this verse"; say so rather than reporting an empty result.
 
 ## Citing
 

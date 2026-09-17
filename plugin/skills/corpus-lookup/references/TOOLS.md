@@ -1,6 +1,6 @@
 # bible-sop tools — reference
 
-Six read-only tools. Tool names may carry a connector prefix in your environment
+Nine read-only tools. Tool names may carry a connector prefix in your environment
 (e.g. `mcp__bible-sop__sop_lookup`); the bare names are used here.
 
 ## Bible
@@ -75,6 +75,56 @@ paragraphs the result stops at a page boundary with `truncated: true` and
 - `search`: a case-insensitive match on code or title in any language
   (`"Steps to Christ"`, `"Messias"`). Without `lang` it searches every language at
   once, which is the fastest way to find a work's codes everywhere.
+
+### `sop_context(book_code, para_key, lang="en", before=2, after=2)`
+
+Neighbouring paragraphs around one already-known paragraph — cheaper than
+`sop_book_paragraphs` when you only need a few paragraphs of context around a
+verified hit, not a whole page range.
+
+- `para_key`: the anchor paragraph's `"PAGE.PARA"` key (from a `sop_lookup` hit
+  or `sop_book_paragraphs` row).
+- `before` / `after`: paragraphs to include on each side. Default 2; clamp
+  0..20. Fewer than requested near a book's first or last page.
+- Returns `{"context": [{book_code, page, para, para_key, text, is_target}, ...]}`,
+  ordered by page then paragraph, with exactly one entry carrying
+  `is_target: true`. `{"error": "..."}` if `para_key` isn't found for that
+  `book_code`/`lang`.
+
+### `sop_parallel(book_code, para_key, lang="de", target_lang="en")`
+
+Paragraph-level de↔en alignment: given one paragraph, returns its counterpart
+paragraph(s) in the other language, retrieved verbatim rather than translated.
+This is the "retrieve, don't translate" path for a quotation that already has
+a published edition on the other side — prefer it over machine or hand
+translation whenever `lang`/`target_lang` is a de↔en pair.
+
+- **Only de↔en is available.** Any other `(lang, target_lang)` pair —
+  including `ja` or `ko`, which carry no alignment data in the corpus at all —
+  returns `{"error": "..."}` rather than a guessed or silently-empty result.
+  Never treat that error as "no counterpart exists"; it means the alignment
+  isn't in this corpus for that language pair.
+- `para_key`: the paragraph's `"PAGE.PARA"` key in the `lang` edition.
+- Returns `{"source": {...}, "target": [{...}, ...]}` — `target` can hold more
+  than one paragraph (a single paragraph sometimes maps to several on the
+  other side), or `[]` with a `"note"` if the source paragraph carries no
+  alignment. `{"error": "..."}` if the language pair is unsupported or the
+  source paragraph doesn't resolve.
+
+### `sop_by_bible_ref(osis, lang="en", limit=20)`
+
+Find SoP paragraphs that quote or cite a given Bible verse.
+
+- `osis`: a single exact OSIS reference (e.g. `"John.3.16"`) — no range
+  expansion; a paragraph citing `"John.3.16-18"` is only found by that exact key.
+- `limit`: default 20; clamp 1..200.
+- **Needs an offline backfill that has not been run yet.** Until the corpus's
+  `bible_refs` payload field is populated, this tool returns
+  `{"error": "..."}` explaining that plainly — never an empty `results: []`.
+  Treat that error as "cannot answer yet", **not** as "no paragraph comments
+  on this verse" — do not report the latter to the user.
+- Once indexed, returns
+  `{"results": [{book_code, page, para, para_key, text, bible_refs}, ...]}`.
 
 ## Reading scores (`multilingual-e5-large`)
 

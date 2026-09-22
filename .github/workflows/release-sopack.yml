@@ -1,0 +1,125 @@
+name: Release sopack
+
+on:
+  push:
+    tags:
+      - "sopack-v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.ref }}"
+          VERSION="${TAG#refs/tags/sopack-v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=sopack-v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Build tarball
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+
+          # Create distribution directory
+          mkdir -p dist/sopack-${VERSION}
+
+          # Copy the sopack package and requirements
+          cp -r sopack dist/sopack-${VERSION}/
+          cp -r app dist/sopack-${VERSION}/
+          cp requirements.txt sopack/requirements.lock dist/sopack-${VERSION}/
+          cp Dockerfile README.md docker-compose.yml dist/sopack-${VERSION}/
+
+          # Create the tarball
+          cd dist
+          tar -czf sopack-${VERSION}.tar.gz sopack-${VERSION}/
+
+          # Compute sha256
+          sha256sum sopack-${VERSION}.tar.gz > sopack-${VERSION}.tar.gz.sha256
+          cat sopack-${VERSION}.tar.gz.sha256
+
+      - name: Generate formula stanza
+        id: formula
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          SHA256=$(cat dist/sopack-${VERSION}.tar.gz.sha256 | awk '{print $1}')
+
+          cat > /tmp/formula.txt << EOF
+          class Sopack < Formula
+            desc "Pack and verify corpus data for Qdrant import"
+            homepage "https://github.com/theDeniZ/qdrant"
+            url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v${VERSION}/sopack-${VERSION}.tar.gz"
+            sha256 "${SHA256}"
+            license "AGPL-3.0-or-later"
+
+            depends_on "python@3.11"
+
+            def install
+              venv = libexec/"venv"
+              system bin/"python3.11", "-m", "venv", venv
+              pip = venv/"bin/pip"
+
+              system pip, "install", "--upgrade", "pip"
+              system pip, "install", "-r", "sopack/requirements.lock"
+              system pip, "install", "--no-deps", "."
+
+              (bin/"sopack").write_text <<~EOS
+                #!/bin/bash
+                exec #{venv}/bin/python -m sopack.cli "\$@"
+              EOS
+              (bin/"sopack").chmod 0755
+            end
+
+            def post_install
+              system "#{bin}/sopack", "--version"
+            end
+
+            test do
+              system "#{bin}/sopack", "--help"
+            end
+          end
+          EOF
+
+          # Store for release notes
+          echo "formula=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag_name }}
+          files: |
+            dist/sopack-${{ steps.version.outputs.version }}.tar.gz
+            dist/sopack-${{ steps.version.outputs.version }}.tar.gz.sha256
+          body: |
+            # sopack ${{ steps.version.outputs.version }}
+
+            ## Installation
+
+            ```bash
+            brew install theDeniZ/tap/sopack
+            ```
+
+            ## Update Formula
+
+            To update the Homebrew formula in theDeniZ/homebrew-tap, use:
+
+            ```ruby
+            url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v${{ steps.version.outputs.version }}/sopack-${{ steps.version.outputs.version }}.tar.gz"
+            sha256 "${{ steps.formula.outputs.formula }}"
+            ```
+
+            Then commit and push to the tap repository.
+
+            ## Changelog
+
+            See https://github.com/theDeniZ/qdrant/releases/tag/${{ steps.version.outputs.tag_name }} for the full changelog.

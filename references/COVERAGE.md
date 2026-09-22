@@ -26,16 +26,60 @@ Say so when you do this.
 An absent Bible **is** provable: `bible_lookup(ref)` without `bible` returns
 every translation that has the verse.
 
-## Spirit of Prophecy — Ellen G. White only
+## Spirit of Prophecy — Ellen G. White, plus a pioneer shelf
 
-The `sop` corpus contains **Ellen G. White** writings and nothing else. No
-E. J. Waggoner, A. T. Jones, Uriah Smith or other pioneers. An empty result for
-another author's sentence means "not in this corpus". It does **not** mean
-"no published translation exists".
+The `sop` corpus is mostly **Ellen G. White**, but it is *not* EGW only.
+(Corrected September 2026; this section previously said the opposite and was
+wrong.) It also holds **49 pre-1915 Adventist pioneer works** by 11 authors,
+imported August 2026, about 60,000 points and 4.69 M words:
+
+| Author | Works | Codes |
+|---|---:|---|
+| A. T. Jones | 11 | `CWCP` `EB` `ECE` `EMTF` `GEP` `GNT` `NSLS18` `PBE` `ROP` `TTL` `TTR` |
+| E. J. Waggoner | 9 | `CHR` `EVCO` `FCC` `GBG` `GOSC` `GT` `PROLI` `SOOCC` `WROM` |
+| Uriah Smith | 9 | `DAR` `LUJ` `MND` `MON` `MSp` `S23D` `SOD` `SYPT` `USLP` |
+| James White | 4 | `HGA` `LI` `LSJW` `SCLWM` |
+| William Miller | 4 | `AAD` `EFS` `RTS` `VOP` |
+| J. N. Andrews | 3 | `CTF` `HSFD` `WDYS` |
+| Joseph Bates | 3 | `BAB` `SDSPS` `VSDS` |
+| J. N. Loughborough | 2 | `GSAM` `RPSDA` |
+| S. N. Haskell | 2 | `SDP` `SSP` |
+| D. M. Canright | 1 | `MAS` |
+| G. I. Butler | 1 | `COS` |
+
+Every pioneer point carries `corpus: "pioneers"`, `author`, `title` and
+`year`; EGW points carry no `corpus` key at all, so `must_not corpus=pioneers`
+is the EGW-only filter. `sop_list_books` returns `author`, `year` and
+`corpus`, and matches on author, so `search="haskell"` works.
+
+**Quoting a pioneer is not quoting the Spirit of Prophecy.** Check `corpus`
+before attributing a hit, and say whose words they are.
+
+Three cautions:
+
+- **`page_kind`, returned on every non-EGW hit.** `print` means the printed
+  `page.paragraph` reference came from the text and is a real citation.
+  `chapter` means `page` is a positional sequence number and is **not** a
+  printed page: cite the work, not a page number. EGW hits carry no
+  `page_kind`; their `page` is always a printed page.
+- **Page ranges do not start at 1** for several works (`FCC` from 7, `GSAM`
+  from 3, `LSJW` from 4, `USLP` only 2-4). A `page_from=1` probe returning
+  nothing does not mean the book is missing.
+- **OCR.** `SDP` and `SSP` (Haskell) open on scrambled two-column pages. Check
+  any Haskell hit before quoting it. `WROM` duplicates `WOR` and `MND`
+  duplicates `SOD`.
+
+**The pioneer shelf is English only.** `DAR` in `de` returns nothing at any
+page, so a pioneer quotation has no canonical wording in de/ru/uk.
+
+An empty result for an *Ellen White* sentence still means "not in this
+corpus", and still does **not** mean "no published translation exists".
+
+Planned additions and repairs: [CORPUS-ACQUISITION.md](CORPUS-ACQUISITION.md).
 
 | lang | paragraphs | books | notes |
 |---|---:|---:|---|
-| en | 390,905 | 606 | full EGW Estate corpus, incl. letters/manuscripts compilations |
+| en | 390,905 | 606 | EGW Estate corpus (letters/manuscripts compilations included) **plus the 49 pioneer works above** |
 | de | 104,993 | 92 | **own DE codes** (`BW`, `WZC`, `DM`, `GK` …), several editions per work |
 | es | 67,784 | 49 | English codes |
 | pt | 63,050 | 47 | English codes |

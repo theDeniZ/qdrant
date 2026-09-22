@@ -981,6 +981,14 @@
     "Acts of the Apostles -- Study Guide"
    ]
   },
+  "AAD": {
+   "author": "William Miller",
+   "corpus": "pioneers",
+   "titles": [
+    "Apology and Defence"
+   ],
+   "year": 1845
+  },
   "AC": {
    "titles": [
     "A Call to Stand Apart"
@@ -1060,6 +1068,14 @@
    "titles": [
     "An Appeal to Mothers"
    ]
+  },
+  "BAB": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "The Autobiography of Elder Joseph Bates"
+   ],
+   "year": 1868
   },
   "BCL": {
    "titles": [
@@ -1231,6 +1247,14 @@
     "Counsels on Health -- Study Guide"
    ]
   },
+  "CHR": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "Christ and His Righteousness"
+   ],
+   "year": 1890
+  },
   "CIHS": {
    "titles": [
     "Christ in His Sanctuary"
@@ -1260,6 +1284,14 @@
    "titles": [
     "Christ’s Object Lessons"
    ]
+  },
+  "COS": {
+   "author": "G. I. Butler",
+   "corpus": "pioneers",
+   "titles": [
+    "The Change of the Sabbath"
+   ],
+   "year": 1889
   },
   "CR144": {
    "titles": [
@@ -1301,6 +1333,14 @@
     "Christian Temperance and Bible Hygiene"
    ]
   },
+  "CTF": {
+   "author": "J. N. Andrews",
+   "corpus": "pioneers",
+   "titles": [
+    "The Complete Testimony of the Fathers"
+   ],
+   "year": 1876
+  },
   "CTr": {
    "titles": [
     "Christ Triumphant"
@@ -1320,6 +1360,14 @@
    "titles": [
     "Compilations—What They Are and What They Are Not"
    ]
+  },
+  "CWCP": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Consecrated Way to Christian Perfection"
+   ],
+   "year": 1905
   },
   "ChL": {
    "titles": [
@@ -1356,6 +1404,14 @@
     "The Desire of Ages -- Study Guide"
    ]
   },
+  "DAR": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Daniel and the Revelation"
+   ],
+   "year": 1882
+  },
   "DATM": {
    "titles": [
     "The Development of Adventist Thinking on Clean and Unclean Meats"
@@ -1390,6 +1446,30 @@
    "titles": [
     "Experiences in Australia"
    ]
+  },
+  "EB": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Empires of the Bible"
+   ],
+   "year": 1897
+  },
+  "ECE": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "Ecclesiastical Empire"
+   ],
+   "year": 1901
+  },
+  "EFS": {
+   "author": "William Miller",
+   "corpus": "pioneers",
+   "titles": [
+    "Evidence from Scripture and History of the Second Coming of Christ"
+   ],
+   "year": 1842
   },
   "EGWATHW": {
    "titles": [
@@ -1491,6 +1571,14 @@
     "The Ellen G. White Writings"
    ]
   },
+  "EMTF": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "An Exposition of Matthew Twenty-Four"
+   ],
+   "year": 1915
+  },
   "EP": {
    "titles": [
     "From Eternity Past"
@@ -1505,6 +1593,14 @@
    "titles": [
     "Evangelism"
    ]
+  },
+  "EVCO": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Everlasting Covenant"
+   ],
+   "year": 1900
   },
   "EW": {
    "titles": [
@@ -1586,6 +1682,14 @@
     "The Fannie Bolton Story"
    ]
   },
+  "FCC": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "Fathers of the Catholic Church"
+   ],
+   "year": 1888
+  },
   "FE": {
    "titles": [
     "Fundamentals of Christian Education"
@@ -1611,6 +1715,14 @@
     "Faith and Works -- Study Guide"
    ]
   },
+  "GBG": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Gospel in the Book of Galatians"
+   ],
+   "year": 1888
+  },
   "GC": {
    "titles": [
     "The Great Controversy"
@@ -1632,10 +1744,34 @@
     "The Genealogy of Ellen G. White"
    ]
   },
+  "GEP": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Great Empires of Prophecy"
+   ],
+   "year": 1898
+  },
   "GI": {
    "titles": [
     "The Gathering of Israel"
    ]
+  },
+  "GNT": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Great Nations of To-Day"
+   ],
+   "year": 1901
+  },
+  "GOSC": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Gospel in Creation"
+   ],
+   "year": 1894
   },
   "GPDR": {
    "titles": [
@@ -1646,6 +1782,22 @@
    "titles": [
     "God’s Remnant Church (The Remnant Church)"
    ]
+  },
+  "GSAM": {
+   "author": "J. N. Loughborough",
+   "corpus": "pioneers",
+   "titles": [
+    "The Great Second Advent Movement"
+   ],
+   "year": 1909
+  },
+  "GT": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Glad Tidings"
+   ],
+   "year": 1900
   },
   "GVEGW": {
    "titles": [
@@ -1708,6 +1860,14 @@
     "The Health Food Ministry"
    ]
   },
+  "HGA": {
+   "author": "James White",
+   "corpus": "pioneers",
+   "titles": [
+    "His Glorious Appearing"
+   ],
+   "year": 1896
+  },
   "HH": {
    "titles": [
     "Humble Hero"
@@ -1752,6 +1912,14 @@
    "titles": [
     "Historical Sketches of the Foreign Missions of the Seventh-day Adventists"
    ]
+  },
+  "HSFD": {
+   "author": "J. N. Andrews",
+   "corpus": "pioneers",
+   "titles": [
+    "History of the Sabbath and First Day of the Week"
+   ],
+   "year": 1873
   },
   "HUT": {
    "titles": [
@@ -1833,6 +2001,14 @@
     "Lift Him Up"
    ]
   },
+  "LI": {
+   "author": "James White",
+   "corpus": "pioneers",
+   "titles": [
+    "Life Incidents"
+   ],
+   "year": 1868
+  },
   "LLE": {
    "titles": [
     "Living the Life of Enoch"
@@ -1863,6 +2039,14 @@
     "Life Sketches of James White and Ellen G. White 1888"
    ]
   },
+  "LSJW": {
+   "author": "James White",
+   "corpus": "pioneers",
+   "titles": [
+    "Life Sketches"
+   ],
+   "year": 1880
+  },
   "LSMS": {
    "titles": [
     "Life Sketches Manuscript"
@@ -1873,10 +2057,26 @@
     "The Light Still Shines"
    ]
   },
+  "LUJ": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Looking Unto Jesus"
+   ],
+   "year": 1897
+  },
   "LYL": {
    "titles": [
     "Letters to Young Lovers"
    ]
+  },
+  "MAS": {
+   "author": "D. M. Canright",
+   "corpus": "pioneers",
+   "titles": [
+    "Matter and Spirit"
+   ],
+   "year": 1871
   },
   "MB": {
    "titles": [
@@ -1929,10 +2129,26 @@
     "Medical Ministry"
    ]
   },
+  "MND": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Man's Nature and Destiny"
+   ],
+   "year": 1884
+  },
   "MOL": {
    "titles": [
     "Messenger of the Lord"
    ]
+  },
+  "MON": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "The Marvel of Nations"
+   ],
+   "year": 1887
   },
   "MR1033": {
    "titles": [
@@ -1969,6 +2185,14 @@
     "Music—Its Role, Qualities, and Influence"
    ]
   },
+  "MSp": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Modern Spiritualism"
+   ],
+   "year": 1896
+  },
   "MTC": {
    "titles": [
     "Ministry to the Cities"
@@ -2004,6 +2228,14 @@
     "A New Life (Revival and Beyond) -- Study Guide"
    ]
   },
+  "NSLS18": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The National Sunday Law"
+   ],
+   "year": 1889
+  },
   "OFC": {
    "titles": [
     "Our Father Cares"
@@ -2018,6 +2250,14 @@
    "titles": [
     "Over My Shoulder"
    ]
+  },
+  "PBE": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Place of the Bible in Education"
+   ],
+   "year": 1903
   },
   "PBORWEW": {
    "titles": [
@@ -2679,6 +2919,14 @@
     "Patriarchs and Prophets -- Study Guide"
    ]
   },
+  "PROLI": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "Prophetic Lights"
+   ],
+   "year": 1897
+  },
   "PaM": {
    "titles": [
     "Pastoral Ministry"
@@ -2704,6 +2952,22 @@
     "Revelation-Inspiration—Ellen White’s Witness and Experience"
    ]
   },
+  "ROP": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Rights of the People"
+   ],
+   "year": 1895
+  },
+  "RPSDA": {
+   "author": "J. N. Loughborough",
+   "corpus": "pioneers",
+   "titles": [
+    "Rise and Progress of the Seventh-day Adventists"
+   ],
+   "year": 1892
+  },
   "RR": {
    "titles": [
     "Royalty and Ruin"
@@ -2719,6 +2983,14 @@
     "Radiant Religion"
    ]
   },
+  "RTS": {
+   "author": "William Miller",
+   "corpus": "pioneers",
+   "titles": [
+    "Miller's Reply to Stuart's 'Hints on Prophecy'"
+   ],
+   "year": 1842
+  },
   "RVSE": {
    "titles": [
     "The Right To Vote—Shall I Exercise It?"
@@ -2728,6 +3000,14 @@
    "titles": [
     "The Retirement Years"
    ]
+  },
+  "S23D": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "The Sanctuary and the Twenty-Three Hundred Days"
+   ],
+   "year": 1877
   },
   "SA": {
    "titles": [
@@ -2743,6 +3023,14 @@
    "titles": [
     "Steps to Christ -- Study Guide"
    ]
+  },
+  "SCLWM": {
+   "author": "James White",
+   "corpus": "pioneers",
+   "titles": [
+    "Sketches of the Christian Life and Public Labors of William Miller"
+   ],
+   "year": 1875
   },
   "SD": {
    "titles": [
@@ -2774,6 +3062,22 @@
     "The “Shut Door” Documents"
    ]
   },
+  "SDP": {
+   "author": "S. N. Haskell",
+   "corpus": "pioneers",
+   "titles": [
+    "The Story of Daniel the Prophet"
+   ],
+   "year": 1908
+  },
+  "SDSPS": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "The Seventh Day Sabbath, a Perpetual Sign"
+   ],
+   "year": 1846
+  },
   "SHM-SG": {
    "titles": [
     "The Story of Our Health Message -- Study Guide"
@@ -2803,6 +3107,22 @@
    "titles": [
     "Stories of My Grandmother"
    ]
+  },
+  "SOD": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "The State of the Dead and the Destiny of the Wicked"
+   ],
+   "year": 1873
+  },
+  "SOOCC": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "Sunday: The Origin of Its Observance"
+   ],
+   "year": 1892
   },
   "SPCCSR": {
    "titles": [
@@ -2839,6 +3159,14 @@
     "From Splendor to Shadow"
    ]
   },
+  "SSP": {
+   "author": "S. N. Haskell",
+   "corpus": "pioneers",
+   "titles": [
+    "The Story of the Seer of Patmos"
+   ],
+   "year": 1905
+  },
   "STJ": {
    "titles": [
     "Steps to Jesus"
@@ -2873,6 +3201,14 @@
    "titles": [
     "The Southern Work"
    ]
+  },
+  "SYPT": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Synopsis of the Present Truth"
+   ],
+   "year": 1883
   },
   "SpM": {
    "titles": [
@@ -3304,6 +3640,22 @@
     "From Trials to Triumph"
    ]
   },
+  "TTL": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "Tremont Temple Lectures"
+   ],
+   "year": 1888
+  },
+  "TTR": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "The Two Republics"
+   ],
+   "year": 1891
+  },
   "Te": {
    "titles": [
     "Temperance"
@@ -3334,15 +3686,39 @@
     "Unlikely Leaders"
    ]
   },
+  "USLP": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "The United States in the Light of Prophecy"
+   ],
+   "year": 1884
+  },
   "VFEGWV": {
    "titles": [
     "Variation and Frequency of the Ellen G. White Visions"
    ]
   },
+  "VOP": {
+   "author": "William Miller",
+   "corpus": "pioneers",
+   "titles": [
+    "Views of the Prophecies and Prophetic Chronology"
+   ],
+   "year": 1842
+  },
   "VOTS": {
    "titles": [
     "The Voice of The Spirit"
    ]
+  },
+  "VSDS": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "A Vindication of the Seventh-Day Sabbath"
+   ],
+   "year": 1848
   },
   "VSS": {
    "titles": [
@@ -3368,6 +3744,14 @@
    "titles": [
     "Why Did Ellen G. White Borrow?"
    ]
+  },
+  "WDYS": {
+   "author": "J. N. Andrews",
+   "corpus": "pioneers",
+   "titles": [
+    "Why Do You Swear?"
+   ],
+   "year": 1866
   },
   "WEGW": {
    "titles": [
@@ -3404,6 +3788,14 @@
    "titles": [
     "Waggoner on Romans"
    ]
+  },
+  "WROM": {
+   "author": "E. J. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "Waggoner on Romans"
+   ],
+   "year": 1896
   },
   "WV": {
    "titles": [

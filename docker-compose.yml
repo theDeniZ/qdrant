@@ -14,6 +14,10 @@ services:
       # - MCP_ALLOWED_HOSTS=qdrant.thedeniz.dev
       # Load the ~2 GB embedding model at startup instead of on the first query.
       - WARM_EMBEDDER=1
+      # SoP book title table location. The Dockerfile seeds this from the packaged copy
+      # on first boot if /data/sop_books.json does not exist. All server-side mutations
+      # write to the volume copy, which survives container rebuilds.
+      - SOP_BOOKS_JSON=/data/sop_books.json
     volumes:
       # Holds keys.db (API keys) and the fastembed model cache.
       - qdrant-mcp-data:/data

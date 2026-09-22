@@ -15,12 +15,15 @@ writings (12 languages), offered in three parts:
 .
 ├── app/                    MCP server + admin UI (Python, Starlette, FastMCP)
 │   └── data/sop_books.json SoP book code → title tables (scripts/export_book_titles.py)
+├── sopack/                 CLI for extracting and packing corpus data (Python 3.11)
 ├── Dockerfile, docker-compose.yml, requirements.txt
+├── homebrew/               sopack.rb formula + tap setup guide
+├── .github/workflows/      release-sopack.yml (GitHub Actions)
 ├── .claude-plugin/         marketplace.json → ./plugin
 ├── plugin/                 the bible-sop plugin (.mcp.json + skills/)
 ├── references/             CANONICAL skill references; copied into each skill by the build
-├── scripts/                build_plugin.py, export_book_titles.py
-└── docs/                   INTEGRATION.md, PROJECT-INSTRUCTIONS.md
+├── scripts/                build_plugin.py, export_book_titles.py, merge_corpus_titles.py
+└── docs/                   INTEGRATION.md, PROJECT-INSTRUCTIONS.md, IMPORT-PIPELINE.md, IMPORT-API.md
 ```
 
 ## Tools
@@ -80,6 +83,22 @@ Edit `references/*.md` and `plugin/skills/*/SKILL.md`, never the copied
 - Connecting claude.ai, Claude Code or another client, and adding the skills to
   a new or existing project (e.g. sbl): **[docs/INTEGRATION.md](docs/INTEGRATION.md)**
 - Instruction blocks to paste: **[docs/PROJECT-INSTRUCTIONS.md](docs/PROJECT-INSTRUCTIONS.md)**
+
+## Corpus import
+
+Add books to the SoP or Bible collections using the **sopack** CLI, which runs on
+the Mac (where fastembed is available). The workflow is:
+
+1. Extract a book (EPUB, Markdown, JSON) into a reviewable intermediate format
+2. Pack it with embeddings into a `.sopack` file
+3. Upload and import it via the admin UI with a dry-run proof and rollback safety
+
+**References:**
+- **[docs/IMPORT-PIPELINE-PLAN.md](docs/IMPORT-PIPELINE-PLAN.md)** — full design, stages,
+  canary probes, and rollback / restore
+- **[docs/IMPORT-API.md](docs/IMPORT-API.md)** — the server's import HTTP routes
+- **sopack CLI** — install via `brew install theDeniZ/tap/sopack` or from a GitHub Release
+  (see **[homebrew/README.md](homebrew/README.md)** for details)
 
 ## Development
 

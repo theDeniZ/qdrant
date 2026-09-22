@@ -64,6 +64,26 @@ def _qdrant(path: str, body: dict) -> Any:
     return r.json().get("result")
 
 
+# --- provenance -----------------------------------------------------------
+# Ellen White points carry none of these keys, so an EGW result is byte-for-byte
+# what it always was. Non-EGW points (``corpus: "pioneers"``) carry all three,
+# and `page_kind` is the one that changes how a hit may be cited:
+#
+#   "print"    `page`/`para` are the printed page.paragraph reference, lifted
+#              from the edition's own inline citation. Cite it as a page.
+#   "chapter"  `page` is a POSITIONAL sequence number (chapter or file index),
+#              not a printed page. Citing it as a page number is wrong; cite
+#              the work and locate the passage some other way.
+#
+# EGW points have no `page_kind`; their `page` is always a printed page.
+_PROV_KEYS = ("corpus", "author", "page_kind")
+
+
+def _prov(payload: dict) -> dict:
+    """The provenance keys a non-EGW point carries, or ``{}`` for Ellen White."""
+    return {k: payload[k] for k in _PROV_KEYS if payload.get(k)}
+
+
 def _format_hit(point: dict) -> dict:
     pl = point.get("payload", {})
     return {
@@ -72,6 +92,7 @@ def _format_hit(point: dict) -> dict:
         "para_key":  pl.get("para_key"),
         "score":     round(point.get("score", 0.0), 3),
         "text":      pl.get("raw_text", ""),
+        **_prov(pl),
     }
 
 
@@ -140,6 +161,10 @@ def sop_lookup(query: str | None = None, codes: list[str] | None = None,
         Single: ``{"hits": [...], "fallbacks": [...]}``.
         Batch:  ``{"results": [{"query", "hits", "fallbacks"}, ...]}`` in input order.
         Each result carries ``book_code``, ``page``, ``para_key``, ``score``, ``text``.
+        Non-EGW results additionally carry ``corpus``, ``author`` and
+        ``page_kind``. **Check them before citing.** ``page_kind: "chapter"``
+        means ``page`` is a positional sequence number, not a printed page, and
+        quoting a pioneer is not quoting the Spirit of Prophecy.
     """
     limit = max(1, min(20, int(limit)))
     batch = queries is not None
@@ -196,6 +221,10 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
 
     Returns:
         ``{"paragraphs": [{book_code, page, para, para_key, text}, ...]}``.
+        Non-EGW results additionally carry ``corpus``, ``author`` and
+        ``page_kind``. **Check them before citing.** ``page_kind: "chapter"``
+        means ``page`` is a positional sequence number, not a printed page, and
+        quoting a pioneer is not quoting the Spirit of Prophecy.
         Large ranges are cut at a page boundary after ~400 paragraphs; the
         response then carries ``"truncated": true`` and ``"next_page_from"``
         — call again from that page to continue.
@@ -219,6 +248,7 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
             "para":      p["payload"]["para"],
             "para_key":  p["payload"]["para_key"],
             "text":      p["payload"]["raw_text"],
+            **_prov(p["payload"]),
         }
         for p in points
     ]
@@ -233,7 +263,8 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
             body["filter"]["must"][2] = {"key": "page", "match": {"value": last_page}}
             kept = sorted(({"book_code": p["payload"]["book_code"], "page": p["payload"]["page"],
                             "para": p["payload"]["para"], "para_key": p["payload"]["para_key"],
-                            "text": p["payload"]["raw_text"]}
+          **_prov(p["payload"]),
+                            "text": p["payload"]["raw_text"], **_prov(p["payload"])}
                            for p in _qdrant("points/scroll", body).get("points", [])),
                           key=lambda x: x["para"])
             last_page += 1
@@ -305,7 +336,14 @@ def sop_list_books(lang: str | None = None, search: str | None = None) -> dict:
                 book["en_titles"] = titles.get("en", {}).get(en_code, {}).get("titles", [])
             if lg == "en":
                 book["titles"] = titles.get("en", {}).get(code, {}).get("titles", [])
-            haystack = " ".join([code, *book["titles"], *book.get("en_titles", [])]).casefold()
+            # Non-EGW works carry these; Ellen White's do not. `corpus` is what
+            # tells an agent a hit may not be quoted as Spirit of Prophecy.
+            for key in ("author", "year", "corpus"):
+                if own.get(key):
+                    book[key] = own[key]
+            haystack = " ".join([code, *book["titles"], *book.get("en_titles", []),
+                                 str(book.get("author", "")),
+                                 str(book.get("corpus", ""))]).casefold()
             if needle and needle not in haystack:
                 continue
             books.append(book)
@@ -534,6 +572,7 @@ def sop_by_bible_ref(osis: str, lang: str = "en", limit: int = 20) -> dict:
     results = [
         {"book_code": p["payload"].get("book_code"), "page": p["payload"].get("page"),
          "para": p["payload"].get("para"), "para_key": p["payload"].get("para_key"),
+         **_prov(p["payload"]),
          "text": p["payload"].get("raw_text", ""), "bible_refs": p["payload"].get("bible_refs", [])}
         for p in points
     ]

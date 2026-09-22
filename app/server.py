@@ -34,7 +34,7 @@ from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 
-from . import admin, bible_tools, keystore, sop_tools
+from . import admin, bible_tools, keystore, seed, sop_tools
 
 log = logging.getLogger("qdrant-mcp")
 
@@ -101,6 +101,12 @@ SERVERS = [
 @contextlib.asynccontextmanager
 async def _lifespan(app):
     keystore.init()
+    # The persistent volume outlives the image, so the title table and the
+    # import pipeline's working directories are established here rather than in
+    # the Dockerfile — an existing named volume never receives a rebuilt image's
+    # new directories. See app/seed.py.
+    seed.ensure_data_dirs()
+    seed.seed_book_titles()
     async with contextlib.AsyncExitStack() as stack:
         for s in SERVERS:
             await stack.enter_async_context(s.session_manager.run())

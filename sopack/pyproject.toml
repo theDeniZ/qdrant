@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sopack"
+version = "0.1.0"
+description = "Prepare and verify corpus import packs for the bible-sop Qdrant collections"
+requires-python = ">=3.11"
+# Runtime deps are deliberately NOT listed here as ranges. The pinned closure in
+# requirements.lock is the contract (R7), because the embedding library's exact
+# version determines the vector space — see contract.EMBEDDING. Install with:
+#   pip install -r requirements.lock && pip install --no-deps .
+dependencies = []
+
+[project.scripts]
+sopack = "sopack.cli:main"
+
+[tool.setuptools]
+# The package directory IS this directory, so it is mapped explicitly rather
+# than discovered (discovery from inside the package would find nothing).
+package-dir = { "sopack" = "." }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["extract*"]
+
+[tool.setuptools.package-data]
+sopack = ["schemas/*.json", "requirements.lock"]

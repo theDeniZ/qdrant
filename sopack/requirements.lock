@@ -1,0 +1,54 @@
+# Pinned dependency closure for the sopack CLI (Python 3.11, macOS/Linux).
+#
+# This is requirement R7: a missing wheel must fail in seconds, not twenty
+# minutes into an embedding run (failures #2 and #3). The closure below was
+# RESOLVED, not hand-listed — fastembed alone pulls 11 direct dependencies, and
+# an incomplete lock silently installs unpinned versions of the rest, which is
+# how a pooling change (#15) gets in without anyone choosing it.
+#
+# Resolved from /workspaces/sdarm/.venv on 2026-09-22, the same interpreter whose
+# fastembed reproduces the live collection's vectors at cosine 1.00000.
+#
+# Deliberately absent, being platform/version conditionals that do not apply to
+# macOS or Linux on Python 3.11:
+#   colorama, win32-setctime  (Windows only)
+#   aiocontextvars            (Python < 3.7)
+#   tomli                     (Python < 3.11)
+#
+# Add --hash pins at release time:
+#   pip install --require-hashes -r requirements.lock
+#
+# Install:
+#   pip install -r sopack/requirements.lock
+
+fastembed==0.8.0
+
+# fastembed's direct dependencies
+huggingface-hub==1.32.0
+loguru==0.7.3
+mmh3==5.3.0
+numpy==2.4.6
+onnxruntime==1.30.0
+pillow==12.3.0
+py-rust-stemmers==0.1.8
+requests==2.34.2
+tokenizers==0.23.2
+tqdm==4.70.1
+
+# transitive
+anyio==4.15.1
+certifi==2026.7.22
+charset-normalizer==3.5.1
+click==8.5.0
+filelock==4.0.0
+flatbuffers==25.12.19
+fsspec==2026.9.0
+hf-xet==1.6.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.20
+packaging==26.3
+protobuf==7.36.2
+pyyaml==6.0.3
+typing-extensions==4.16.0
+urllib3==2.8.0

@@ -77,7 +77,43 @@ class DumpLoadRoundTrip(unittest.TestCase):
         self.assertIn("\n  ", raw)  # indent=2
         block_keys = list(doc["blocks"][0].keys())
         self.assertEqual(block_keys,
-                          ["para_key", "page", "para", "seq", "chunks", "text", "words"])
+                          ["para_key", "page", "para", "seq", "chunk", "chunks",
+                           "text", "words"])
+
+    def test_load_defaults_chunk_to_seq_for_pre_0_1_4_files(self):
+        # A book.json written before 0.1.4 has no `chunk`. Such a file could
+        # not contain a collision (validate refused it), so chunk == seq is
+        # not a guess: it is what the writer meant.
+        book = _plain_sop_book()
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "book.json"
+            dump(book, path)
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            for b in doc["blocks"]:
+                b.pop("chunk")
+            doc["blocks"][1]["seq"] = 1
+            doc["blocks"][1]["para_key"] = "1.1"
+            path.write_text(json.dumps(doc), encoding="utf-8")
+            loaded = load(path)
+        self.assertEqual([b.chunk for b in loaded.blocks], [0, 1])
+
+    def test_dump_load_round_trips_chunk(self):
+        book = _plain_sop_book()
+        book.blocks = [
+            Block(para_key="3.1", page=3, para=1, seq=0, chunk=0, chunks=1,
+                  text="a heading", words=2),
+            Block(para_key="3.1", page=3, para=1, seq=1, chunk=0, chunks=2,
+                  text="piece one", words=2),
+            Block(para_key="3.1", page=3, para=1, seq=2, chunk=1, chunks=2,
+                  text="piece two", words=2),
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "book.json"
+            dump(book, path)
+            loaded = load(path)
+        self.assertEqual([(b.seq, b.chunk) for b in loaded.blocks],
+                         [(0, 0), (1, 0), (2, 1)])
+        self.assertEqual(validate(loaded), [])
 
     def test_load_rejects_bad_json(self):
         with tempfile.TemporaryDirectory() as td:
@@ -194,6 +230,53 @@ class Validate(unittest.TestCase):
         errors = validate(book)
         self.assertTrue(any("inconsistent" in e for e in errors))
 
+    def test_accepts_two_paragraphs_sharing_one_para_key(self):
+        # The 0.1.4 regression: an EPUB with an inline citation scheme keys
+        # cited blocks from the citation and uncited ones (headings) from a
+        # chapter ordinal, so two different paragraphs can land on "3.1". The
+        # extractor keeps their ids apart with seq; that must validate.
+        book = _plain_sop_book()
+        book.blocks = [
+            Block(para_key="3.1", page=3, para=1, seq=0, chunk=0, chunks=1,
+                  text="Revelation 18 verse one", words=4),
+            Block(para_key="3.1", page=3, para=1, seq=1, chunk=0, chunks=1,
+                  text="II. WHAT ARE WE TO UNDERSTAND", words=6),
+        ]
+        self.assertEqual(validate(book), [])
+
+    def test_accepts_split_paragraph_after_a_colliding_one(self):
+        book = _plain_sop_book()
+        book.blocks = [
+            Block(para_key="3.1", page=3, para=1, seq=0, chunk=0, chunks=1,
+                  text="the heading here", words=3),
+            Block(para_key="3.1", page=3, para=1, seq=1, chunk=0, chunks=2,
+                  text="a long paragraph", words=3),
+            Block(para_key="3.1", page=3, para=1, seq=2, chunk=1, chunks=2,
+                  text="split in two", words=3),
+        ]
+        self.assertEqual(validate(book), [])
+
+    def test_rejects_seq_gap_across_colliding_paragraphs(self):
+        book = _plain_sop_book()
+        book.blocks = [
+            Block(para_key="3.1", page=3, para=1, seq=0, chunk=0, chunks=1,
+                  text="first here", words=2),
+            Block(para_key="3.1", page=3, para=1, seq=2, chunk=0, chunks=1,
+                  text="third here", words=2),
+        ]
+        errors = validate(book)
+        self.assertTrue(any("3.1" in e and "seq" in e for e in errors))
+
+    def test_rejects_truncated_split_paragraph(self):
+        # claims two pieces, only the first is present
+        book = _plain_sop_book()
+        book.blocks = [
+            Block(para_key="3.1", page=3, para=1, seq=0, chunk=0, chunks=2,
+                  text="only piece", words=2),
+        ]
+        errors = validate(book)
+        self.assertTrue(any("chunks=2" in e for e in errors))
+
     def test_valid_chunked_block_is_clean(self):
         book = _plain_sop_book()
         book.blocks = [
@@ -240,6 +323,16 @@ class Payload(unittest.TestCase):
         self.assertNotIn("chunks", p1)
         self.assertEqual(p2["chunk"], 1)
         self.assertEqual(p2["chunks"], 2)
+
+    def test_sop_payload_chunk_is_paragraph_local_not_seq(self):
+        # Second paragraph under a colliding para_key: seq 1 (its id), but it
+        # is piece 0 of 2 of its OWN paragraph, so the payload must say 0.
+        book = _plain_sop_book()
+        block = Block(para_key="3.1", page=3, para=1, seq=1, chunk=0, chunks=2,
+                      text="first piece", words=2)
+        payload = to_payload(book, block)
+        self.assertEqual(payload["chunk"], 0)
+        self.assertEqual(payload["chunks"], 2)
 
     def test_aligned_pulled_from_alignment_en_reverse(self):
         # en_reverse is keyed by EN para_key -> [own-language para_keys] (the

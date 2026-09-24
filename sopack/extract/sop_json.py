@@ -120,7 +120,7 @@ def extract(
             continue
         page, para = _parse_page_para(para_key)
         out_blocks.append(Block(
-            para_key=para_key, page=page, para=para, seq=0, chunks=1,
+            para_key=para_key, page=page, para=para, seq=0, chunk=0, chunks=1,
             text=text, words=len(text.split()),
         ))
 

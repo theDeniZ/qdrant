@@ -132,7 +132,7 @@ Plain JSON, no vectors, safe to commit.
   "stats": {"blocks_in": 4210, "blocks_out": 4102, "dropped": 108,
             "damage": 0.011, "words": 812443},
   "blocks": [
-    {"para_key": "12.3", "page": 12, "para": 3, "seq": 0, "chunks": 1,
+    {"para_key": "12.3", "page": 12, "para": 3, "seq": 0, "chunk": 0, "chunks": 1,
      "text": "…", "words": 214}
   ]
 }
@@ -143,8 +143,16 @@ Rules:
 - `extract` never invents metadata. What it cannot read from the source is left `null`
   and `pack` refuses to proceed until it is filled in (fixes #9 — a filename-derived
   author shifting silently).
-- Chunking of over-long blocks happens here, visibly, with `seq`/`chunks` recorded —
+- Chunking of over-long blocks happens here, visibly, with `chunk`/`chunks` recorded —
   not inside the embedding step.
+- `seq` and `chunk` are different numbers (0.1.4). `seq` disambiguates every block
+  sharing a `para_key` and is what `sop/seq` hashes into the point id; `chunk` is the
+  piece's index within *its own* paragraph and is what the payload carries. They differ
+  only when two source paragraphs key the same — which a scan with an inline citation
+  scheme does routinely, since its uncited blocks (headings) are keyed by chapter
+  ordinal and collide with the citation keys. A `book.json` written before 0.1.4 has no
+  `chunk`; it is read back as `chunk = seq`, which is exact, because such a file could
+  not contain a collision.
 - Dropped blocks are *counted and listed* in a sidecar report, never silently discarded
   (R8).
 - Re-extracting a book with a changed `id_rule` is refused; the rule is fixed at first

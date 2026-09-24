@@ -88,7 +88,7 @@ def extract(
         for j, piece in enumerate(pieces):
             out_blocks.append(Block(
                 para_key=para_key, page=page, para=para_in_page,
-                seq=j, chunks=len(pieces), text=piece,
+                seq=j, chunk=j, chunks=len(pieces), text=piece,
                 words=len(piece.split()),
             ))
 

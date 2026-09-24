@@ -82,6 +82,13 @@ quarter's worth of books in one run rather than one at a time.
 from the file's own `meta` block, so passing `--year` there is refused rather than
 silently ignored.
 
+**`seq` is not `chunk`.** A `para_key` can hold more than one paragraph: in a scan
+with an inline citation scheme, cited blocks are keyed from the citation and uncited
+ones (headings) from a chapter ordinal, and the two collide. `seq` runs 0,1,2… across
+everything sharing the key and is what the point id is built from; `chunk` is the
+piece's index within its own paragraph and is what the payload carries. `inspect`
+reports how many para_keys are shared and how many blocks are split. (Before 0.1.4 they were one field and such a book would not validate.)
+
 **The id rule is permanent.** A book's `id_rule` fixes how its point ids are derived.
 Change it later and the "same" paragraphs get different ids — you get orphaned
 duplicates instead of an update. The two sop rules are not interchangeable:

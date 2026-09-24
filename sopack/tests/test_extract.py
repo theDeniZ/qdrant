@@ -219,6 +219,26 @@ class EpubExtraction(unittest.TestCase):
         for b in book.blocks:
             self.assertNotIn("CHR", b.text)
 
+    def test_uncited_heading_colliding_with_a_cited_key_still_validates(self):
+        # The COOH/DOCP failure: in a coded book the uncited blocks (headings)
+        # are keyed by chapter ordinal, which collides with the citation keys.
+        # Before 0.1.4 extract produced a book.json that validate() refused.
+        from sopack.book import validate
+
+        blocks_html = "".join(
+            f"<p>Sentence number {i} of real readable prose in this book. CHR 1.{i}</p>"
+            for i in range(1, 8)
+        )
+        blocks_html += "<p>II. WHAT ARE WE TO UNDERSTAND BY THE FALL OF BABYLON</p>"
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "book.epub"
+            make_epub(path, [blocks_html])
+            book = extract(path, "epub", corpus="pioneers", author="A", year=1900, slug="x")
+
+        self.assertEqual(validate(book), [])
+        collided = sorted((b.seq, b.chunk) for b in book.blocks if b.para_key == "1.1")
+        self.assertEqual(collided, [(0, 0), (1, 0)])
+
     def test_pagemark_drives_page_para_when_no_inline_code(self):
         html = (
             "<p>[12]</p>"

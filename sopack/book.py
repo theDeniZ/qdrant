@@ -31,6 +31,25 @@ class BookError(Exception):
 
 @dataclass
 class Block:
+    """One emitted point.
+
+    ``seq`` and ``chunk`` are **not** the same number, and conflating them is
+    the bug fixed in 0.1.4. ``seq`` disambiguates every block sharing a
+    ``para_key`` — it is what ``sop/seq`` hashes into the point id — and runs
+    0,1,2… across the whole ``para_key``, including across two *different*
+    source paragraphs that happen to key the same (an EPUB with an inline
+    citation scheme keys cited blocks from the citation and uncited ones —
+    headings, mostly — from a chapter ordinal, and the two collide). ``chunk``
+    is the piece's index *within its own paragraph*, 0…``chunks``-1, and is
+    what the payload carries. They are equal only while a ``para_key`` holds
+    one paragraph, which is why the two were indistinguishable until a
+    colliding book turned up.
+
+    ``chunk`` defaults to ``seq``: that is exactly right for every book.json
+    written before 0.1.4, since a book with a collision could not be written
+    at all.
+    """
+
     para_key: str
     page: int
     para: int
@@ -38,6 +57,11 @@ class Block:
     chunks: int
     text: str
     words: int
+    chunk: int | None = None
+
+    def __post_init__(self):
+        if self.chunk is None:
+            self.chunk = self.seq
 
 
 @dataclass
@@ -122,6 +146,7 @@ def load(path) -> Book:
                 chunks=int(b["chunks"]),
                 text=str(b["text"]),
                 words=int(b["words"]),
+                chunk=int(b["chunk"]) if b.get("chunk") is not None else None,
             ))
         except (TypeError, ValueError) as exc:
             raise BookError(f"{path}: blocks[{i}] has a badly typed field: {exc}") from exc
@@ -156,6 +181,7 @@ def dump(book: Book, path) -> None:
                 "page": b.page,
                 "para": b.para,
                 "seq": b.seq,
+                "chunk": b.chunk,
                 "chunks": b.chunks,
                 "text": b.text,
                 "words": b.words,
@@ -175,8 +201,12 @@ def validate(book: Book) -> list[str]:
     plus ``author``/``year`` for non-EGW works, i.e. ``book.corpus`` is set;
     EGW works, which never carry a ``corpus`` key, are exempt, matching the
     live collection's convention), an ``id_rule`` not allowed by the book's
-    profile, duplicate ``(para_key, seq)`` pairs, empty block text, and
-    ``chunks``/``seq`` inconsistency within a ``para_key``.
+    profile, duplicate ``(para_key, seq)`` pairs, empty block text, a
+    ``para_key`` whose ``seq`` values are not dense from 0, and blocks that do
+    not partition into whole paragraphs of ``chunks`` pieces.
+
+    A ``para_key`` carrying several *paragraphs* is legitimate and is not an
+    error — see :class:`Block`.
     """
     errors: list[str] = []
 
@@ -218,21 +248,44 @@ def validate(book: Book) -> list[str]:
             errors.append(f"block (para_key={b.para_key!r}, seq={b.seq}) has empty text")
         by_para_key[b.para_key].append(b)
 
+    # A para_key may hold MORE than one paragraph (see Block): its seq values
+    # must still be 0..n-1 so the sop/seq ids are dense and reproducible, and
+    # the blocks must partition into whole paragraphs of `chunks` pieces each.
     for para_key, group in by_para_key.items():
-        chunk_vals = {b.chunks for b in group}
-        if len(chunk_vals) > 1:
-            errors.append(
-                f"para_key {para_key!r}: inconsistent 'chunks' values {sorted(chunk_vals)}")
-            continue
-        chunks = chunk_vals.pop()
-        if chunks < 1:
-            errors.append(f"para_key {para_key!r}: chunks must be >= 1, got {chunks}")
-            continue
         seqs = sorted(b.seq for b in group)
-        if seqs != list(range(chunks)):
+        if seqs != list(range(len(group))):
             errors.append(
-                f"para_key {para_key!r}: seq values {seqs} do not match chunks={chunks} "
-                f"(expected {list(range(chunks))})")
+                f"para_key {para_key!r}: seq values {seqs} are not 0..{len(group) - 1} "
+                f"(every block sharing a para_key needs a dense, unique seq)")
+            continue
+
+        ordered = sorted(group, key=lambda b: b.seq)
+        i = 0
+        while i < len(ordered):
+            chunks = ordered[i].chunks
+            if chunks < 1:
+                errors.append(
+                    f"para_key {para_key!r}: chunks must be >= 1, got {chunks} "
+                    f"at seq {ordered[i].seq}")
+                break
+            piece = ordered[i:i + chunks]
+            if len(piece) < chunks:
+                errors.append(
+                    f"para_key {para_key!r}: paragraph at seq {ordered[i].seq} claims "
+                    f"chunks={chunks} but only {len(piece)} block(s) follow")
+                break
+            bad_chunks = sorted({b.chunks for b in piece})
+            if bad_chunks != [chunks]:
+                errors.append(
+                    f"para_key {para_key!r}: inconsistent 'chunks' values {bad_chunks} "
+                    f"within the paragraph starting at seq {ordered[i].seq}")
+                break
+            if [b.chunk for b in piece] != list(range(chunks)):
+                errors.append(
+                    f"para_key {para_key!r}: chunk values {[b.chunk for b in piece]} "
+                    f"do not match chunks={chunks} (expected {list(range(chunks))})")
+                break
+            i += chunks
 
     return errors
 
@@ -287,7 +340,7 @@ def to_payload(book: Book, block: Block) -> dict:
             if val is not None:
                 payload[key] = val
         if block.chunks > 1:
-            payload["chunk"] = block.seq
+            payload["chunk"] = block.chunk
             payload["chunks"] = block.chunks
         return payload
 

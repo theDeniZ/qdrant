@@ -216,11 +216,15 @@ def extract(
             continue
 
         pieces = chunk.split_long(text)
+        # base_seq is non-zero when an earlier paragraph already claimed this
+        # para_key: in a book with an inline citation scheme, a heading keyed
+        # by chapter ordinal can land on a cited paragraph's key. seq keeps
+        # their point ids distinct; chunk stays paragraph-local.
         base_seq = seen[para_key]
         for j, piece in enumerate(pieces):
             out_blocks.append(Block(
                 para_key=para_key, page=key_page, para=key_para,
-                seq=base_seq + j, chunks=len(pieces), text=piece,
+                seq=base_seq + j, chunk=j, chunks=len(pieces), text=piece,
                 words=len(piece.split()),
             ))
         seen[para_key] += len(pieces)

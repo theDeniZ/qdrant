@@ -124,6 +124,17 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
     if stats:
         for k, v in stats.items():
             print(f"  {k}: {v}")
+    # Paragraphs, not blocks: a paragraph starts at chunk 0. More than one
+    # under the same para_key is a key collision — legitimate, but worth
+    # seeing, since it is why `seq` and `chunk` diverge for this book.
+    starts: dict[str, int] = {}
+    for b in blocks:
+        if b.chunk == 0:
+            starts[b.para_key] = starts.get(b.para_key, 0) + 1
+    collided = sum(1 for n in starts.values() if n > 1)
+    print(f"paragraphs: {sum(starts.values())} "
+          f"({collided} para_key(s) shared by more than one)")
+    print(f"split blocks: {sum(1 for b in blocks if b.chunks > 1)}")
     if hasattr(book, "book") and isinstance(book.book, dict):
         b = book.book
         print(f"book_code: {b.get('book_code')}  lang: {b.get('lang')}  "

@@ -10,8 +10,8 @@
 class Sopack < Formula
   desc "Prepare and verify corpus import packs for the bible-sop Qdrant collections"
   homepage "https://github.com/theDeniZ/qdrant"
-  url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v0.1.0/sopack-0.1.0.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v0.1.2/sopack-0.1.2.tar.gz"
+  sha256 "e145e95800444a72c26877f6119428362eb2b4fea0643c977635f8a1f6504368"
 
   # NOTE: set the license to match the repository's LICENSE file before
   # publishing. Left unset deliberately rather than guessed.

@@ -347,7 +347,7 @@ sopack verify pioneers.sopack                 # checksums, schema, id rule, prob
 
 - Source lives at `qdrant/sopack/`, versioned with the server.
 - A GitHub Release from the `qdrant` repo publishes `sopack-<version>.tar.gz`.
-- The `qdrant` repo is itself the tap: `Formula/sopack.rb` (`depends_on "python@3.11"`,
+- The `qdrant` repo is itself the tap: `Formula/sopack.rb` (`depends_on "python@3.14"`,
   arm64 + macOS 14 — the pinned onnxruntime has no other macOS wheel) installs into a
   `libexec` virtualenv from `requirements.lock` (fastembed, onnxruntime, tokenizers,
   huggingface-hub, numpy; hash pins still to add). That lockfile is R7.

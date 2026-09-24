@@ -20,7 +20,7 @@ class Sopack < Formula
   # macosx_14_0_arm64 — there is none for Intel Macs or macOS < 14.
   depends_on arch: :arm64
   depends_on macos: :sonoma
-  depends_on "python@3.11"
+  depends_on "python@3.14"
 
   # The venv lives OUTSIDE the keg, in var/. Homebrew rewrites the install
   # name of every Mach-O file in a keg after `install`, and prebuilt wheels are
@@ -34,7 +34,7 @@ class Sopack < Formula
   end
 
   def install
-    python = Formula["python@3.11"].opt_bin/"python3.11"
+    python = Formula["python@3.14"].opt_bin/"python3.14"
     wheels = libexec/"wheels"
 
     # Throwaway build venv, only to run pip; nothing from it is installed.
@@ -61,7 +61,7 @@ class Sopack < Formula
   end
 
   def post_install
-    python = Formula["python@3.11"].opt_bin/"python3.11"
+    python = Formula["python@3.14"].opt_bin/"python3.14"
     # Rebuilt from scratch on every install/upgrade so no older version's
     # packages survive in it.
     rm_r venv if venv.exist?

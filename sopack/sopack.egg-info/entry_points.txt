@@ -1,0 +1,2 @@
+[console_scripts]
+sopack = sopack.cli:main

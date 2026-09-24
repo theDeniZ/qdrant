@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: sopack
+Version: 0.1.2
+Summary: Prepare and verify corpus import packs for the bible-sop Qdrant collections
+Requires-Python: >=3.11

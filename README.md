@@ -15,7 +15,7 @@ writings (12 languages), offered in three parts:
 .
 ├── app/                    MCP server + admin UI (Python, Starlette, FastMCP)
 │   └── data/sop_books.json SoP book code → title tables (scripts/export_book_titles.py)
-├── sopack/                 CLI for extracting and packing corpus data (Python 3.11)
+├── sopack/                 CLI for extracting and packing corpus data (Python 3.14)
 ├── Dockerfile, docker-compose.yml, requirements.txt
 ├── Formula/                sopack.rb — this repo is the Homebrew tap (Formula/README.md)
 ├── .github/workflows/      release-sopack.yml (GitHub Actions)

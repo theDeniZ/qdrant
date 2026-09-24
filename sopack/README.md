@@ -21,7 +21,7 @@ name.sopack                 ← upload in the admin UI
 brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant
 brew install theDeniZ/qdrant/sopack
 # or, from a checkout:
-python3.11 -m venv .venv && .venv/bin/pip install -r requirements.lock
+python3.14 -m venv .venv && .venv/bin/pip install -r requirements.lock
 .venv/bin/pip install --no-deps .
 ```
 
@@ -122,5 +122,5 @@ them. Only `pack.py` may import an embedding library.
 ## Tests
 
 ```bash
-cd qdrant && PYTHONPATH=. python3.11 -m unittest discover -s sopack/tests -p 'test_*.py'
+cd qdrant && PYTHONPATH=. python3.14 -m unittest discover -s sopack/tests -p 'test_*.py'
 ```

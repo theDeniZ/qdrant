@@ -15,6 +15,14 @@ sopack doctor                                                  # loads the model
 
 Upgrade: `brew update && brew upgrade sopack`.
 
+The Python environment is built by the formula's `post_install` into
+`$(brew --prefix)/var/sopack/venv`, **not** inside the keg: Homebrew relinks every
+Mach-O file in a keg after install, and prebuilt wheels (first casualty:
+`py_rust_stemmers`) lack the header padding for that, which fails the install.
+The keg only holds the downloaded wheels; `post_install` installs them offline.
+Consequences: if `sopack` says the venv is missing, run `brew postinstall sopack`;
+`brew uninstall sopack` leaves the venv behind — `rm -rf $(brew --prefix)/var/sopack`.
+
 Intel Macs and macOS < 14 are not supported: the pinned `onnxruntime==1.30.0`
 (`sopack/requirements.lock`) ships only a `macosx_14_0_arm64` wheel. Loosening that
 pin is not a packaging decision — the embedding stack's exact versions define the
@@ -44,7 +52,7 @@ move the formula to a small `theDeniZ/homebrew-tap` repo after all.
 | Job | Runner | Does |
 |---|---|---|
 | `build` | ubuntu | tag = package = pyproject version; installs from the lockfile exactly as the formula does; unit tests; `sopack --version`; `git archive` of `sopack/` → `sopack-<v>.tar.gz` + sha256 |
-| `brew` | macos-14 (arm64) | copies `Formula/sopack.rb` into a throwaway local tap pointing at the built tarball (`file://`), runs `brew install` + `brew test` |
+| `brew` | macos-14 (arm64) | copies `Formula/sopack.rb` into a throwaway local tap pointing at the built tarball (`file://`), runs `brew install`, asserts `post_install` built the venv, runs `brew test` |
 | `publish` | ubuntu | only if both passed: creates the GitHub Release with the tarball, then rewrites `url`/`sha256` in `Formula/sopack.rb` on the default branch and pushes that commit |
 
 Never edit `url`/`sha256` by hand. If the default branch is protected against pushes
@@ -62,5 +70,5 @@ TAP="$(brew --repository)/Library/Taps/local/homebrew-sopack"
 perl -pe "s|^  url \".*\"|  url \"file:///tmp/sopack-$V.tar.gz\"|; s|^  sha256 \".*\"|  sha256 \"$(shasum -a 256 /tmp/sopack-$V.tar.gz | cut -d' ' -f1)\"|" \
   Formula/sopack.rb > "$TAP/Formula/sopack.rb"
 brew install --verbose local/sopack/sopack && brew test local/sopack/sopack
-brew uninstall sopack && brew untap local/sopack
+brew uninstall sopack && brew untap local/sopack && rm -rf "$(brew --prefix)/var/sopack"
 ```

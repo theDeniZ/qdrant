@@ -102,6 +102,10 @@ jobs:
           perl -pe "s|^  url \".*\"|  url \"file://$GITHUB_WORKSPACE/dist/sopack-$V.tar.gz\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" \
             Formula/sopack.rb > "$TAP/Formula/sopack.rb"
           brew install --verbose ci/sopack/sopack
+          # A failed post_install is only a warning to `brew install`, but it is
+          # where the venv gets built — assert it exists before testing.
+          test -x "$(brew --prefix)/var/sopack/venv/bin/python" \
+            || { echo "::error::post_install did not build the venv"; exit 1; }
           brew test --verbose ci/sopack/sopack
           sopack --version
 

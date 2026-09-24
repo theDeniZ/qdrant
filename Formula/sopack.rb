@@ -22,31 +22,62 @@ class Sopack < Formula
   depends_on macos: :sonoma
   depends_on "python@3.11"
 
+  # The venv lives OUTSIDE the keg, in var/. Homebrew rewrites the install
+  # name of every Mach-O file in a keg after `install`, and prebuilt wheels are
+  # not linked with -headerpad_max_install_names: py_rust_stemmers' .so fails
+  # that rewrite ("Updated load commands do not fit in the header") and the
+  # install exits 1. So `install` only collects wheels (zips, never relinked)
+  # and `post_install` — which runs after the relocation pass — builds the venv
+  # from them, offline.
+  def venv
+    var/"sopack/venv"
+  end
+
   def install
     python = Formula["python@3.11"].opt_bin/"python3.11"
-    venv = libexec/"venv"
+    wheels = libexec/"wheels"
 
-    # A dedicated venv keeps the onnxruntime/fastembed stack out of the user's
-    # own site-packages, and pins it to the interpreter the lockfile was
-    # resolved against.
-    system python, "-m", "venv", venv
-    system venv/"bin/pip", "install", "--upgrade", "pip"
-
+    # Throwaway build venv, only to run pip; nothing from it is installed.
+    system python, "-m", "venv", buildpath/"build-venv"
+    pip = buildpath/"build-venv/bin/pip"
     # The pinned closure is the contract: the embedding library's exact version
     # determines the vector space every pack is written into (contract.py).
+    # --only-binary: post_install has no network and no build toolchain.
     # --require-hashes is added here once the lockfile carries hashes.
-    system venv/"bin/pip", "install", "-r", "sopack/requirements.lock"
-    system venv/"bin/pip", "install", "--no-deps", "./sopack"
+    system pip, "download", "--only-binary", ":all:", "--dest", wheels,
+           "-r", "sopack/requirements.lock"
+    system pip, "wheel", "--no-deps", "--wheel-dir", wheels, "./sopack"
+    libexec.install "sopack/requirements.lock"
 
     (bin/"sopack").write <<~SH
       #!/bin/bash
+      if [ ! -x "#{venv}/bin/python" ]; then
+        echo "sopack: #{venv} is missing — run: brew postinstall sopack" >&2
+        exit 1
+      fi
       exec "#{venv}/bin/python" -m sopack.cli "$@"
     SH
     chmod 0755, bin/"sopack"
   end
 
+  def post_install
+    python = Formula["python@3.11"].opt_bin/"python3.11"
+    # Rebuilt from scratch on every install/upgrade so no older version's
+    # packages survive in it.
+    rm_r venv if venv.exist?
+    system python, "-m", "venv", venv
+    system venv/"bin/pip", "install", "--no-index", "--find-links", libexec/"wheels",
+           "-r", libexec/"requirements.lock"
+    system venv/"bin/pip", "install", "--no-index", "--no-deps",
+           *Dir[libexec/"wheels/sopack-*.whl"]
+  end
+
   def caveats
     <<~EOS
+      The Python environment lives in #{venv} (outside the keg, see the
+      formula). `brew uninstall sopack` leaves it behind; remove it with:
+        rm -rf #{var}/sopack
+
       The first `sopack pack` downloads the ~2.2 GB embedding model into
       fastembed's cache, which defaults to a temp directory macOS may purge.
       Keep it by exporting a stable location, e.g. in ~/.zprofile:
@@ -58,6 +89,6 @@ class Sopack < Formula
   test do
     assert_match version.to_s, shell_output("#{bin}/sopack --version")
     # Imports every dependency in the pinned closure without loading the model.
-    system libexec/"venv/bin/python", "-c", "import fastembed, numpy, onnxruntime, sopack.pack"
+    system venv/"bin/python", "-c", "import fastembed, numpy, onnxruntime, sopack.pack"
   end
 end

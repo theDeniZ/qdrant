@@ -44,14 +44,17 @@ move the formula to a small `theDeniZ/homebrew-tap` repo after all.
 
 ## Releasing
 
-1. Bump the version in **both** `sopack/__init__.py` and `sopack/pyproject.toml`.
-2. Commit, then tag and push: `git tag sopack-v0.1.0 && git push origin sopack-v0.1.0`.
+1. Bump `__version__` in `sopack/__init__.py` — the only place the version lives
+   (`pyproject.toml` reads it from there).
+2. Commit **first**, then tag that commit and push both:
+   `git tag sopack-v0.1.2 && git push origin HEAD sopack-v0.1.2`.
+   A tag that doesn't match `__version__` fails the `build` job and publishes nothing.
 
 `.github/workflows/release-sopack.yml` then:
 
 | Job | Runner | Does |
 |---|---|---|
-| `build` | ubuntu | tag = package = pyproject version; installs from the lockfile exactly as the formula does; unit tests; `sopack --version`; `git archive` of `sopack/` → `sopack-<v>.tar.gz` + sha256 |
+| `build` | ubuntu | tag = `sopack.__version__`; installs from the lockfile exactly as the formula does; unit tests; `sopack --version`; `git archive` of `sopack/` → `sopack-<v>.tar.gz` + sha256 |
 | `brew` | macos-14 (arm64) | copies `Formula/sopack.rb` into a throwaway local tap pointing at the built tarball (`file://`), runs `brew install`, asserts `post_install` built the venv, runs `brew test` |
 | `publish` | ubuntu | only if both passed: creates the GitHub Release with the tarball, then rewrites `url`/`sha256` in `Formula/sopack.rb` on the default branch and pushes that commit |
 

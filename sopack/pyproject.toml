@@ -4,7 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sopack"
-version = "0.1.0"
+# Single source of truth: sopack/__init__.py (the release workflow checks the tag
+# against it).
+dynamic = ["version"]
 description = "Prepare and verify corpus import packs for the bible-sop Qdrant collections"
 requires-python = ">=3.11"
 # Runtime deps are deliberately NOT listed here as ranges. The pinned closure in
@@ -22,6 +24,9 @@ sopack = "sopack.cli:main"
 # finds `extract` as a TOP-LEVEL package and never installs `sopack` itself.
 package-dir = { "sopack" = "." }
 packages = ["sopack", "sopack.extract"]
+
+[tool.setuptools.dynamic]
+version = { attr = "sopack.__version__" }
 
 [tool.setuptools.package-data]
 sopack = ["schemas/*.json", "requirements.lock"]

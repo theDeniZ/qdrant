@@ -1,7 +1,7 @@
 name: Release sopack
 
 # Cut a release by pushing a tag `sopack-v<version>` whose version equals
-# sopack/__init__.py and sopack/pyproject.toml. The pipeline:
+# __version__ in sopack/__init__.py. The pipeline:
 #
 #   build    (linux)  version check, unit tests, tarball of sopack/
 #   brew     (macOS)  real `brew install` + `brew test` of that tarball through a
@@ -34,15 +34,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Check tag, package and pyproject versions agree
+      - name: Check the tag matches sopack/__init__.py
         id: version
         run: |
+          # pyproject.toml reads its version from sopack.__version__, so this
+          # is the only place a version lives.
           TAG_VERSION="${GITHUB_REF_NAME#sopack-v}"
           PKG_VERSION=$(python -c "import re,pathlib;print(re.search(r'__version__ = \"(.+)\"', pathlib.Path('sopack/__init__.py').read_text()).group(1))")
-          PYPROJECT_VERSION=$(python -c "import tomllib;print(tomllib.load(open('sopack/pyproject.toml','rb'))['project']['version'])")
-          echo "tag=$TAG_VERSION package=$PKG_VERSION pyproject=$PYPROJECT_VERSION"
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ] || [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]; then
-            echo "::error::version mismatch — bump sopack/__init__.py and sopack/pyproject.toml to $TAG_VERSION"
+          echo "tag=$TAG_VERSION package=$PKG_VERSION"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::version mismatch — set __version__ in sopack/__init__.py to $TAG_VERSION, commit, then re-tag"
             exit 1
           fi
           echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"

@@ -1,125 +1,154 @@
 name: Release sopack
 
+# Cut a release by pushing a tag `sopack-v<version>` whose version equals
+# sopack/__init__.py and sopack/pyproject.toml. The pipeline:
+#
+#   build    (linux)  version check, unit tests, tarball of sopack/
+#   brew     (macOS)  real `brew install` + `brew test` of that tarball through a
+#                     throwaway local tap — nothing is published if this fails
+#   publish  (linux)  GitHub Release with the tarball, then Formula/sopack.rb on
+#                     the default branch gets the new url + sha256
+#
+# This repository is itself the Homebrew tap (see Formula/README.md), so the
+# formula bump is a commit here, not a PR to another repo.
+
 on:
   push:
     tags:
       - "sopack-v*"
 
+concurrency:
+  group: release-sopack
+  cancel-in-progress: false
+
 jobs:
-  release:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha256: ${{ steps.tarball.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check tag, package and pyproject versions agree
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sopack-v}"
+          PKG_VERSION=$(python -c "import re,pathlib;print(re.search(r'__version__ = \"(.+)\"', pathlib.Path('sopack/__init__.py').read_text()).group(1))")
+          PYPROJECT_VERSION=$(python -c "import tomllib;print(tomllib.load(open('sopack/pyproject.toml','rb'))['project']['version'])")
+          echo "tag=$TAG_VERSION package=$PKG_VERSION pyproject=$PYPROJECT_VERSION"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ] || [ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]; then
+            echo "::error::version mismatch — bump sopack/__init__.py and sopack/pyproject.toml to $TAG_VERSION"
+            exit 1
+          fi
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Install exactly as the formula does
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install --upgrade pip
+          /tmp/venv/bin/pip install -r sopack/requirements.lock
+          /tmp/venv/bin/pip install --no-deps ./sopack
+
+      - name: Unit tests + CLI smoke
+        run: |
+          PYTHONPATH=. /tmp/venv/bin/python -m unittest discover -s sopack/tests -p 'test_*.py'
+          /tmp/venv/bin/sopack --version | grep -F "${{ steps.version.outputs.version }}"
+          # Run from outside the checkout so the INSTALLED package is imported.
+          cd /tmp && /tmp/venv/bin/python -c "import sopack.pack, sopack.extract, sopack.doctor"
+
+      - name: Build tarball
+        id: tarball
+        run: |
+          V=${{ steps.version.outputs.version }}
+          mkdir -p dist
+          # Tracked files of sopack/ only, under the single top-level dir
+          # Homebrew cd's into — the formula expects ./sopack inside it.
+          git archive --format=tar.gz --prefix="sopack-$V/" -o "dist/sopack-$V.tar.gz" HEAD sopack
+          (cd dist && sha256sum "sopack-$V.tar.gz" > "sopack-$V.tar.gz.sha256")
+          cat "dist/sopack-$V.tar.gz.sha256"
+          echo "sha256=$(cut -d' ' -f1 "dist/sopack-$V.tar.gz.sha256")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sopack-tarball
+          path: dist/
+
+  brew:
+    needs: build
+    # Apple Silicon + Sonoma: the oldest platform the pinned onnxruntime supports.
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sopack-tarball
+          path: dist
+
+      - name: Install through a throwaway local tap
+        env:
+          V: ${{ needs.build.outputs.version }}
+          SHA: ${{ needs.build.outputs.sha256 }}
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_FROM_API: "1"
+        run: |
+          brew tap-new --no-git ci/sopack
+          TAP="$(brew --repository)/Library/Taps/ci/homebrew-sopack"
+          perl -pe "s|^  url \".*\"|  url \"file://$GITHUB_WORKSPACE/dist/sopack-$V.tar.gz\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" \
+            Formula/sopack.rb > "$TAP/Formula/sopack.rb"
+          brew install --verbose ci/sopack/sopack
+          brew test --verbose ci/sopack/sopack
+          sopack --version
+
+  publish:
+    needs: [build, brew]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG="${{ github.ref }}"
-          VERSION="${TAG#refs/tags/sopack-v}"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag_name=sopack-v$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/download-artifact@v4
         with:
-          python-version: "3.11"
-
-      - name: Build tarball
-        run: |
-          VERSION=${{ steps.version.outputs.version }}
-
-          # Create distribution directory
-          mkdir -p dist/sopack-${VERSION}
-
-          # Copy the sopack package and requirements
-          cp -r sopack dist/sopack-${VERSION}/
-          cp -r app dist/sopack-${VERSION}/
-          cp requirements.txt sopack/requirements.lock dist/sopack-${VERSION}/
-          cp Dockerfile README.md docker-compose.yml dist/sopack-${VERSION}/
-
-          # Create the tarball
-          cd dist
-          tar -czf sopack-${VERSION}.tar.gz sopack-${VERSION}/
-
-          # Compute sha256
-          sha256sum sopack-${VERSION}.tar.gz > sopack-${VERSION}.tar.gz.sha256
-          cat sopack-${VERSION}.tar.gz.sha256
-
-      - name: Generate formula stanza
-        id: formula
-        run: |
-          VERSION=${{ steps.version.outputs.version }}
-          SHA256=$(cat dist/sopack-${VERSION}.tar.gz.sha256 | awk '{print $1}')
-
-          cat > /tmp/formula.txt << EOF
-          class Sopack < Formula
-            desc "Pack and verify corpus data for Qdrant import"
-            homepage "https://github.com/theDeniZ/qdrant"
-            url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v${VERSION}/sopack-${VERSION}.tar.gz"
-            sha256 "${SHA256}"
-            license "AGPL-3.0-or-later"
-
-            depends_on "python@3.11"
-
-            def install
-              venv = libexec/"venv"
-              system bin/"python3.11", "-m", "venv", venv
-              pip = venv/"bin/pip"
-
-              system pip, "install", "--upgrade", "pip"
-              system pip, "install", "-r", "sopack/requirements.lock"
-              system pip, "install", "--no-deps", "."
-
-              (bin/"sopack").write_text <<~EOS
-                #!/bin/bash
-                exec #{venv}/bin/python -m sopack.cli "\$@"
-              EOS
-              (bin/"sopack").chmod 0755
-            end
-
-            def post_install
-              system "#{bin}/sopack", "--version"
-            end
-
-            test do
-              system "#{bin}/sopack", "--help"
-            end
-          end
-          EOF
-
-          # Store for release notes
-          echo "formula=$SHA256" >> "$GITHUB_OUTPUT"
+          name: sopack-tarball
+          path: dist
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag_name }}
+          tag_name: ${{ github.ref_name }}
+          name: sopack ${{ needs.build.outputs.version }}
           files: |
-            dist/sopack-${{ steps.version.outputs.version }}.tar.gz
-            dist/sopack-${{ steps.version.outputs.version }}.tar.gz.sha256
+            dist/sopack-${{ needs.build.outputs.version }}.tar.gz
+            dist/sopack-${{ needs.build.outputs.version }}.tar.gz.sha256
           body: |
-            # sopack ${{ steps.version.outputs.version }}
-
-            ## Installation
+            ## Install (Apple Silicon, macOS 14+)
 
             ```bash
-            brew install theDeniZ/tap/sopack
+            brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant   # once
+            brew install theDeniZ/qdrant/sopack                            # or: brew upgrade sopack
+            sopack doctor
             ```
 
-            ## Update Formula
+            sha256 `${{ needs.build.outputs.sha256 }}`
 
-            To update the Homebrew formula in theDeniZ/homebrew-tap, use:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
-            ```ruby
-            url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v${{ steps.version.outputs.version }}/sopack-${{ steps.version.outputs.version }}.tar.gz"
-            sha256 "${{ steps.formula.outputs.formula }}"
-            ```
-
-            Then commit and push to the tap repository.
-
-            ## Changelog
-
-            See https://github.com/theDeniZ/qdrant/releases/tag/${{ steps.version.outputs.tag_name }} for the full changelog.
+      - name: Point Formula/sopack.rb at this release
+        env:
+          V: ${{ needs.build.outputs.version }}
+          SHA: ${{ needs.build.outputs.sha256 }}
+        run: |
+          URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sopack-$V.tar.gz"
+          perl -pi -e "s|^  url \".*\"|  url \"$URL\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" Formula/sopack.rb
+          git diff --stat
+          if git diff --quiet; then echo "formula already current"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "sopack: formula -> $V"
+          git push origin HEAD:${{ github.event.repository.default_branch }}

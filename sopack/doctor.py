@@ -59,10 +59,30 @@ def _check_numpy() -> _Result:
 
 
 def _cache_root() -> Path:
+    """The directory fastembed itself will read the model from.
+
+    Mirrors ``fastembed.common.utils.define_cache_dir(None)`` as of the
+    contract-pinned fastembed (``_check_fastembed`` fails on any other
+    version): ``$FASTEMBED_CACHE_PATH``, else ``<tempdir>/fastembed_cache``.
+    Mirrored rather than called because the real function ``mkdir``s the
+    directory, which would make a missing cache impossible to report. It is
+    NOT ``~/.cache/fastembed`` and NOT the Hugging Face hub cache — fastembed
+    passes its own ``cache_dir`` to ``snapshot_download``, so the HF-style
+    ``models--*`` layout lives under this root."""
     env = os.environ.get("FASTEMBED_CACHE_PATH")
     if env:
         return Path(env)
-    return Path.home() / ".cache" / "fastembed"
+    return Path(tempfile.gettempdir()) / "fastembed_cache"
+
+
+def _temp_note(root: Path) -> str:
+    """macOS purges ``$TMPDIR`` (``/var/folders/…/T``) of files unused for a
+    few days, so the default location can silently cost another 19-minute
+    download. Worth saying; not a failure."""
+    if os.environ.get("FASTEMBED_CACHE_PATH"):
+        return ""
+    return ("; default temp location — the OS may purge it, set "
+            "FASTEMBED_CACHE_PATH to keep the model")
 
 
 def _resolve_hf_repo(model_id: str) -> str | None:
@@ -90,7 +110,9 @@ def _resolve_hf_repo(model_id: str) -> str | None:
 def _check_model_cache() -> _Result:
     root = _cache_root()
     if not root.is_dir():
-        return _Result("model cache", False, f"{root} does not exist")
+        return _Result("model cache", False,
+                        f"{root} does not exist — the model is not downloaded "
+                        f"yet (the first load fetches ~2.2 GB){_temp_note(root)}")
 
     model_id = contract.EMBEDDING["model"]
     hf_repo = _resolve_hf_repo(model_id)
@@ -108,8 +130,9 @@ def _check_model_cache() -> _Result:
                             f"{expected} present but no model.onnx under it "
                             f"(resolved via registry: {model_id!r} -> {hf_repo!r})")
         return _Result("model cache", True,
-                        f"{expected.name} ({len(onnx_files)} model.onnx file(s), "
-                        f"resolved via registry: {model_id!r} -> {hf_repo!r})")
+                        f"{expected} ({len(onnx_files)} model.onnx file(s), "
+                        f"resolved via registry: {model_id!r} -> {hf_repo!r})"
+                        f"{_temp_note(root)}")
 
     # Registry lookup failed — fall back to "is anything at all cached",
     # and say plainly that this is the weaker check, not silently degrade.
@@ -155,6 +178,7 @@ def _check_model_loads(quick: bool) -> _Result:
             hint = " — this is failure #14, the onnxruntime external-data trap"
         return _Result("model loads", False, f"{type(exc).__name__}: {msg}{hint}")
     vec = vectors[0]
+    where = getattr(getattr(model, "model", None), "_model_dir", None)
     dim = len(vec.tolist() if hasattr(vec, "tolist") else vec)
     if dim != contract.VECTOR_SIZE:
         return _Result("model loads", False,
@@ -162,7 +186,8 @@ def _check_model_loads(quick: bool) -> _Result:
                         f"contract requires {contract.VECTOR_SIZE}")
     return _Result("model loads", True,
                     f"loaded {contract.EMBEDDING['model']}, embedded 1 string, "
-                    f"dim {dim} matches contract")
+                    f"dim {dim} matches contract"
+                    + (f", from {where}" if where else ""))
 
 
 def _check_cpu_count() -> _Result:
@@ -192,7 +217,14 @@ CHECKS = (
 
 def run(quick: bool = False) -> list[_Result]:
     results = [check() for check in CHECKS]
-    results.append(_check_model_loads(quick))
+    loads = _check_model_loads(quick)
+    results.append(loads)
+    # A successful load downloads a missing model into the same cache, so
+    # the earlier cache verdict may be stale — re-check rather than report a
+    # FAIL that the load just fixed.
+    if loads.ok and not quick:
+        results = [_check_model_cache() if r.name == "model cache" and not r.ok
+                   else r for r in results]
     return results
 
 

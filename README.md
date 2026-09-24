@@ -17,7 +17,7 @@ writings (12 languages), offered in three parts:
 │   └── data/sop_books.json SoP book code → title tables (scripts/export_book_titles.py)
 ├── sopack/                 CLI for extracting and packing corpus data (Python 3.11)
 ├── Dockerfile, docker-compose.yml, requirements.txt
-├── homebrew/               sopack.rb formula + tap setup guide
+├── Formula/                sopack.rb — this repo is the Homebrew tap (Formula/README.md)
 ├── .github/workflows/      release-sopack.yml (GitHub Actions)
 ├── .claude-plugin/         marketplace.json → ./plugin
 ├── plugin/                 the bible-sop plugin (.mcp.json + skills/)
@@ -97,8 +97,8 @@ the Mac (where fastembed is available). The workflow is:
 - **[docs/IMPORT-PIPELINE-PLAN.md](docs/IMPORT-PIPELINE-PLAN.md)** — full design, stages,
   canary probes, and rollback / restore
 - **[docs/IMPORT-API.md](docs/IMPORT-API.md)** — the server's import HTTP routes
-- **sopack CLI** — install via `brew install theDeniZ/tap/sopack` or from a GitHub Release
-  (see **[homebrew/README.md](homebrew/README.md)** for details)
+- **sopack CLI** — `brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant && brew install
+  theDeniZ/qdrant/sopack`; releasing and tap details in **[Formula/README.md](Formula/README.md)**
 
 ## Development
 

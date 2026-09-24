@@ -17,14 +17,18 @@ name.sopack                 ← upload in the admin UI
 ## Install
 
 ```bash
-brew install theDeniZ/tap/sopack          # once the tap is published
+# Apple Silicon, macOS 14+ — this repo is the tap (see ../Formula/README.md):
+brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant
+brew install theDeniZ/qdrant/sopack
 # or, from a checkout:
 python3.11 -m venv .venv && .venv/bin/pip install -r requirements.lock
 .venv/bin/pip install --no-deps .
 ```
 
 Run `sopack doctor` first on a new machine. It checks the interpreter, that the
-installed fastembed matches the contract, that the model cache resolves, and — by
+installed fastembed matches the contract, that the model is in the cache fastembed
+will actually read (`$FASTEMBED_CACHE_PATH`, else `$TMPDIR/fastembed_cache` — set the
+variable on a Mac, macOS purges the temp dir), and — by
 actually loading the model and embedding a string — that it produces 1024-dim vectors.
 That last check costs ~30 s and is the point of the command; `--quick` skips it and
 says so rather than reporting a bare pass.

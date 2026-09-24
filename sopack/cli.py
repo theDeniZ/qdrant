@@ -172,7 +172,9 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    from . import __version__
     ap = argparse.ArgumentParser(prog="sopack", description=__doc__)
+    ap.add_argument("--version", action="version", version=f"sopack {__version__}")
     sub = ap.add_subparsers(dest="command", required=True)
 
     p_extract = sub.add_parser("extract", help="source -> reviewable book.json")

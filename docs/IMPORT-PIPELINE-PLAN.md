@@ -20,7 +20,7 @@ satisfies it, with every open question settled.
 | D6 | Safety net | **Qdrant snapshot + per-job id ledger.** Snapshot before any mutation; `undo.jsonl` + created-id list for exact rollback. |
 | D7 | Scope, v1 | The `sop` collection: **English works** and **other languages** (de/ja/ko style, including the de↔en `aligned` map). |
 | D8 | Bible | The format carries a **`profile`** field from day one. `sop` is implemented in v1; `bible` is fully specified here and implemented in phase 4, reusing the entire transport, job and safety layer. |
-| D9 | CLI home | `qdrant/sopack/`, sharing one `contract.py` with the server. Shipped by GitHub Release + a `theDeniZ/homebrew-tap` formula. |
+| D9 | CLI home | `qdrant/sopack/`, sharing one `contract.py` with the server. Shipped by GitHub Release + `Formula/sopack.rb` in this repo, which doubles as the Homebrew tap (no separate tap repo). |
 
 ---
 
@@ -347,13 +347,18 @@ sopack verify pioneers.sopack                 # checksums, schema, id rule, prob
 
 - Source lives at `qdrant/sopack/`, versioned with the server.
 - A GitHub Release from the `qdrant` repo publishes `sopack-<version>.tar.gz`.
-- `theDeniZ/homebrew-tap` holds `Formula/sopack.rb`: `depends_on "python@3.11"`,
-  install into a `libexec` virtualenv from a **hash-pinned `requirements.lock`**
-  (fastembed, onnxruntime, tokenizers, huggingface-hub, numpy). That lockfile is R7.
-- `brew install theDeniZ/tap/sopack`; `brew upgrade` for a new release.
-- The e5-large model cache defaults to `~/Library/Caches/sopack/fastembed`. `sopack
-  doctor` checks the model is present and healthy — including the onnxruntime ≥1.23
-  external-data trap (#14), *before* a 19-minute download rather than after.
+- The `qdrant` repo is itself the tap: `Formula/sopack.rb` (`depends_on "python@3.11"`,
+  arm64 + macOS 14 — the pinned onnxruntime has no other macOS wheel) installs into a
+  `libexec` virtualenv from `requirements.lock` (fastembed, onnxruntime, tokenizers,
+  huggingface-hub, numpy; hash pins still to add). That lockfile is R7.
+- `brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant` once, then
+  `brew install theDeniZ/qdrant/sopack`; `brew upgrade` for a new release. The release
+  workflow `brew install`s every build on a macOS runner before publishing it, then
+  commits the new `url`/`sha256` to the formula. See `Formula/README.md`.
+- The e5-large model cache is fastembed's own: `$FASTEMBED_CACHE_PATH`, else
+  `$TMPDIR/fastembed_cache` (the formula's caveats recommend setting the variable, as
+  macOS purges the temp dir). `sopack doctor` checks that exact directory and that the
+  model is healthy — including the onnxruntime ≥1.23 external-data trap (#14).
 
 ---
 
@@ -497,7 +502,7 @@ aborts the job, which is the fail-safe working as designed.
 | R4 real dry-run | §6.4, scratch collection, real embed/upsert/retrieve |
 | R5 idempotent, resumable | deterministic ids; resumable upload; resumable job; `(book_code, slug)` identity |
 | R6 additive, never destructive | stage 9 shrink guard; full rebuild is not reachable from the server at all |
-| R7 pinned + verified deps | `requirements.lock` in the tap; `sopack doctor`; `pack` imports everything up front |
+| R7 pinned + verified deps | `requirements.lock` in `sopack/`; `sopack doctor`; `pack` imports everything up front |
 | R8 no silent partial success | every stage asserts its own output; stage 10 proves retrievability |
 | R9 self-contained | pack is self-describing; `generator/data/sop` is an optional `extract` *source*, never required |
 | R10 run log and provenance | `job.json` + `log.ndjson` + `report.md`, operator and timings |
@@ -567,10 +572,12 @@ indexes and verification rules are specified and frozen in `contract.py`; what i
 missing is `extract --kind bible_json` from `generator/data/bibles/<name>.json` and the
 re-import path. No transport, job, snapshot or UI work — that is the dividend of D8.
 
-**Phase 5 — tap. ◻ PARTIAL.** `homebrew/sopack.rb`, `homebrew/README.md` and
-`.github/workflows/release-sopack.yml` exist but are **unvalidated** — a formula can
-only really be tested by cutting a release and installing it. Until then, install from
-a checkout.
+**Phase 5 — tap. ◻ PARTIAL.** `Formula/sopack.rb` (this repo is the tap),
+`Formula/README.md` and `.github/workflows/release-sopack.yml` exist. The package now
+installs correctly (`pyproject.toml` used to ship only a top-level `extract` package and
+no `sopack`) and the lockfile resolves for macOS 14 arm64. **No release has been cut
+yet**: the workflow's macOS `brew install` job is the first real validation of the
+formula. Until then, install from a checkout.
 
 ---
 

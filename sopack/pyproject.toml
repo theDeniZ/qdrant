@@ -17,13 +17,11 @@ dependencies = []
 sopack = "sopack.cli:main"
 
 [tool.setuptools]
-# The package directory IS this directory, so it is mapped explicitly rather
-# than discovered (discovery from inside the package would find nothing).
+# The package directory IS this directory, so it is mapped explicitly and the
+# packages are listed rather than discovered: discovery from inside the package
+# finds `extract` as a TOP-LEVEL package and never installs `sopack` itself.
 package-dir = { "sopack" = "." }
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["extract*"]
+packages = ["sopack", "sopack.extract"]
 
 [tool.setuptools.package-data]
 sopack = ["schemas/*.json", "requirements.lock"]

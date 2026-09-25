@@ -37,8 +37,10 @@ def _vec(rng) -> list[float]:
 
 def _finish(w, rng, n_probe=1):
     w.set_books([{"book_code": "TT", "lang": "en", "points": w.count}])
-    w.set_probe([{"id": f"canary-{i}", "collection": "sop"} for i in range(n_probe)],
-                [_vec(rng) for _ in range(n_probe)])
+    w.set_probe([{"id": f"fixture-{i}", "profile": "sop"} for i in range(n_probe)],
+                [_vec(rng) for _ in range(n_probe)],
+                self_check={"n": n_probe, "min_cosine": 1.0, "mean_cosine": 1.0,
+                           "threshold": contract.PACK_MIN_COSINE})
 
 
 class TestRoundTrip(unittest.TestCase):

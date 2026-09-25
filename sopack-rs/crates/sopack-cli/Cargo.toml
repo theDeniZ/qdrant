@@ -1,0 +1,31 @@
+[package]
+name = "sopack-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "sopack"
+path = "src/main.rs"
+
+[dependencies]
+sopack-contract = { workspace = true }
+sopack-format = { workspace = true }
+sopack-book = { workspace = true }
+sopack-extract = { workspace = true }
+sopack-embed = { workspace = true }
+sopack-progress = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tempfile = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[features]
+coreml = ["sopack-embed/coreml"]
+cuda = ["sopack-embed/cuda"]

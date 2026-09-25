@@ -13,4 +13,4 @@ that needs fastembed lives in ``pack``.
 See ``docs/IMPORT-PIPELINE-PLAN.md``.
 """
 
-__version__ = "0.1.4"
+__version__ = "0.2.0"

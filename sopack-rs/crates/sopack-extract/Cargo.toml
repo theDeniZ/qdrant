@@ -1,0 +1,42 @@
+[package]
+name = "sopack-extract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+sopack-book = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+# `meta.toml` sidecars (propose::Proposal writes a template, `meta::load`
+# reads it back) — TOML is the plan's chosen sidecar format (§3.5), kept
+# distinct from the JSON `book.json`/`propose --json` surface on purpose: a
+# sidecar is hand-edited by an agent/human, and TOML's comments are how
+# `write_template` documents unresolved candidates inline (§ meta.rs).
+toml = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+zip = { workspace = true }
+quick-xml = { workspace = true }
+# `regex` (no lookbehind/backreferences) cannot reproduce
+# `sopack/extract/chunk.py`'s SENT_RE lookbehind splitter or
+# `sopack/extract/epub.py`'s `<(script|style)\b.*?</\1>` /
+# `<(p|h[1-6]|li|blockquote)\b[^>]*>(.*?)</\1>` backreferenced tag matching.
+# fancy-regex is a backtracking engine (like CPython's `re`) that supports
+# both, so every ported pattern uses it uniformly instead of splitting the
+# crate across two regex engines.
+fancy-regex = "0.14"
+# HTML5 named + numeric character reference decoding, matching
+# `html.unescape` closely enough for extracted book text (named entities
+# like &mdash;/&nbsp;/&hellip; are common in archive.org/Gutenberg EPUBs).
+html-escape = "0.2"
+# NFD decomposition for `propose::normalize_title` — strips diacritics so a
+# registry title and a freshly-scanned title-page candidate compare equal
+# regardless of which of two independent transcriptions carries the accent
+# marks.
+unicode-normalization = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -6,8 +6,8 @@ writings (12 languages), offered in three parts:
 1. **MCP server** (`app/`, Docker): six lookup tools over Streamable HTTP, backed
    by an existing Qdrant instance, with per-client API keys you create and revoke
    in a small admin UI.
-2. **Plugin** (`plugin/`): the connector plus three skills: `corpus-lookup`,
-   `quote-verify`, `quote-translate`.
+2. **Plugin** (`plugin/`): the connector plus four skills: `corpus-lookup`,
+   `quote-verify`, `quote-translate`, `corpus-prep`.
 3. **Project setup** (`docs/`): instructions for new projects and for adding this
    to existing ones (claude.ai and Claude Code).
 
@@ -86,12 +86,19 @@ Edit `references/*.md` and `plugin/skills/*/SKILL.md`, never the copied
 
 ## Corpus import
 
-Add books to the SoP or Bible collections using the **sopack** CLI, which runs on
-the Mac (where fastembed is available). The workflow is:
+Add books to the SoP or Bible collections using the **sopack** CLI
+(`sopack-rs/`, a single Rust binary — macOS or Linux, no Python needed to
+build or verify a pack). The workflow is:
 
-1. Extract a book (EPUB, Markdown, JSON) into a reviewable intermediate format
-2. Pack it with embeddings into a `.sopack` file
+1. Extract a book (EPUB, Markdown, text, sop_json) into a reviewable
+   intermediate `book.json`, with metadata resolved via `sopack propose`
+2. Pack it with embeddings into a `.sopack` file, then verify it offline
 3. Upload and import it via the admin UI with a dry-run proof and rollback safety
+
+Steps 1–2 (metadata research through a verified pack) are the
+**`corpus-prep`** plugin skill — it drives `sopack propose/extract/inspect/
+pack/verify` end to end and hands the finished pack to you; it never uploads
+or imports (step 3 is always a manual, confirmed action).
 
 **References:**
 - **[docs/IMPORT-PIPELINE-PLAN.md](docs/IMPORT-PIPELINE-PLAN.md)** — full design, stages,

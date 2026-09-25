@@ -1,0 +1,13 @@
+{
+  "label": "mas_t4",
+  "book_code": "MAS",
+  "blocks": 290,
+  "threads": "default (4)",
+  "batch_tokens": "default (512)",
+  "wall_s": 195.828,
+  "embed_only_elapsed_s": 161.7,
+  "embed_only_tokens": 20746,
+  "blocks_per_s": 1.793,
+  "tokens_per_s": 128.3,
+  "note": "throughput notably lower than TTL at the same settings; machine was shared with other concurrent agents during this run (RAM/CPU contention), not an isolated measurement"
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/contract-list.v1.json",
+  "title": "sopack contract list output (v1)",
+  "description": "The JSON `sopack contract list --json` prints to stdout: the contract ids this binary embeds.",
+  "type": "object",
+  "required": ["embedded", "default"],
+  "additionalProperties": false,
+  "properties": {
+    "embedded": { "type": "array", "items": { "type": "string" } },
+    "default": { "type": "string" }
+  }
+}

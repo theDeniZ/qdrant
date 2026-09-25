@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/model-path.v1.json",
+  "title": "sopack model path output (v1)",
+  "description": "The JSON `sopack model path --json` prints to stdout. Produced by crates/sopack-cli/src/commands/model.rs.",
+  "type": "object",
+  "required": ["path", "exists"],
+  "additionalProperties": false,
+  "properties": {
+    "path": { "type": "string" },
+    "exists": { "type": "boolean" }
+  }
+}

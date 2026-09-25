@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/calibrate.v1.json",
+  "title": "sopack calibrate output (v1)",
+  "description": "The JSON `sopack calibrate --json` prints to stdout. Exit code is 0 on pass, 5 on fail (SOPACK-1.0-PLAN.md §3.5) — `pass` in this body always reflects the same verdict. Produced by crates/sopack-cli/src/commands/calibrate.rs (`CalibrateResult`).",
+  "type": "object",
+  "required": ["device", "n", "min_cosine", "mean_cosine", "threshold", "pass", "per_entry"],
+  "additionalProperties": false,
+  "properties": {
+    "device": { "enum": ["cpu", "coreml", "cuda", "auto"] },
+    "n": { "type": "integer", "minimum": 0 },
+    "min_cosine": { "type": "number" },
+    "mean_cosine": { "type": "number" },
+    "threshold": { "type": "number" },
+    "pass": { "type": "boolean" },
+    "per_entry": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "prefixItems": [{ "type": "string" }, { "type": "number" }],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  }
+}

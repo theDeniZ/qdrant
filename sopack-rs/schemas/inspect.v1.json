@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/inspect.v1.json",
+  "title": "sopack inspect output (v1)",
+  "description": "The JSON `sopack inspect <book.json> --json` prints to stdout. Produced by crates/sopack-book/src/inspect.rs (`InspectReport`).",
+  "type": "object",
+  "required": ["file", "profile", "id_rule", "blocks", "stats", "paragraphs", "collided_para_keys", "split_blocks", "book_code", "lang", "title"],
+  "additionalProperties": false,
+  "properties": {
+    "file": { "type": "string" },
+    "profile": { "type": "string" },
+    "id_rule": { "type": "string" },
+    "blocks": { "type": "integer", "minimum": 0 },
+    "stats": { "type": "object" },
+    "paragraphs": { "type": "integer", "minimum": 0 },
+    "collided_para_keys": { "type": "integer", "minimum": 0 },
+    "split_blocks": { "type": "integer", "minimum": 0 },
+    "book_code": {},
+    "lang": {},
+    "title": {}
+  }
+}

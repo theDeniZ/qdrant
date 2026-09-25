@@ -116,6 +116,26 @@ def patched_book_module():
             sys.modules.pop("sopack.book", None)
 
 
+def fake_calibration(texts: list[str], *, dim: int = 1024, profile: str = "sop") -> dict:
+    """A calibration fixture doc whose stored vectors are exactly what
+    :class:`FakeTextEmbedding` will (re)produce for ``passage_prefix + text``
+    — so a test's calibration self-check (``sopack.pack.pack``'s first step)
+    passes at cosine 1.0 without touching the real model. Import
+    ``contract.EMBEDDING["passage_prefix"]`` lazily to avoid a module-level
+    dependency loop with ``sopack.contract``."""
+    from sopack import contract
+    prefix = contract.EMBEDDING["passage_prefix"]
+    embedder = FakeTextEmbedding(dim=dim)
+    entries = []
+    for i, text in enumerate(texts):
+        vector = next(iter(embedder.embed([prefix + text])))
+        entries.append({"id": f"fixture-{i}", "profile": profile, "uid": None,
+                        "lang": "en", "note": f"test fixture {i}", "text": text,
+                        "vector": vector})
+    return {"schema": "sopack.calibration/1", "contract": "e5-large-v1",
+            "entries": entries}
+
+
 class FakeTextEmbedding:
     """Stands in for ``fastembed.TextEmbedding``: deterministic, instant,
     seeded off each text's hash so the same text always gets the same

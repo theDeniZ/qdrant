@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/progress-event.v1.json",
+  "title": "sopack progress event (v1)",
+  "description": "One NDJSON line emitted on stderr by `sopack --progress json` (SOPACK-1.0-PLAN.md §3.4). Produced by crates/sopack-progress/src/event.rs — keep the two in sync.",
+  "type": "object",
+  "required": ["v", "event"],
+  "properties": {
+    "v": { "const": 1 },
+    "event": { "enum": ["stage_start", "progress", "stage_end", "warning", "done"] }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "event": { "const": "stage_start" },
+        "stage": { "type": "string" },
+        "total": { "type": "integer", "minimum": 0 },
+        "unit": { "$ref": "#/$defs/unit" }
+      },
+      "required": ["stage", "total", "unit"]
+    },
+    {
+      "properties": {
+        "event": { "const": "progress" },
+        "stage": { "type": "string" },
+        "done": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "unit": { "$ref": "#/$defs/unit" },
+        "pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "rate_per_s": { "type": ["number", "null"] },
+        "eta_s": { "type": ["number", "null"] }
+      },
+      "required": ["stage", "done", "total", "unit", "pct"]
+    },
+    {
+      "properties": {
+        "event": { "const": "stage_end" },
+        "stage": { "type": "string" },
+        "done": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "unit": { "$ref": "#/$defs/unit" },
+        "elapsed_s": { "type": "number", "minimum": 0 }
+      },
+      "required": ["stage", "done", "total", "unit", "elapsed_s"]
+    },
+    {
+      "properties": {
+        "event": { "const": "warning" },
+        "stage": { "type": ["string", "null"] },
+        "message": { "type": "string" }
+      },
+      "required": ["message"]
+    },
+    {
+      "properties": {
+        "event": { "const": "done" },
+        "elapsed_s": { "type": "number", "minimum": 0 },
+        "pct": { "const": 100 }
+      },
+      "required": ["elapsed_s", "pct"]
+    }
+  ],
+  "$defs": {
+    "unit": { "enum": ["bytes", "items", "blocks", "tokens", "checks"] }
+  }
+}

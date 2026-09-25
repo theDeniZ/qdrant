@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/schema-list.v1.json",
+  "title": "sopack schema --list output (v1)",
+  "description": "The JSON `sopack schema --list --json` prints to stdout: every schema name `sopack schema <name>` accepts.",
+  "type": "object",
+  "required": ["schemas"],
+  "additionalProperties": false,
+  "properties": {
+    "schemas": { "type": "array", "items": { "type": "string" } }
+  }
+}

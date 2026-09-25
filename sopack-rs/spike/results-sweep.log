@@ -1,0 +1,5 @@
+budget=0      batches=192    70.2s  2.73 blocks/s min_cos_vs_stored=1.0000000
+budget=512    batches=70     70.6s  2.72 blocks/s min_cos_vs_stored=1.0000000
+budget=1024   batches=31     71.3s  2.69 blocks/s min_cos_vs_stored=1.0000000
+budget=2048   batches=16     76.4s  2.51 blocks/s min_cos_vs_stored=1.0000000
+budget=8192   batches=5      98.0s  1.96 blocks/s min_cos_vs_stored=1.0000000

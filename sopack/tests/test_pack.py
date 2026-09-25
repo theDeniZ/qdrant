@@ -33,9 +33,8 @@ from sopack import contract  # noqa: E402
 from sopack.format import PackReader  # noqa: E402
 
 
-def _canaries(n=2):
-    return [{"id": f"canary-{i}", "collection": "sop", "text": f"canary text {i}"}
-            for i in range(n)]
+def _calibration(n=2):
+    return _helpers.fake_calibration([f"fixture text {i}" for i in range(n)])
 
 
 class PackTests(unittest.TestCase):
@@ -57,11 +56,12 @@ class PackTests(unittest.TestCase):
         book2 = _helpers.make_book(_book_mod, lang="en", book_code="GC",
                                     n_blocks=2, title="The Great Controversy",
                                     author="E. G. White", year=1888)
-        canaries = _canaries(3)
+        calibration = _calibration(3)
 
         with self._patch_embedder():
             manifest = pack_mod.pack(
-                [(book1, "sha-hsfd"), (book2, "sha-gc")], self.out, canaries,
+                [(book1, "sha-hsfd"), (book2, "sha-gc")], self.out,
+                calibration=calibration,
                 batch_size=2, workers=1, progress=lambda *_: None)
 
         self.assertEqual(manifest["counts"]["points"], 5)
@@ -88,7 +88,7 @@ class PackTests(unittest.TestCase):
         book = _helpers.make_book(_book_mod, lang="en", book_code="X", n_blocks=2)
         with self._patch_embedder(dim=7):
             with self.assertRaises(pack_mod.PackBuildError) as ctx:
-                pack_mod.pack([(book, None)], self.out, _canaries(1),
+                pack_mod.pack([(book, None)], self.out, calibration=_calibration(1),
                               workers=1, progress=lambda *_: None)
         self.assertIn("dimension", str(ctx.exception))
         self.assertFalse(self.out.exists(), "no file should be left on a failed pack")
@@ -97,25 +97,28 @@ class PackTests(unittest.TestCase):
         book = _helpers.make_book(_book_mod, lang="en", book_code="X", n_blocks=1)
         with mock.patch.object(pack_mod.fastembed, "__version__", "0.5.1"):
             with self.assertRaises(pack_mod.PackBuildError) as ctx:
-                pack_mod.pack([(book, None)], self.out, _canaries(1),
+                pack_mod.pack([(book, None)], self.out, calibration=_calibration(1),
                               workers=1, progress=lambda *_: None)
         self.assertIn("0.5.1", str(ctx.exception))
         self.assertFalse(self.out.exists())
 
     def test_probe_written_and_readable(self):
         book = _helpers.make_book(_book_mod, lang="en", book_code="X", n_blocks=2)
-        canaries = _canaries(4)
+        calibration = _calibration(4)
         with self._patch_embedder():
-            manifest = pack_mod.pack([(book, None)], self.out, canaries,
+            manifest = pack_mod.pack([(book, None)], self.out, calibration=calibration,
                                       workers=1, progress=lambda *_: None)
 
         probe = manifest["probe"]
         self.assertIsNotNone(probe)
-        self.assertEqual(len(probe["canaries"]), 4)
-        got_ids = {c["id"] for c in probe["canaries"]}
-        self.assertEqual(got_ids, {c["id"] for c in canaries})
-        for c in probe["canaries"]:
-            self.assertEqual(c["cosine_expected_min"], contract.PROBE_MIN_COSINE)
+        self.assertEqual(probe["kind"], "calibration")
+        self.assertEqual(probe["fixture_sha256"], contract.calibration_fixture_sha256(calibration))
+        self.assertEqual(len(probe["entries"]), 4)
+        got_ids = {e["id"] for e in probe["entries"]}
+        self.assertEqual(got_ids, {e["id"] for e in calibration["entries"]})
+        self.assertEqual(probe["self_check"]["n"], 4)
+        self.assertGreaterEqual(probe["self_check"]["min_cosine"], contract.PACK_MIN_COSINE)
+        self.assertEqual(probe["self_check"]["threshold"], contract.PACK_MIN_COSINE)
 
         with PackReader(self.out) as reader:
             reader.check()
@@ -133,7 +136,8 @@ class PackTests(unittest.TestCase):
             title="Steps to Christ", author="E. G. White", year=1892)
 
         with self._patch_embedder():
-            pack_mod.pack([(de_book, None), (en_book, None)], self.out, _canaries(1),
+            pack_mod.pack([(de_book, None), (en_book, None)], self.out,
+                          calibration=_calibration(1),
                           workers=1, progress=lambda *_: None)
 
         with PackReader(self.out) as reader:
@@ -149,12 +153,13 @@ class PackTests(unittest.TestCase):
         self.assertEqual(titles["en"]["SC"]["year"], 1892)
         self.assertNotIn("en_code", titles["en"]["SC"])  # English never gets one
 
-    def test_no_canaries_refused(self):
+    def test_no_calibration_entries_refused(self):
         book = _helpers.make_book(_book_mod, lang="en", book_code="X", n_blocks=1)
         with self._patch_embedder():
             with self.assertRaises(pack_mod.PackBuildError):
-                pack_mod.pack([(book, None)], self.out, [], workers=1,
-                              progress=lambda *_: None)
+                pack_mod.pack([(book, None)], self.out,
+                              calibration={"schema": "sopack.calibration/1", "entries": []},
+                              workers=1, progress=lambda *_: None)
 
     def test_mixed_id_rule_refused(self):
         book1 = _helpers.make_book(_book_mod, lang="en", book_code="A", n_blocks=1,
@@ -163,9 +168,30 @@ class PackTests(unittest.TestCase):
                                     id_rule="sop/plain")
         with self._patch_embedder():
             with self.assertRaises(pack_mod.PackBuildError) as ctx:
-                pack_mod.pack([(book1, None), (book2, None)], self.out, _canaries(1),
+                pack_mod.pack([(book1, None), (book2, None)], self.out,
+                              calibration=_calibration(1),
                               workers=1, progress=lambda *_: None)
         self.assertIn("id_rule", str(ctx.exception))
+
+    def test_calibration_below_threshold_refused_before_any_book_embedded(self):
+        """Acceptance criterion (SOPACK-AUTONOMY.md §5.3): pack fails fast,
+        before embedding any book, when the calibration self-check fails —
+        simulated here the same way a real pooling/library regression would
+        show up: the fixture's committed vector no longer matches what this
+        machine's embedder produces for that text."""
+        book = _helpers.make_book(_book_mod, lang="en", book_code="X", n_blocks=1)
+        calibration = _calibration(2)
+        # Corrupt one fixture vector so it no longer matches FakeTextEmbedding's
+        # deterministic output for that text — exactly what a drifted pooling
+        # implementation would look like from the outside.
+        calibration["entries"][0]["vector"] = [0.0] * contract.VECTOR_SIZE
+
+        with self._patch_embedder():
+            with self.assertRaises(pack_mod.CalibrationFailed) as ctx:
+                pack_mod.pack([(book, None)], self.out, calibration=calibration,
+                              workers=1, progress=lambda *_: None)
+        self.assertIn("calibration self-check FAILED", str(ctx.exception))
+        self.assertFalse(self.out.exists(), "no file should be left on a failed calibration")
 
 
 if __name__ == "__main__":

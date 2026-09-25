@@ -1,0 +1,335 @@
+{
+  "schema": "sopack.book/1",
+  "profile": "sop",
+  "source": {
+    "file": "pd-books/converted/andrews__why-do-you-swear__1861__archive.epub",
+    "sha256": "79150c4fa5cfcc80cd467fff315dfa92052f5e37500129e059b8c60ce4eb7e8a",
+    "kind": "epub",
+    "acquired_from": null,
+    "rights": "Public domain"
+  },
+  "book": {
+    "book_code": null,
+    "lang": "en",
+    "book_pair": null,
+    "title": "Why Do You Swear?",
+    "author": "J. N. Andrews",
+    "year": 1861,
+    "slug": null,
+    "corpus": null,
+    "page_kind": "chapter"
+  },
+  "id_rule": "sop/seq",
+  "alignment": null,
+  "stats": {
+    "blocks_in": 37,
+    "blocks_out": 23,
+    "dropped": 14,
+    "damage": 0.03717201166180758,
+    "words": 1366,
+    "dropped_detail": [
+      {
+        "para_key": "1.1",
+        "reason": "too short (2 word(s) < 8)",
+        "text": "Part 1"
+      },
+      {
+        "para_key": "1.2",
+        "reason": "too short (1 word(s) < 8)",
+        "text": "1'"
+      },
+      {
+        "para_key": "1.3",
+        "reason": "too short (4 word(s) < 8)",
+        "text": "WHY DO JOU SWEAR"
+      },
+      {
+        "para_key": "1.6",
+        "reason": "too short (4 word(s) < 8)",
+        "text": "' thase heads \\"
+      },
+      {
+        "para_key": "1.11",
+        "reason": "too short (5 word(s) < 8)",
+        "text": "Then why do you swear?"
+      },
+      {
+        "para_key": "1.12",
+        "reason": "too short (5 word(s) < 8)",
+        "text": "\"3.But farther. Yoyihihve dimoral na-"
+      },
+      {
+        "para_key": "1.16",
+        "reason": "junk-char ratio 2.5% over 2.0% gate",
+        "text": "neutralit3\\ Dare -you Say that yon are a"
+      },
+      {
+        "para_key": "1.18",
+        "reason": "junk-char ratio 2.8% over 2.0% gate",
+        "text": "• you love God more—do you love your"
+      },
+      {
+        "para_key": "1.19",
+        "reason": "too short (6 word(s) < 8)",
+        "text": "fellow-man whom you curse? Do you"
+      },
+      {
+        "para_key": "1.20",
+        "reason": "too short (7 word(s) < 8)",
+        "text": "love the Bib'le whicli condemns the swear-"
+      },
+      {
+        "para_key": "1.22",
+        "reason": "junk-char ratio 2.4% over 2.0% gate",
+        "text": "and others while your mouth is fo^il with"
+      },
+      {
+        "para_key": "1.26",
+        "reason": "junk-char ratio 2.5% over 2.0% gate",
+        "text": "•ear heai^ you ? Are 3-011 not less wftUiig to meet Him at the judgment ? Yes !"
+      },
+      {
+        "para_key": "1.32",
+        "reason": "junk-char ratio 2.4% over 2.0% gate",
+        "text": "\" For the land is fall of adulterers ; for because of sv\\^earing the land mourue"
+      },
+      {
+        "para_key": "1.37",
+        "reason": "too short (1 word(s) < 8)",
+        "text": "pH8.5"
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "para_key": "1.4",
+      "page": 1,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "BY REV. J. N. ANDREWS, OF N. C.",
+      "words": 8
+    },
+    {
+      "para_key": "1.5",
+      "page": 1,
+      "para": 5,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "1>1UEND, permit me to ask yon in kindliess, if yo'i have well coiiaidered the words \\vhic1i I-just now heard you uiter ? As tithoughtin1 ma?!, }ou must admit that there sliOuJd he ^/ood reas'-ns f^r all the acts of life. lu aj I\\our husiiiess transaotioiip.^or pleasure-Bcokiiig pursuits, do- ;\\oa not consider bt\"fore hail d what will h& the ^probiib'e resu It? And if yon h ave reason to believe there is a prospect of. adV8f).tage to you, ycMi go forward ; otherwise, 3^3u do not. Why do you invest your money ? Why do you pursue a profL'SsioH? Why do you labor with youF iinuds? Wliy are }ou a< soldier? For a)i these you have douhtleaa g^nod and sufhcient reasons. My friend, why doyou swear? If you have reasons sufficient to justify you in ihe pracdee,.certainly you. can have no oljection to telling me what 'hej are'. O.'me, sit down awhile, ixud \"let us reason together.\" Ifjoucan convince me that itis j^^oper and profitable^ as a reasonable man,T mu&t withdraw my opposition to it. But.if, on the other hand, I.&hall be able to show that it is highjj^ injurious,, asid extremely danger-; ous, will ypu not cease it forever ? \\Ve- /generaliy speak of men as being possessed of a three-fold nature—the physi'cal, iDteJlectual and moral man. Such a man are you! Nov/ I can understand how certain pursuits can be prohtable to your physical man—labor or money-makings for instance. 'I can see how other pursints can benetit the intellectual—such as study, reading, conversation, &c» . I am convinced that yet orlier practices can be of advantage to -the moral nature—these are the reading of God's word, prayer to- Jlim, and faith in His Soir Jesus. But -tellme, does swearing come under any o^",
+      "words": 294
+    },
+    {
+      "para_key": "1.7",
+      "page": 1,
+      "para": 7,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "1. As a meie pliysical creature, how ^ucli are you profited by being a profane man ? Ilave you mada more money h/ being a swearer than you otherwise wouldhave done ? Has yourlabor been easier? Can you march Ion «-er,and endure more fatigue and greater hardships because you are a swearer ? Have you a b^^tter appetite—is your bread sweeter because you swear?* Do you rest more q^ijetly, and isyour sleep more retreshing because 3'ou profane God'slioly name? Are you more exempt from bodily etiffering and diseases, and will 3'ou live longer because you swear? Are yoxi a braver man, a better soldier,— and QYioreready to die for your country ? To all these questions you answer like an honest man,\" ^\"0 ! Then why do you swear, when, by your ow^n admission there is no bodily profit?",
+      "words": 139
+    },
+    {
+      "para_key": "1.8",
+      "page": 1,
+      "para": 8,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "2. But you have, a mind, an intellect. Does swearing improve that mind ? Are you a wiser man tor every oath which you utter ? Do you reason more clearly, is your intellect more elevated by reason of profanity ? As a rational being you ought to have exahed ideas of the character of God, does swearing produce them, o-r",
+      "words": 61
+    },
+    {
+      "para_key": "1.9",
+      "page": 1,
+      "para": 9,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "otherwise ? You oug.hi to revere and horn",
+      "words": 8
+    },
+    {
+      "para_key": "1.10",
+      "page": 1,
+      "para": 10,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "or his laws. Does the swearer do so ?—",
+      "words": 9
+    },
+    {
+      "para_key": "1.13",
+      "page": 1,
+      "para": 13,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "ture. What say you to the effect of pro*-",
+      "words": 9
+    },
+    {
+      "para_key": "1.14",
+      "page": 1,
+      "para": 14,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "fauity upon it ? You are are a better or",
+      "words": 10
+    },
+    {
+      "para_key": "1.15",
+      "page": 1,
+      "para": 15,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "worse man because of it. There is no",
+      "words": 8
+    },
+    {
+      "para_key": "1.17",
+      "page": 1,
+      "para": 17,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "more pioul man because you swear ? Do",
+      "words": 8
+    },
+    {
+      "para_key": "1.21",
+      "page": 1,
+      "para": 21,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "er ? Do you, can yo*a. pray- for yourself",
+      "words": 9
+    },
+    {
+      "para_key": "1.23",
+      "page": 1,
+      "para": 23,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "curses? Stop, friend, do not leave so ab-",
+      "words": 8
+    },
+    {
+      "para_key": "1.24",
+      "page": 1,
+      "para": 24,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "ruptly. 'Tis becanse I love you that I speak thus to you. Analyze, forjust one minute, your feelings while* under th@ power of this demon of,profanity ;",
+      "words": 27
+    },
+    {
+      "para_key": "1.25",
+      "page": 1,
+      "para": 25,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Fii-st. Vfith reference to your Heavenly Father-^-hopestly answer rne. Do you not feel -a loss of respect and reverence for His holy name whom you revile? Is not your heart colder and more rebeh lious toward him ? Are you not less inclined to pray to Him ? Wonld you not prefer that His eye should not see, Hia",
+      "words": 59
+    },
+    {
+      "para_key": "1.27",
+      "page": 1,
+      "para": 27,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Secondly. In reference to your fellowmortal. Do you. not love hini less or hate him more ? After your imprecations, are you not more ready to do him an injury ? Yea!",
+      "words": 32
+    },
+    {
+      "para_key": "1.28",
+      "page": 1,
+      "para": 28,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Thirdl}^ as to yourself. Is not your\" heart harder because of profanity ? Is it not less Susceptible of divine impressions? Is it not more gross, beastly, earthly, sensual, deviliah ? Yes ! Have you listened, to the voice of conscience in this matter ? No ! But you have a charoxter every man has ! Has not your character sufffred in the \"eyes of all good and rational men ? Yes. Do you respect t/Gurself as you would have done, had you never been a swearer? No.",
+      "words": 88
+    },
+    {
+      "para_key": "1.29",
+      "page": 1,
+      "para": 29,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Can you look into the eyes of that pure woman whom you call mother, wife %r sister, and feel that she loves you more because you are a swearer ? Would you love her more, were she as profane as you ? Look at that innocent child; is it a pleasant thought that he shall become asfoul-mouthed as you ? No ! No ! ! Bat",
+      "words": 66
+    },
+    {
+      "para_key": "1.30",
+      "page": 1,
+      "para": 30,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Bee bow l>e-listens, he is now takino: bis firstlesson in profanity from youi Your conscience does not approve it in yoarself; you would' not recommend it i;o mother, wife, sister or child. Then why do you swear? Kow, if Lean convince you tbat it is higlily injurious and extreme^' ly dangerous, will you not cease forever to be a swearer ? My argument is simple. What ever . failtito beuelit the physical intellectual or moral nature must in the end have an opposite effect—that is become injurious. There are few if any points of absolute neutralit}?- in the moral universe- and certainly this is not one of them, and you this momentare convinced thati't isinjurious, and highly so because itcarries with it a spirit of rebellion against conscience, somety and God which'ramifies all your nature. Again. All open and voluntary transgressions of* Good's holy law are extremely dangerous^ because it puts the creature in direct opposition to the most powerful, wise, holy, and just being in allthe- universe, w^ho says \"I am a jealous God and will not give my glory",
+      "words": 181
+    },
+    {
+      "para_key": "1.31",
+      "page": 1,
+      "para": 31,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "to another.\" Will lie then allow yon to d(tract from His glory with impunity? The mo^t open, darirg, and voli^ntary sin wliich men commit is swearing. There is no apo)ogy for it—-lo attempt at concealiag it—no lust or appetite which calls for it. The murderer coramita the deed in the dark. The adulterer in secret. The extortioner under false pretences. The one for revenge, the other for lust, the third for gain—but you swear publicly and loudly and for nothing. And . now -listen to what God eays, and may His Holy Spirit impress the solemn words' of warning upon your heart. \"Thou shait not take tiie name of the Lord thy God in v.jiin,for the Lord will not hold hira guiltless that takeih his name in vain.\" Ex. XX : 7. \" For thus said He unto me, This is the curse that goeth forth oyer the face of the whole earth : for every one that stealeth shall be cut ofi* as on this side, according to it; and every one that swcareth shall be cut off as on that side according to it.\" Zech. v: 3.",
+      "words": 189
+    },
+    {
+      "para_key": "1.33",
+      "page": 1,
+      "para": 33,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "tlie plcasaut places of the wilderness are dried iip, and their course is evil, and their force is not right.\" Jer. xxiii: 10.",
+      "words": 23
+    },
+    {
+      "para_key": "1.34",
+      "page": 1,
+      "para": 34,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "\" By swearing and lying and killing and stealing and committing adultery, they break out, and blood toiicheth \"blood. Therefore shall the land mourn, and every one that dwelleth therein shall languish.\" Hos. iv: 2—3.",
+      "words": 35
+    },
+    {
+      "para_key": "1.35",
+      "page": 1,
+      "para": 35,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "See what a dark catalogue of crimes and jou by youv profanity ha .e placed yourself in it, made yourself ;*c(:;>>panion according to Gods word with Uars, murderers^ thieves^ and adulterers. According to the law of Moses a man was executed f r cursing the najno of God. And had declared that \" whosoever curseth his God shall bear his sin,\" How",
+      "words": 62
+    },
+    {
+      "para_key": "1.36",
+      "page": 1,
+      "para": 36,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "' terrible the responsibility—c?oy^e you meet it? And now farewell ; p<^'rhap8 until the judgment, and may God in mercy help you to cease to swear and learn to pray. Amen. HoUinger Corp.",
+      "words": 33
+    }
+  ]
+}

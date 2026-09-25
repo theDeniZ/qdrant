@@ -109,6 +109,9 @@
     "Diener des Evangeliums"
    ]
   },
+  "DEV": {
+   "titles": []
+  },
   "DG": {
    "en_code": "Pr",
    "titles": [
@@ -298,6 +301,9 @@
     "Die Leiden Christi"
    ]
   },
+  "LCh": {
+   "titles": []
+  },
   "LJ": {
    "en_code": "DA",
    "titles": [
@@ -309,6 +315,9 @@
    "titles": [
     "Leben auf dem Land"
    ]
+  },
+  "LLa": {
+   "titles": []
   },
   "LW": {
    "en_code": "LS",
@@ -363,6 +372,9 @@
    "titles": [
     "Ruf an die Jugend"
    ]
+  },
+  "RJ97": {
+   "titles": []
   },
   "RSs": {
    "en_code": "CSW",
@@ -999,6 +1011,14 @@
     "The Ark of the Covenant, Will It Be Found?"
    ]
   },
+  "AERS": {
+   "author": "J. H. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Atonement; An Examination of a Remedial System in the Light of Nature and Revelation"
+   ],
+   "year": 1884
+  },
   "AG": {
    "titles": [
     "God’s Amazing Grace"
@@ -1033,6 +1053,14 @@
    "titles": [
     "A Prophet Among You"
    ]
+  },
+  "AS23": {
+   "author": "J. N. Andrews",
+   "corpus": "pioneers",
+   "titles": [
+    "The Sanctuary and Twenty-Three Hundred Days"
+   ],
+   "year": 1872
   },
   "ASM": {
    "titles": [
@@ -1131,6 +1159,30 @@
    "titles": [
     "Beginning of the End"
    ]
+  },
+  "BP1": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "The Opening Heavens, or a Connected View of the Testimony of the Prophets and Apostles, Concerning the Opening Heavens, Compared with Astronomical Observations, and of the Present and Future Location of the New Jerusalem, the Paradise of God"
+   ],
+   "year": 1846
+  },
+  "BP2": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "Second Advent Way Marks and High Heaps, or A Connected View of the Fulfilment of Prophecy, by God's Peculiar People, from the Year 1840 to 1847"
+   ],
+   "year": 1847
+  },
+  "BP3": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "An Explanation of the Typical and Anti-typical Sanctuary by the Scriptures, with a Chart"
+   ],
+   "year": 1850
   },
   "BPUEGW": {
    "titles": [
@@ -1237,6 +1289,14 @@
     "Calamities and God’s Love; Sin, Judgment, and the Shortness of Time"
    ]
   },
+  "CGRJ": {
+   "author": "A. T. Jones",
+   "corpus": "pioneers",
+   "titles": [
+    "Civil Government and Religion"
+   ],
+   "year": 1889
+  },
   "CH": {
    "titles": [
     "Counsels on Health"
@@ -1246,6 +1306,14 @@
    "titles": [
     "Counsels on Health -- Study Guide"
    ]
+  },
+  "CHMP": {
+   "author": "Charles Fitch",
+   "corpus": "pioneers",
+   "titles": [
+    "Come Out of Her, My People: A Sermon"
+   ],
+   "year": 1843
   },
   "CHR": {
    "author": "E. J. Waggoner",
@@ -1259,6 +1327,14 @@
    "titles": [
     "Christ in His Sanctuary"
    ]
+  },
+  "CIS": {
+   "author": "S. N. Haskell",
+   "corpus": "pioneers",
+   "titles": [
+    "The Cross and Its Shadow"
+   ],
+   "year": 1914
   },
   "CL": {
    "titles": [
@@ -1284,6 +1360,14 @@
    "titles": [
     "Christ’s Object Lessons"
    ]
+  },
+  "COOD": {
+   "author": "J. N. Loughborough",
+   "corpus": "pioneers",
+   "titles": [
+    "The Church: Its Organization, Order and Discipline"
+   ],
+   "year": 1907
   },
   "COS": {
    "author": "G. I. Butler",
@@ -1441,6 +1525,14 @@
    "titles": [
     "Dramatic Productions In SDA Institutions"
    ]
+  },
+  "DSE": {
+   "author": "O. R. L. Crosier",
+   "corpus": "pioneers",
+   "titles": [
+    "The Sanctuary"
+   ],
+   "year": 1846
   },
   "EA": {
    "titles": [
@@ -1694,6 +1786,14 @@
    "titles": [
     "Fundamentals of Christian Education"
    ]
+  },
+  "FEE": {
+   "author": "J. H. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "From Eden to Eden"
+   ],
+   "year": 1888
   },
   "FH": {
    "titles": [
@@ -2203,6 +2303,14 @@
     "Mrs. White’s Indebtedness"
    ]
   },
+  "MWM": {
+   "author": "Sylvester Bliss",
+   "corpus": "pioneers",
+   "titles": [
+    "Memoirs of William Miller, Generally Known as a Lecturer on the Prophecies, and the Second Coming of Christ"
+   ],
+   "year": 1853
+  },
   "MYP": {
    "titles": [
     "Messages to Young People"
@@ -2235,6 +2343,14 @@
     "The National Sunday Law"
    ],
    "year": 1889
+  },
+  "NTMS": {
+   "author": "J. H. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Nature and Tendency of Modern Spiritualism"
+   ],
+   "year": 1880
   },
   "OFC": {
    "titles": [
@@ -2919,6 +3035,22 @@
     "Patriarchs and Prophets -- Study Guide"
    ]
   },
+  "PREX1": {
+   "author": "Josiah Litch",
+   "corpus": "pioneers",
+   "titles": [
+    "Prophetic Expositions; or, A Connected View of the Testimony of the Prophets Concerning the Kingdom of God and the Time of Its Establishment. Vol. I."
+   ],
+   "year": 1842
+  },
+  "PREX2": {
+   "author": "Josiah Litch",
+   "corpus": "pioneers",
+   "titles": [
+    "Prophetic Expositions; or, A Connected View of the Testimony of the Prophets Concerning the Kingdom of God and the Time of Its Establishment. Vol. II."
+   ],
+   "year": 1842
+  },
   "PROLI": {
    "author": "E. J. Waggoner",
    "corpus": "pioneers",
@@ -2926,6 +3058,14 @@
     "Prophetic Lights"
    ],
    "year": 1897
+  },
+  "PSC": {
+   "author": "Josiah Litch",
+   "corpus": "pioneers",
+   "titles": [
+    "The Probability of the Second Coming of Christ About A.D. 1843, Shown by a Comparison of Prophecy with History, up to the Present Time, and an Explanation of Those Prophecies Which Are Yet to Be Fulfilled"
+   ],
+   "year": 1838
   },
   "PaM": {
    "titles": [
@@ -2936,6 +3076,14 @@
    "titles": [
     "Prayer"
    ]
+  },
+  "QAWX": {
+   "author": "Milton C. Wilcox",
+   "corpus": "pioneers",
+   "titles": [
+    "Questions and Answers, Gathered from the Question Corner Department of the Signs of the Times"
+   ],
+   "year": 1911
   },
   "QSEW": {
    "titles": [
@@ -3078,6 +3226,14 @@
    ],
    "year": 1846
   },
+  "SGOM": {
+   "author": "J. H. Waggoner",
+   "corpus": "pioneers",
+   "titles": [
+    "The Spirit of God: Its Offices and Manifestations, to the End of the Christian Age"
+   ],
+   "year": 1877
+  },
   "SHM-SG": {
    "titles": [
     "The Story of Our Health Message -- Study Guide"
@@ -3103,6 +3259,14 @@
     "The Sanctified Life -- Study Guide"
    ]
   },
+  "SLG": {
+   "author": "Joseph Bates",
+   "corpus": "pioneers",
+   "titles": [
+    "A Seal of the Living God: A Hundred Forty-Four Thousand of the Servants of God Being Sealed in 1840"
+   ],
+   "year": 1849
+  },
   "SMG": {
    "titles": [
     "Stories of My Grandmother"
@@ -3123,6 +3287,14 @@
     "Sunday: The Origin of Its Observance"
    ],
    "year": 1892
+  },
+  "SOTW": {
+   "author": "W. W. Prescott",
+   "corpus": "pioneers",
+   "titles": [
+    "The Saviour of the World"
+   ],
+   "year": 1929
   },
   "SPCCSR": {
    "titles": [
@@ -3585,6 +3757,14 @@
     "This Day With God"
    ]
   },
+  "TDOC": {
+   "author": "W. W. Prescott",
+   "corpus": "pioneers",
+   "titles": [
+    "The Doctrine of Christ: A Series of Bible Studies for Use in Churches and Seminaries"
+   ],
+   "year": 1920
+  },
   "TEd": {
    "titles": [
     "True Education"
@@ -3599,6 +3779,22 @@
    "titles": [
     "That I May Know Him"
    ]
+  },
+  "TMR14": {
+   "author": "J. N. Andrews",
+   "corpus": "pioneers",
+   "titles": [
+    "The Three Messages of Revelation 14:6-12, Particularly the Third Angel's Message and Two-Horned Beast"
+   ],
+   "year": 1876
+  },
+  "TODS": {
+   "author": "Uriah Smith",
+   "corpus": "pioneers",
+   "titles": [
+    "Thoughts on the Prophecies of Daniel, Being Part I of the Combined Volume \"Daniel and the Revelation,\" Showing the Response of History to the Voice of Prophecy"
+   ],
+   "year": 1899
   },
   "TOJ": {
    "titles": [
@@ -3811,6 +4007,327 @@
    "titles": [
     "Ye Shall Receive Power"
    ]
+  }
+ },
+ "es": {
+  "1MCP": {
+   "titles": []
+  },
+  "1SM": {
+   "titles": []
+  },
+  "1T": {
+   "titles": []
+  },
+  "1TT": {
+   "titles": []
+  },
+  "2MCP": {
+   "titles": []
+  },
+  "2SM": {
+   "titles": []
+  },
+  "2T": {
+   "titles": []
+  },
+  "2TT": {
+   "titles": []
+  },
+  "3T": {
+   "titles": []
+  },
+  "3TT": {
+   "titles": []
+  },
+  "4T": {
+   "titles": []
+  },
+  "5T": {
+   "titles": []
+  },
+  "6T": {
+   "titles": []
+  },
+  "7T": {
+   "titles": []
+  },
+  "8T": {
+   "titles": []
+  },
+  "9T": {
+   "titles": []
+  },
+  "AA": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "CG": {
+   "titles": []
+  },
+  "CL": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "CSW": {
+   "titles": []
+  },
+  "CTr": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "Ev": {
+   "titles": []
+  },
+  "FW": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "GW": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "LS": {
+   "titles": []
+  },
+  "LYL": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "Mar": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "Pr": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SL": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  },
+  "TA": {
+   "titles": []
+  },
+  "TM": {
+   "titles": []
+  },
+  "Te": {
+   "titles": []
+  },
+  "YRP": {
+   "titles": []
+  }
+ },
+ "fr": {
+  "1MCP": {
+   "titles": []
+  },
+  "1SM": {
+   "titles": []
+  },
+  "1TT": {
+   "titles": []
+  },
+  "2MCP": {
+   "titles": []
+  },
+  "2SM": {
+   "titles": []
+  },
+  "2TT": {
+   "titles": []
+  },
+  "3TT": {
+   "titles": []
+  },
+  "AA": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "CSW": {
+   "titles": []
+  },
+  "CTBH": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "Ev": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "GW": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SL": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  },
+  "TSS": {
+   "titles": []
+  },
+  "Te": {
+   "titles": []
+  },
+  "YRP": {
+   "titles": []
+  }
+ },
+ "it": {
+  "1SM": {
+   "titles": []
+  },
+  "1TT": {
+   "titles": []
+  },
+  "2SM": {
+   "titles": []
+  },
+  "2TT": {
+   "titles": []
+  },
+  "3TT": {
+   "titles": []
+  },
+  "AA": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "CM": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "TA": {
+   "titles": []
+  },
+  "TM": {
+   "titles": []
   }
  },
  "ja": {
@@ -4127,6 +4644,442 @@
    "titles": [
     "절제생활"
    ]
+  }
+ },
+ "pt": {
+  "1MCP": {
+   "titles": []
+  },
+  "1SM": {
+   "titles": []
+  },
+  "1T": {
+   "titles": []
+  },
+  "1TT": {
+   "titles": []
+  },
+  "2MCP": {
+   "titles": []
+  },
+  "2SM": {
+   "titles": []
+  },
+  "2T": {
+   "titles": []
+  },
+  "2TT": {
+   "titles": []
+  },
+  "3T": {
+   "titles": []
+  },
+  "3TT": {
+   "titles": []
+  },
+  "4T": {
+   "titles": []
+  },
+  "5T": {
+   "titles": []
+  },
+  "6T": {
+   "titles": []
+  },
+  "7T": {
+   "titles": []
+  },
+  "8T": {
+   "titles": []
+  },
+  "9T": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "CG": {
+   "titles": []
+  },
+  "CL": {
+   "titles": []
+  },
+  "CM": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "CSW": {
+   "titles": []
+  },
+  "CTr": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "Ev": {
+   "titles": []
+  },
+  "FW": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "GW": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "LYL": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "Mar": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SL": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  },
+  "TA": {
+   "titles": []
+  },
+  "TM": {
+   "titles": []
+  },
+  "Te": {
+   "titles": []
+  },
+  "YRP": {
+   "titles": []
+  }
+ },
+ "ro": {
+  "1MCP": {
+   "titles": []
+  },
+  "1SM": {
+   "titles": []
+  },
+  "2MCP": {
+   "titles": []
+  },
+  "5T": {
+   "titles": []
+  },
+  "6T": {
+   "titles": []
+  },
+  "7T": {
+   "titles": []
+  },
+  "8T": {
+   "titles": []
+  },
+  "AA": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "CG": {
+   "titles": []
+  },
+  "CM": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "CSW": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "Ev": {
+   "titles": []
+  },
+  "FW": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "GW": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "LS": {
+   "titles": []
+  },
+  "LYL": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "Pr": {
+   "titles": []
+  },
+  "SA": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SL": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  },
+  "TA": {
+   "titles": []
+  },
+  "TM": {
+   "titles": []
+  },
+  "Te": {
+   "titles": []
+  }
+ },
+ "ru": {
+  "1MCP": {
+   "titles": []
+  },
+  "1SM": {
+   "titles": []
+  },
+  "1T": {
+   "titles": []
+  },
+  "2MCP": {
+   "titles": []
+  },
+  "2SM": {
+   "titles": []
+  },
+  "2T": {
+   "titles": []
+  },
+  "3T": {
+   "titles": []
+  },
+  "4T": {
+   "titles": []
+  },
+  "5BC": {
+   "titles": []
+  },
+  "5T": {
+   "titles": []
+  },
+  "6BC": {
+   "titles": []
+  },
+  "6T": {
+   "titles": []
+  },
+  "7BC": {
+   "titles": []
+  },
+  "7T": {
+   "titles": []
+  },
+  "8T": {
+   "titles": []
+  },
+  "9T": {
+   "titles": []
+  },
+  "AA": {
+   "titles": []
+  },
+  "AH": {
+   "titles": []
+  },
+  "CD": {
+   "titles": []
+  },
+  "CG": {
+   "titles": []
+  },
+  "CL": {
+   "titles": []
+  },
+  "CM": {
+   "titles": []
+  },
+  "CME": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "CSW": {
+   "titles": []
+  },
+  "CTBH": {
+   "titles": []
+  },
+  "CTr": {
+   "titles": []
+  },
+  "ChS": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "EW": {
+   "titles": []
+  },
+  "Ed": {
+   "titles": []
+  },
+  "Ev": {
+   "titles": []
+  },
+  "FW": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "GW": {
+   "titles": []
+  },
+  "LDE": {
+   "titles": []
+  },
+  "LYL": {
+   "titles": []
+  },
+  "MB": {
+   "titles": []
+  },
+  "MH": {
+   "titles": []
+  },
+  "MYP": {
+   "titles": []
+  },
+  "Mar": {
+   "titles": []
+  },
+  "PK": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "Pr": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  },
+  "TM": {
+   "titles": []
+  },
+  "Te": {
+   "titles": []
+  },
+  "YRP": {
+   "titles": []
+  }
+ },
+ "uk": {
+  "AA": {
+   "titles": []
+  },
+  "COL": {
+   "titles": []
+  },
+  "DA": {
+   "titles": []
+  },
+  "GC": {
+   "titles": []
+  },
+  "PP": {
+   "titles": []
+  },
+  "SC": {
+   "titles": []
+  },
+  "SR": {
+   "titles": []
+  }
+ },
+ "zh": {
+  "CD": {
+   "titles": []
   }
  }
 }

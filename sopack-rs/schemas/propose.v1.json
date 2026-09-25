@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/propose.v1.json",
+  "title": "sopack propose output (v1)",
+  "description": "The JSON `sopack propose <source> --json` prints to stdout (SOPACK-1.0-PLAN.md §3.5, §6). Produced by crates/sopack-extract/src/propose.rs (`Proposal`) — keep the two in sync. `propose` never fills a field's `value` unless every candidate for it agrees AND at least one candidate's `from` is `title_page`, `sop_json_meta` or `sop_json_dir` (see propose.rs's `is_authoritative`) — every other field stays `null` and is listed in `unresolved`.",
+  "type": "object",
+  "required": ["source", "fields", "unresolved", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "object",
+      "required": ["path", "kind", "sha256", "bytes"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "kind": { "enum": ["epub", "markdown", "text", "sop_json"] },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "required": [
+        "book_code", "lang", "title", "author", "year",
+        "corpus", "slug", "book_pair", "acquired_from", "rights"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "book_code": { "$ref": "#/$defs/field" },
+        "lang": { "$ref": "#/$defs/field" },
+        "title": { "$ref": "#/$defs/field" },
+        "author": { "$ref": "#/$defs/field" },
+        "year": { "$ref": "#/$defs/field" },
+        "corpus": { "$ref": "#/$defs/field" },
+        "slug": { "$ref": "#/$defs/field" },
+        "book_pair": { "$ref": "#/$defs/field" },
+        "acquired_from": { "$ref": "#/$defs/field" },
+        "rights": { "$ref": "#/$defs/field" }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "book_code", "lang", "title", "author", "year",
+          "corpus", "slug", "book_pair", "acquired_from", "rights"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "field": {
+      "type": "object",
+      "required": ["value", "candidates"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "description": "null unless every candidate agrees and at least one is authoritative (see this schema's top-level description)."
+        },
+        "candidates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/candidate" }
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["value", "from"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {},
+        "from": {
+          "type": "string",
+          "description": "A short, stable source tag, e.g. title_page, opf:dc:title, opf:dc:date, opf:dc:source, opf:dc:source_normalized, opf:dc:rights, opf:dc:rights_normalized, opf:dc:language, filename, filename_normalized, lang_heuristic, title_heuristic, title_heuristic_alt, author_heuristic, front_matter, first_lines, sop_json_meta, sop_json_dir, sop_json_key_guess, derived:book_code, registry:title_match (re-import detector: the title matched an existing registry row by title, not by code — see Registry::find_by_title)."
+        },
+        "evidence": { "type": "string" },
+        "warning": { "type": "string" },
+        "collision": {
+          "type": ["boolean", "null"],
+          "description": "Only ever present on a book_code candidate: whether the literal code string is already a row in the offline registry. Absent (not just null) when no registry was given."
+        }
+      }
+    }
+  }
+}

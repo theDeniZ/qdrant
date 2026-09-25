@@ -1,16 +1,27 @@
 name: Release sopack
 
 # Cut a release by pushing a tag `sopack-v<version>` whose version equals
-# __version__ in sopack/__init__.py. The pipeline:
+# [workspace.package] version in sopack-rs/Cargo.toml. The pipeline:
 #
-#   build    (linux)  version check, unit tests, tarball of sopack/
-#   brew     (macOS)  real `brew install` + `brew test` of that tarball through a
-#                     throwaway local tap — nothing is published if this fails
-#   publish  (linux)  GitHub Release with the tarball, then Formula/sopack.rb on
-#                     the default branch gets the new url + sha256
+#   build    (matrix: linux x64, linux arm64, macOS arm64)
+#            fmt, clippy, tests, no-HTTP-client audit, release build, then the
+#            FINAL tarball layout is staged (bin/ + lib/ with Microsoft's
+#            ONNX Runtime 1.30.0 + contracts/ + licenses) and the STAGED binary
+#            is what gets tested: --version, doctor --quick, and on two targets
+#            a real model run (model fetch -> calibrate -> pack -> verify).
+#            The tarball uploaded is byte-for-byte the one that was tested.
+#   brew     (macOS) real `brew install` + `brew test` of that exact tarball
+#            through a throwaway local tap — nothing is published if it fails.
+#   publish  GitHub Release with every tarball + SHA256SUMS, then
+#            Formula/sopack.rb on the default branch gets the new url + sha256.
 #
 # This repository is itself the Homebrew tap (see Formula/README.md), so the
 # formula bump is a commit here, not a PR to another repo.
+#
+# Why ORT is bundled and not linked: the binary uses ort's `load-dynamic` and
+# finds the library at <canonical exe dir>/../lib (SOPACK-1.0-PLAN.md §5; M0
+# measured exactly this ORT version against the stored vectors). The
+# calibration run below re-proves that on every release.
 
 on:
   push:
@@ -21,111 +32,211 @@ concurrency:
   group: release-sopack
   cancel-in-progress: false
 
+env:
+  ORT_VERSION: "1.30.0"
+  CARGO_TERM_COLOR: always
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          # 22.04 on purpose: glibc 2.35, so the binary also runs on older
+          # distros (Debian bookworm = 2.36). ORT's own builds need 2.28.
+          - runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            ort_plat: linux-x64
+            ort_sha256: a5ed5a3cac51fbb2e90da632ae43d19212faaa20e76484e62bcb7c23ddb3b3fd
+            model_run: true
+          - runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            ort_plat: linux-aarch64
+            ort_sha256: e16a27a8ed330bbc698df7330b0cf56e722f354e3bcc92118682c74ef3c3e3da
+            model_run: false
+          - runner: macos-14
+            target: aarch64-apple-darwin
+            ort_plat: osx-arm64
+            ort_sha256: 6ebb5062a934537c352937821f9fe9718e7de1a2db1122a93dd363ffd53a7012
+            model_run: true
+    runs-on: ${{ matrix.runner }}
     outputs:
       version: ${{ steps.version.outputs.version }}
-      sha256: ${{ steps.tarball.outputs.sha256 }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
-
-      - name: Check the tag matches sopack/__init__.py
+      - name: Check the tag matches sopack-rs/Cargo.toml
         id: version
         run: |
-          # pyproject.toml reads its version from sopack.__version__, so this
-          # is the only place a version lives.
           TAG_VERSION="${GITHUB_REF_NAME#sopack-v}"
-          PKG_VERSION=$(python -c "import re,pathlib;print(re.search(r'__version__ = \"(.+)\"', pathlib.Path('sopack/__init__.py').read_text()).group(1))")
-          echo "tag=$TAG_VERSION package=$PKG_VERSION"
-          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-            echo "::error::version mismatch — set __version__ in sopack/__init__.py to $TAG_VERSION, commit, then re-tag"
+          CARGO_VERSION=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\(.*\)"/\1/p' sopack-rs/Cargo.toml)
+          echo "tag=$TAG_VERSION cargo=$CARGO_VERSION"
+          if [ -z "$CARGO_VERSION" ] || [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
+            echo "::error::version mismatch — set [workspace.package] version in sopack-rs/Cargo.toml to $TAG_VERSION, then re-tag"
             exit 1
           fi
           echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: No committed build artifacts under sopack/
+      # The committed .cargo/config.toml points the linker at the devcontainer's
+      # zig wrapper (no gcc there). CI runners have a normal toolchain.
+      - name: Drop the devcontainer-only linker config
+        run: rm -f sopack-rs/.cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: sopack-rs
+          key: ${{ matrix.target }}
+
+      - name: Format
+        working-directory: sopack-rs
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        working-directory: sopack-rs
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Tests (model tests are #[ignore]d here; the real run is below)
+        working-directory: sopack-rs
+        run: cargo test --workspace --locked
+
+      - name: No HTTP client in the binary (plan §3.2)
+        working-directory: sopack-rs
         run: |
-          # setuptools builds ./sopack in-tree and only refreshes build/lib files
-          # OLDER than the source. A committed build/ therefore ships stale code
-          # under new metadata — both here and in the git-archive tarball the
-          # formula builds from (the first sopack-v0.1.3 run failed on exactly this).
-          STALE=$(git ls-files sopack | grep -E '^sopack/(build/|[^/]*\.egg-info/)' || true)
-          if [ -n "$STALE" ]; then
-            echo "::error::build artifacts are tracked — git rm -r --cached them:"
-            echo "$STALE" | head -20
+          # -e normal: a build script may use an HTTP client; only what is
+          # linked into the shipped binary matters.
+          if cargo tree -p sopack-cli -e normal --locked | grep -E '\b(reqwest|hyper|ureq)\b'; then
+            echo "::error::sopack-cli links an HTTP client — sopack must stay offline (SOPACK-AUTONOMY.md)"
             exit 1
           fi
 
-      - name: Install exactly as the formula does
-        run: |
-          python -m venv /tmp/venv
-          /tmp/venv/bin/pip install --upgrade pip
-          /tmp/venv/bin/pip install -r sopack/requirements.lock
-          /tmp/venv/bin/pip install --no-deps ./sopack
+      - name: Release build
+        working-directory: sopack-rs
+        run: cargo build --release --locked -p sopack-cli
 
-      - name: Unit tests + CLI smoke
+      - name: Fetch ONNX Runtime ${{ env.ORT_VERSION }} (${{ matrix.ort_plat }})
         run: |
-          PYTHONPATH=. /tmp/venv/bin/python -m unittest discover -s sopack/tests -p 'test_*.py'
-          GOT=$(/tmp/venv/bin/sopack --version)
-          if [ "$GOT" != "sopack ${{ steps.version.outputs.version }}" ]; then
-            echo "::error::installed CLI reports '$GOT', expected 'sopack ${{ steps.version.outputs.version }}'"
-            exit 1
-          fi
-          # Run from outside the checkout so the INSTALLED package is imported.
-          cd /tmp && /tmp/venv/bin/python -c "import sopack.pack, sopack.extract, sopack.doctor"
+          F="onnxruntime-${{ matrix.ort_plat }}-$ORT_VERSION.tgz"
+          curl -fsSL -o "$RUNNER_TEMP/$F" \
+            "https://github.com/microsoft/onnxruntime/releases/download/v$ORT_VERSION/$F"
+          echo "${{ matrix.ort_sha256 }}  $RUNNER_TEMP/$F" | shasum -a 256 -c -
+          # No --strip-components: Microsoft's macOS tarball stores its entries
+          # as ./onnxruntime-osx-arm64-<v>/… (leading "./", which tar counts as
+          # the first component), the Linux ones as onnxruntime-linux-*-<v>/….
+          # Extracted as-is, both land in the same top-level directory.
+          tar -xzf "$RUNNER_TEMP/$F" -C "$RUNNER_TEMP"
+          ORT_DIR="$RUNNER_TEMP/onnxruntime-${{ matrix.ort_plat }}-$ORT_VERSION"
+          test -d "$ORT_DIR/lib" || { echo "::error::$F did not unpack to $ORT_DIR/lib"; exit 1; }
+          echo "ORT_DIR=$ORT_DIR" >> "$GITHUB_ENV"
 
-      - name: Build tarball
-        id: tarball
+      - name: Stage the release layout
+        id: stage
         run: |
           V=${{ steps.version.outputs.version }}
+          NAME="sopack-$V-${{ matrix.target }}"
+          S="$RUNNER_TEMP/stage/$NAME"
+          mkdir -p "$S/bin" "$S/lib" "$S/LICENSE-THIRD-PARTY"
+          cp sopack-rs/target/release/sopack "$S/bin/"
+          # -P keeps the soname symlinks as symlinks. `! -type d`: the macOS
+          # tarball also ships a libonnxruntime.<v>.dylib.dSYM/ debug-symbol
+          # DIRECTORY next to the dylibs, which a plain `cp -P` glob refuses.
+          find "$ORT_DIR/lib" -maxdepth 1 -name 'libonnxruntime*' ! -type d -exec cp -P {} "$S/lib/" \;
+          cp -R sopack-rs/contracts "$S/contracts"
+          cp sopack-rs/README.md "$S/README.md"
+          cp "$ORT_DIR/LICENSE" "$S/LICENSE-THIRD-PARTY/onnxruntime-LICENSE"
+          cp "$ORT_DIR/ThirdPartyNotices.txt" "$S/LICENSE-THIRD-PARTY/onnxruntime-ThirdPartyNotices.txt"
+          ls -la "$S" "$S/lib"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "dir=$S" >> "$GITHUB_OUTPUT"
+
+      - name: Staged binary — version + doctor --quick (no model yet)
+        run: |
+          # ORT_DYLIB_PATH deliberately unset: this exercises the ../lib lookup.
+          unset ORT_DYLIB_PATH
+          B="${{ steps.stage.outputs.dir }}/bin/sopack"
+          GOT=$("$B" --version)
+          if [ "$GOT" != "sopack ${{ steps.version.outputs.version }}" ]; then
+            echo "::error::binary reports '$GOT'"; exit 1
+          fi
+          "$B" doctor --quick --json --progress none | tee "$RUNNER_TEMP/doctor.json"
+          # The bundled ORT must be FOUND (quick mode only warns if it is not).
+          grep -q '"1.30.0 at ' "$RUNNER_TEMP/doctor.json" \
+            || { echo "::error::staged binary did not find its bundled ONNX Runtime"; exit 1; }
+
+      - name: Model cache location
+        if: matrix.model_run
+        run: echo "SOPACK_CACHE=$RUNNER_TEMP/sopack-cache" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v4
+        if: matrix.model_run
+        with:
+          path: ${{ runner.temp }}/sopack-cache/models
+          # The contract pins the model revision; a new contract = a new key.
+          key: sopack-model-e5-large-v1-66076b8dc6e367337e3e90e6fb309fb0f3addaf6
+
+      - name: Real model run — fetch, doctor, calibrate, pack, verify (staged binary)
+        if: matrix.model_run
+        run: |
+          unset ORT_DYLIB_PATH
+          B="${{ steps.stage.outputs.dir }}/bin/sopack"
+          "$B" model fetch --json --progress plain
+          "$B" doctor --json --progress none
+          "$B" calibrate --json --progress none
+          "$B" pack packs/wdys.book.json -o "$RUNNER_TEMP/wdys.sopack" --json --progress plain
+          "$B" verify "$RUNNER_TEMP/wdys.sopack" --json --progress none
+
+      - name: Tarball
+        run: |
+          N=${{ steps.stage.outputs.name }}
           mkdir -p dist
-          # Tracked files of sopack/ only, under the single top-level dir
-          # Homebrew cd's into — the formula expects ./sopack inside it.
-          git archive --format=tar.gz --prefix="sopack-$V/" -o "dist/sopack-$V.tar.gz" HEAD sopack
-          (cd dist && sha256sum "sopack-$V.tar.gz" > "sopack-$V.tar.gz.sha256")
-          cat "dist/sopack-$V.tar.gz.sha256"
-          echo "sha256=$(cut -d' ' -f1 "dist/sopack-$V.tar.gz.sha256")" >> "$GITHUB_OUTPUT"
+          tar -C "$RUNNER_TEMP/stage" -czf "dist/$N.tar.gz" "$N"
+          (cd dist && shasum -a 256 "$N.tar.gz" > "$N.tar.gz.sha256")
+          cat "dist/$N.tar.gz.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: sopack-tarball
+          name: ${{ steps.stage.outputs.name }}
           path: dist/
+          if-no-files-found: error
 
   brew:
     needs: build
-    # Apple Silicon + Sonoma: the oldest platform the pinned onnxruntime supports.
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
-          name: sopack-tarball
+          name: sopack-${{ needs.build.outputs.version }}-aarch64-apple-darwin
           path: dist
 
       - name: Install through a throwaway local tap
         env:
           V: ${{ needs.build.outputs.version }}
-          SHA: ${{ needs.build.outputs.sha256 }}
           HOMEBREW_NO_AUTO_UPDATE: "1"
           HOMEBREW_NO_INSTALL_FROM_API: "1"
         run: |
+          TAR="sopack-$V-aarch64-apple-darwin.tar.gz"
+          SHA=$(cut -d' ' -f1 "dist/$TAR.sha256")
           brew tap-new --no-git ci/sopack
           TAP="$(brew --repository)/Library/Taps/ci/homebrew-sopack"
-          perl -pe "s|^  url \".*\"|  url \"file://$GITHUB_WORKSPACE/dist/sopack-$V.tar.gz\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" \
+          perl -pe "s|^  url \".*\"|  url \"file://$GITHUB_WORKSPACE/dist/$TAR\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" \
             Formula/sopack.rb > "$TAP/Formula/sopack.rb"
           brew install --verbose ci/sopack/sopack
-          # A failed post_install is only a warning to `brew install`, but it is
-          # where the venv gets built — assert it exists before testing.
-          test -x "$(brew --prefix)/var/sopack/venv/bin/python" \
-            || { echo "::error::post_install did not build the venv"; exit 1; }
+          # Homebrew relinks Mach-O files in the keg; make sure the bundled
+          # ONNX Runtime survived that and is found from the symlinked binary.
+          # The formula puts them in libexec/lib (not the keg's lib/, which
+          # would be linked into $(brew --prefix)/lib and collide with
+          # Homebrew's own onnxruntime formula).
+          ls -la "$(brew --prefix sopack)/libexec/lib"
+          test -f "$(brew --prefix sopack)/libexec/lib/libonnxruntime.dylib" \
+            || { echo "::error::libonnxruntime.dylib missing from libexec/lib"; exit 1; }
           brew test --verbose ci/sopack/sopack
           sopack --version
+          sopack doctor --quick --json --progress none
 
   publish:
     needs: [build, brew]
@@ -135,38 +246,63 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: sopack-tarball
-          path: dist
+          path: artifacts
+          merge-multiple: true
+
+      - name: Collect tarballs + SHA256SUMS
+        id: sums
+        run: |
+          mkdir -p dist
+          cp artifacts/*.tar.gz artifacts/*.tar.gz.sha256 dist/
+          (cd dist && cat *.tar.gz.sha256 > SHA256SUMS && sha256sum -c SHA256SUMS)
+          V=${{ needs.build.outputs.version }}
+          echo "mac_sha=$(grep "sopack-$V-aarch64-apple-darwin.tar.gz" dist/SHA256SUMS | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: sopack ${{ needs.build.outputs.version }}
+          prerelease: ${{ startsWith(needs.build.outputs.version, '0.') }}
           files: |
-            dist/sopack-${{ needs.build.outputs.version }}.tar.gz
-            dist/sopack-${{ needs.build.outputs.version }}.tar.gz.sha256
+            dist/*.tar.gz
+            dist/*.tar.gz.sha256
+            dist/SHA256SUMS
           body: |
-            ## Install (Apple Silicon, macOS 14+)
+            ## Install
 
+            **macOS (Apple Silicon, 14+):**
             ```bash
             brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant   # once
             brew install theDeniZ/qdrant/sopack                            # or: brew upgrade sopack
-            sopack doctor
             ```
 
-            sha256 `${{ needs.build.outputs.sha256 }}`
+            **Linux (x86_64, aarch64; glibc >= 2.35):**
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/${{ github.event.repository.default_branch }}/sopack-rs/install.sh | sh
+            ```
+
+            **Then, once per machine:**
+            ```bash
+            sopack model fetch   # ~2.2 GB embedding model, sha256-verified
+            sopack doctor        # loads the model and runs the calibration check
+            ```
+
+            Every tarball bundles Microsoft ONNX Runtime ${{ env.ORT_VERSION }}. Checksums: `SHA256SUMS`.
 
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
+          path: repo
 
       - name: Point Formula/sopack.rb at this release
+        working-directory: repo
         env:
           V: ${{ needs.build.outputs.version }}
-          SHA: ${{ needs.build.outputs.sha256 }}
+          SHA: ${{ steps.sums.outputs.mac_sha }}
         run: |
-          URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sopack-$V.tar.gz"
+          test -n "$SHA" || { echo "::error::no macOS sha256 found in SHA256SUMS"; exit 1; }
+          URL="https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/sopack-$V-aarch64-apple-darwin.tar.gz"
           perl -pi -e "s|^  url \".*\"|  url \"$URL\"|; s|^  sha256 \".*\"|  sha256 \"$SHA\"|" Formula/sopack.rb
           git diff --stat
           if git diff --quiet; then echo "formula already current"; exit 0; fi

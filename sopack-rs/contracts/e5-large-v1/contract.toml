@@ -1,0 +1,102 @@
+# Embedding contract e5-large-v1 — the vector space of the live `sop` and
+# `bibles` collections. SOPACK-1.0-PLAN.md §3.6, SOPACK-AUTONOMY.md §3.2.
+#
+# This file is DATA shared by every implementation:
+#   * the Rust `sopack` binary embeds it (include_str!) and also accepts
+#     `--contract <path>`;
+#   * the Python server (app/import_service.py via sopack/contract.py) reads the
+#     same file with tomllib.
+# Nothing here names a vector store. Collection names, named-vector names and
+# payload-index types live in the importer's adapter config.
+#
+# Changing any [embedding] or [model] value defines a NEW vector space: make a
+# new contract directory (e5-large-v2, …), a new calibration fixture and a new
+# collection. Never edit these values in place.
+
+schema = "sopack.contract/1"
+id = "e5-large-v1"
+description = "intfloat/multilingual-e5-large, mean pooling, L2-normalised, 1024-d cosine"
+
+[embedding]
+model = "intfloat/multilingual-e5-large"
+pooling = "mean"                 # attention-mask-weighted mean of last_hidden_state
+normalized = true                # L2
+dim = 1024
+distance = "cosine"
+max_tokens = 512                 # truncate (not split) at the encoder window
+passage_prefix = "passage: "
+query_prefix = "query: "
+# The runtimes that are MEASURED to reproduce this space (M0, 2026-09-24:
+# 281 stored vectors at min cosine 0.99999999998). Informational: acceptance
+# is decided by the calibration gate, not by these strings.
+reference_runtimes = [
+  "fastembed 0.8.0 (python, onnxruntime 1.30.0)",
+  "sopack-rs (ort 2.0.0-rc.13 + tokenizers 0.23.2, onnxruntime 1.30.0)",
+]
+
+[model]
+# Where `sopack model fetch` gets the files from, and what it verifies.
+source = "huggingface"
+repo = "qdrant/multilingual-e5-large-onnx"
+revision = "66076b8dc6e367337e3e90e6fb309fb0f3addaf6"
+onnx = "model.onnx"
+# Model inputs/outputs as exported (token_type_ids is fed zeros if present).
+output = "last_hidden_state"
+
+[model.files]
+# file = { sha256, bytes } — every file is verified after download and by `doctor`.
+"config.json"             = { sha256 = "1de8c3be1f344c0eefa4962480a006f8639f416dfafaa95a770e3cf4bceae6a4", bytes = 716 }
+"model.onnx"              = { sha256 = "1c09780c907c8a91a77a6ab1fd231f79e090d2907ca431223703dfebeed3d36c", bytes = 545851 }
+"model.onnx_data"         = { sha256 = "0cf1883fee81c63819a44e2ba0efa51d4043d9759685a4ebebbde97e0623d15c", bytes = 2235363328 }
+"special_tokens_map.json" = { sha256 = "8c785abebea9ae3257b61681b4e6fd8365ceafde980c21970d001e834cf10835", bytes = 964 }
+"tokenizer.json"          = { sha256 = "f59925fcb90c92b894cb93e51bb9b4a6105c5c249fe54ce1c704420ac39b81af", bytes = 17082756 }
+"tokenizer_config.json"   = { sha256 = "f90024142df07163e5e6c5b9a6ad7c8c68b22a9112af11e3db4559a9ff90f737", bytes = 1147 }
+
+[chunker]
+# Depend on the model window: 512 tokens ≈ 380 English words (sopack/extract/chunk.py).
+max_words = 300
+target_words = 220
+min_words = 8
+max_block_damage = 0.25
+max_junk_chars = 0.02
+
+[calibration]
+# The committed fixture (SOPACK-AUTONOMY.md §3.1): real corpus texts with the
+# vectors copied from the live collections when the fixture was made.
+# Generated 2026-09-24 via `python -m app.calibration export` (M1); verified
+# against Python fastembed 0.8.0: min cosine 0.99999999998695 across all 16
+# entries (well above pack_min_cosine).
+file = "calibration.json"
+sha256 = "56634875b59f05524fd4ee249073c25a54ae8ad5b3eae4d66cf6fec875aea2d5"
+pack_min_cosine = 0.9999         # pack-time self-check, every entry (M0 min: 0.99999999998)
+probe_min_cosine = 0.95          # server floor, pack probe ↔ fixture (PROBE_MIN_COSINE)
+probe_expect_cosine = 0.99       # below this a passing probe is reported as suspicious
+
+[ids]
+namespace = "dns"                # uuid5(NAMESPACE_DNS, uid)
+
+[ids.rules]
+"sop/plain" = "{lang}:{book_code}:{para_key}"
+"sop/seq"   = "{lang}:{book_code}:{para_key}#{seq}"
+"bible/v1"  = "bible:{bible}:{osis}"
+
+[profiles.sop]
+required = ["lang", "book_code", "book_pair", "page", "para", "para_key", "raw_text", "aligned"]
+optional = ["corpus", "author", "title", "year", "slug", "page_kind", "chunk", "chunks", "bible_refs"]
+id_rules = ["sop/seq", "sop/plain"]
+default_id_rule = "sop/seq"
+identity = "book_code"
+text_field = "raw_text"
+reimport_is_normal = false
+# Store-neutral hints; each importer adapter maps them to its own index types.
+filterable = { lang = "string", book_code = "string", page = "int" }
+
+[profiles.bible]
+required = ["bible", "osis", "text"]
+optional = ["canonical_osis", "versification_offset"]
+id_rules = ["bible/v1"]
+default_id_rule = "bible/v1"
+identity = "bible"
+text_field = "text"
+reimport_is_normal = true
+filterable = { bible = "string", osis = "string" }

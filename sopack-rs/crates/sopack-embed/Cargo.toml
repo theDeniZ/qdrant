@@ -1,0 +1,38 @@
+[package]
+name = "sopack-embed"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+sopack-progress = { workspace = true }
+sopack-contract = { workspace = true }
+ort = { workspace = true, features = ["load-dynamic"] }
+tokenizers = { workspace = true }
+ndarray = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rayon = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }
+# Not in the workspace-shared dep list (only ort/tokenizers/ndarray are
+# pinned there) — added directly per common.md's rule for this crate's own
+# needs. Used only to read `OrtGetApiBase().GetVersionString()` straight off
+# the resolved dylib for manifest provenance (`ort::sys::OrtApi`, what
+# `ort::api()` exposes, does not carry `GetVersionString` — only the smaller
+# `OrtApiBase` does; see runtime.rs). Same major version ort itself uses for
+# its own `load-dynamic` feature.
+libloading = "0.9"
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[features]
+coreml = ["ort/coreml"]
+cuda = ["ort/cuda"]
+
+[[example]]
+name = "bench"

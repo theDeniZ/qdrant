@@ -1,11 +1,11 @@
 """.sopack container — reader and writer.
 
-A .sopack is a ZIP holding::
+A .sopack is a ZIP holding (``sopack/2``, docs/SOPACK-2-FORMAT.md)::
 
-    manifest.json   contract, counts, checksums, canary probe
+    manifest.json   contract, counts, checksums, calibration probe
     points.jsonl    one JSON object per point, in vector order
     vectors.f32     N x dim x 4 bytes, little-endian float32, same order
-    probe.f32       the canary vectors referenced by manifest["probe"]
+    probe.f32       the pack's own embeddings of the calibration fixture
     titles.json     additive title-table fragment (sop profile only)
 
 **Stdlib only** — imported by the server. Vectors are raw float32 precisely so
@@ -16,6 +16,11 @@ why that beats float16 and inline JSON arrays on a small machine.
 Both sides stream: ``PackWriter`` never holds more than one point, and
 ``PackReader.batches()`` never holds more than one batch, so peak RAM is
 independent of pack size.
+
+``PackWriter`` always writes ``sopack/2`` (store-neutral, calibration-fixture
+probe — SOPACK-AUTONOMY.md §3.1). ``PackReader`` accepts both ``sopack/1``
+(legacy live-canary probe) and ``sopack/2``, and rejects any other major
+schema version outright; unknown manifest keys are always ignored.
 """
 
 from __future__ import annotations
@@ -93,13 +98,23 @@ class PackWriter:
     """
 
     def __init__(self, path, profile: str, pack_id: str, created_by: str,
-                 id_rule: str | None = None, dim: int = contract.VECTOR_SIZE):
+                 id_rule: str | None = None, dim: int = contract.VECTOR_SIZE,
+                 runtime: str | None = None, device: str = "cpu",
+                 threads: int = 1, batch_tokens: int | None = None):
         self.path = Path(path)
         self.profile = contract.get_profile(profile)
         self.pack_id = pack_id
         self.created_by = created_by
         self.id_rule = id_rule or self.profile.default_id_rule
         self.dim = dim
+        # Embedding-block provenance (R10) — informational only, never
+        # compared by check_embedding(). `runtime` defaults to `created_by`
+        # (already "sopack <ver> on <platform>"), which is a reasonable
+        # stand-in when a caller (e.g. a test) does not supply one.
+        self.runtime = runtime or created_by
+        self.device = device
+        self.threads = threads
+        self.batch_tokens = batch_tokens
         self.count = 0
         self._books: list[dict] = []
         self._probe: dict | None = None
@@ -165,18 +180,38 @@ class PackWriter:
     def set_titles(self, titles: dict | None) -> None:
         self._titles = titles
 
-    def set_probe(self, canaries: list[dict], vectors: list[list[float]]) -> None:
-        """*canaries* are ``{"id", "collection"}`` of points ALREADY in the live
-        collection; *vectors* are this machine's fresh embeddings of their text,
-        in the same order. The server cosines the two (§4.4)."""
-        if len(canaries) != len(vectors):
-            raise PackError("probe: canary/vector count mismatch")
+    def set_probe(self, entries: list[dict], vectors: list[list[float]], *,
+                  self_check: dict, fixture_sha256: str | None = None) -> None:
+        """*entries* are the calibration fixture's own ``{"id", "profile"[,
+        "uid"]}`` records (SOPACK-2-FORMAT.md §3), in fixture order; *vectors*
+        are THIS pack's fresh embeddings of their text, same order — computed
+        by the same model instance that embedded the books, before any book
+        was embedded (§3, R11). *self_check* is what the caller measured
+        comparing *vectors* against the fixture's own stored vectors: ``{"n",
+        "min_cosine", "mean_cosine", "threshold"}``. The importer repeats an
+        equivalent comparison offline (its own copy of the fixture) — this
+        pack-time check exists so a broken environment fails on the laptop in
+        seconds, not on the server after a long embed.
+
+        *fixture_sha256* is the sha256 the manifest declares this pack was
+        calibrated against — defaults to the contract's own committed
+        fixture (``contract.CALIBRATION_SHA256``), which is what every
+        production pack uses; a caller that built *entries* from an
+        overridden fixture (tests) passes that fixture's own sha
+        (``contract.calibration_fixture_sha256``) so the importer, given the
+        same override, agrees."""
+        if len(entries) != len(vectors):
+            raise PackError("probe: fixture entry/vector count mismatch")
         self._probe = {
-            "canaries": [
-                {**c, "vector_offset": i, "cosine_expected_min": contract.PROBE_MIN_COSINE}
-                for i, c in enumerate(canaries)
-            ],
+            "kind": "calibration",
+            "fixture_sha256": (fixture_sha256 if fixture_sha256 is not None
+                              else contract.CALIBRATION_SHA256),
             "vectors": PROBE,
+            "entries": [
+                {"id": e["id"], "profile": e.get("profile"), "vector_offset": i}
+                for i, e in enumerate(entries)
+            ],
+            "self_check": dict(self_check),
         }
         self._probe_vectors = vectors
 
@@ -242,13 +277,29 @@ class PackWriter:
             "profile": self.profile.name,
             "pack_id": self.pack_id,
             "created_by": self.created_by,
-            "target": {
-                "collection": self.profile.collection,
-                "vector_name": contract.VECTOR_NAME,
-                "vector_size": contract.VECTOR_SIZE,
-                "distance": contract.DISTANCE,
+            "target": {"profile": self.profile.name, "contract": contract.CONTRACT_ID},
+            "contract": {
+                "id": contract.CONTRACT_ID,
+                "sha256": contract.CONTRACT_SHA256,
+                "calibration_sha256": contract.CALIBRATION_SHA256,
             },
-            "embedding": dict(contract.EMBEDDING),
+            "embedding": {
+                # Exactly the checked keys (SOPACK-2-FORMAT.md §2) plus
+                # provenance — not the whole contract.EMBEDDING dict, which
+                # also carries query_prefix/reference_runtimes (contract-only
+                # concerns a pack never needs to declare about itself).
+                "model": contract.EMBEDDING["model"],
+                "pooling": contract.EMBEDDING["pooling"],
+                "normalized": contract.EMBEDDING["normalized"],
+                "dim": self.dim,
+                "distance": contract.EMBEDDING["distance"],
+                "max_tokens": contract.EMBEDDING["max_tokens"],
+                "passage_prefix": contract.EMBEDDING["passage_prefix"],
+                "runtime": self.runtime,
+                "device": self.device,
+                "threads": self.threads,
+                "batch_tokens": self.batch_tokens,
+            },
             "id_rule": self.id_rule,
             "id_rule_doc": contract.ID_RULE_DOC[self.id_rule],
             "counts": {"points": self.count, "books": len(self._books), "dim": self.dim,
@@ -334,19 +385,24 @@ class PackReader:
 
     # ── integrity ────────────────────────────────────────────────────────────
     def check(self) -> list[str]:
-        """Everything verifiable without touching Qdrant. Empty list is clean."""
+        """Everything verifiable without touching a store. Empty list is clean.
+
+        Accepts both ``sopack/1`` (legacy) and ``sopack/2`` manifests; any
+        other major schema (e.g. a future ``sopack/3``) is rejected outright,
+        per SOPACK-2-FORMAT.md."""
         errors = []
-        if self.manifest.get("schema") != contract.SCHEMA_PACK:
-            errors.append(f"unsupported schema {self.manifest.get('schema')!r} "
-                          f"(this server reads {contract.SCHEMA_PACK!r})")
+        schema = self.manifest.get("schema")
+        if schema not in contract.SUPPORTED_PACK_SCHEMAS:
+            errors.append(f"unsupported schema {schema!r} "
+                          f"(this reader accepts {contract.SUPPORTED_PACK_SCHEMAS!r})")
             return errors
         try:
             profile = self.profile
         except ValueError as exc:
             return [str(exc)]
 
-        errors += contract.check_embedding(self.manifest.get("embedding") or {})
-        errors += contract.check_target(self.manifest.get("target") or {}, profile)
+        errors += contract.check_embedding(self.manifest.get("embedding") or {}, schema)
+        errors += contract.check_target(self.manifest.get("target") or {}, profile, schema)
 
         if self.id_rule not in profile.id_rules:
             errors.append(f"id_rule {self.id_rule!r} is not valid for profile "

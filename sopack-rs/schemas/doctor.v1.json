@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/doctor.v1.json",
+  "title": "sopack doctor output (v1)",
+  "description": "The JSON `sopack doctor [--quick] --json` prints to stdout. Exit code is 0 when every check passes, 6 otherwise. Produced by crates/sopack-cli/src/commands/doctor.rs (`DoctorReport`).",
+  "type": "object",
+  "required": ["checks", "ok"],
+  "additionalProperties": false,
+  "properties": {
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "ok", "level", "detail"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "ok": { "type": "boolean" },
+          "level": { "enum": ["info", "warning", "error"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "ok": { "type": "boolean" }
+  }
+}

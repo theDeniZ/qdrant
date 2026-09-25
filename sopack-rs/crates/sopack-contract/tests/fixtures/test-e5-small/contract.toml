@@ -1,0 +1,78 @@
+# Test-only contract proving a new embedding model is data, not code
+# (SOPACK-1.0-PLAN.md §3.6): "M2 tests this with a small second model (e.g.
+# multilingual-e5-small) as a test-only contract." This directory is
+# deliberately NOT under sopack-rs/contracts/ (real, shared, released
+# contracts) — it lives here, next to the test that loads it
+# (tests/conformance_second_contract.rs), and is never embedded into the
+# binary. The model is never downloaded: `model.files` sha256/bytes below
+# are placeholders (this contract is loaded and validated, not used to fetch
+# or run anything).
+
+schema = "sopack.contract/1"
+id = "e5-small-test"
+description = "TEST ONLY: intfloat/multilingual-e5-small, mean pooling, L2-normalised, 384-d cosine — proves a new model needs no sopack-contract code change (SOPACK-1.0-PLAN.md §3.6)."
+
+[embedding]
+model = "intfloat/multilingual-e5-small"
+pooling = "mean"
+normalized = true
+dim = 384
+distance = "cosine"
+max_tokens = 512
+passage_prefix = "passage: "
+query_prefix = "query: "
+reference_runtimes = ["test fixture only — never run"]
+
+[model]
+source = "huggingface"
+repo = "intfloat/multilingual-e5-small"
+revision = "test-fixture-not-a-real-revision"
+onnx = "model.onnx"
+output = "last_hidden_state"
+
+[model.files]
+"config.json"             = { sha256 = "0000000000000000000000000000000000000000000000000000000000000", bytes = 1 }
+"model.onnx"               = { sha256 = "1111111111111111111111111111111111111111111111111111111111111", bytes = 1 }
+"tokenizer.json"           = { sha256 = "2222222222222222222222222222222222222222222222222222222222222", bytes = 1 }
+
+[chunker]
+max_words = 300
+target_words = 220
+min_words = 8
+max_block_damage = 0.25
+max_junk_chars = 0.02
+
+[calibration]
+file = "calibration.json"
+sha256 = "37a4633179def83afcdf2ecf57693bc6eb292550b3884da74b03e79613d37077"
+pack_min_cosine = 0.9999
+probe_min_cosine = 0.95
+probe_expect_cosine = 0.99
+
+[ids]
+namespace = "dns"
+
+[ids.rules]
+"sop/plain" = "{lang}:{book_code}:{para_key}"
+"sop/seq"   = "{lang}:{book_code}:{para_key}#{seq}"
+"bible/v1"  = "bible:{bible}:{osis}"
+
+[profiles.sop]
+required = ["lang", "book_code", "book_pair", "page", "para", "para_key", "raw_text", "aligned"]
+optional = ["corpus", "author", "title", "year", "slug", "page_kind", "chunk", "chunks", "bible_refs"]
+id_rules = ["sop/seq", "sop/plain"]
+default_id_rule = "sop/seq"
+identity = "book_code"
+text_field = "raw_text"
+reimport_is_normal = false
+filterable = { lang = "string", book_code = "string", page = "int" }
+
+[profiles.bible]
+required = ["bible", "osis", "text"]
+optional = ["canonical_osis", "versification_offset"]
+id_rules = ["bible/v1"]
+default_id_rule = "bible/v1"
+identity = "bible"
+text_field = "text"
+reimport_is_normal = true
+filterable = { bible = "string", osis = "string" }

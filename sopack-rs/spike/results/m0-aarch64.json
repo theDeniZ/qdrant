@@ -1,0 +1,166 @@
+{
+  "available_parallelism": 4,
+  "bar": 0.9999,
+  "n_points": 281,
+  "ordered32_seconds": 286.567888548,
+  "ordered32_vs_stored": {
+    "below_bar": 0,
+    "mean": 0.9999999999961605,
+    "min": 0.9999999999831353,
+    "n": 281,
+    "pass": true
+  },
+  "python_vs_stored": {
+    "below_bar": 0,
+    "mean": 0.9999999999961597,
+    "min": 0.9999999999831348,
+    "n": 281,
+    "pass": true
+  },
+  "single_min_by_group": {
+    "bench": 0.9999999999868043,
+    "bible-elberfelder1905": 0.9999999999981285,
+    "bible-japkougo": 0.9999999999991376,
+    "bible-kjv": 0.9999999999982445,
+    "bible-korean": 0.9999999999985947,
+    "bible-luther1912": 0.9999999999978981,
+    "bible-net": 0.9999999999974992,
+    "bible-nkjv": 0.9999999999946051,
+    "bible-schlachter": 0.999999999997847,
+    "bible-spanish": 0.99999999999534,
+    "bible-synodal": 0.9999999999843479,
+    "bible-ukrogienko": 0.9999999999955855,
+    "sop-de": 0.9999999999910215,
+    "sop-en": 0.9999999999966303,
+    "sop-es": 0.9999999999914169,
+    "sop-fr": 0.9999999999920617,
+    "sop-it": 0.9999999999918663,
+    "sop-ja": 0.9999999999933262,
+    "sop-ko": 0.9999999999926275,
+    "sop-long": 0.9999999999916869,
+    "sop-pioneer": 0.9999999999983123,
+    "sop-pt": 0.9999999999934068,
+    "sop-ro": 0.999999999993213,
+    "sop-ru": 0.999999999991783,
+    "sop-uk": 0.999999999992216,
+    "sop-zh": 0.9999999999931481
+  },
+  "single_seconds": 99.664851211,
+  "single_vs_python": {
+    "below_bar": 0,
+    "mean": 0.9999999999995853,
+    "min": 0.999999999997228,
+    "n": 281,
+    "pass": true
+  },
+  "single_vs_stored": {
+    "below_bar": 0,
+    "mean": 0.9999999999961602,
+    "min": 0.9999999999843479,
+    "n": 281,
+    "pass": true
+  },
+  "single_worst5": [
+    {
+      "cos": 0.9999999999843479,
+      "id": "5501ef27-9562-5298-9d33-f28c9707f84d",
+      "tag": "synodal:2Sam.1.16"
+    },
+    {
+      "cos": 0.9999999999868043,
+      "id": "c12ad27d-b40f-55ba-8221-182562e6adf5",
+      "tag": "de:WFK:29.1"
+    },
+    {
+      "cos": 0.999999999987045,
+      "id": "11011d7a-f75b-5bc7-a602-d2dfb717bdfd",
+      "tag": "en:12MR:59.1"
+    },
+    {
+      "cos": 0.9999999999882723,
+      "id": "c1382ff4-42ae-5506-ae13-0947f97c4fb6",
+      "tag": "de:TH:204.1"
+    },
+    {
+      "cos": 0.999999999989195,
+      "id": "c141e57c-a42e-55c8-84fc-405b94f27aa2",
+      "tag": "de:DKn:22.4"
+    }
+  ],
+  "sorted16384": {
+    "batches": 4,
+    "max_abs_diff_vs_single": 2.3492611944675446e-7,
+    "seconds": 152.773687654,
+    "vs_single": {
+      "below_bar": 0,
+      "mean": 0.9999999999995868,
+      "min": 0.9999999999972238,
+      "n": 281,
+      "pass": true
+    },
+    "vs_stored": {
+      "below_bar": 0,
+      "mean": 0.9999999999961312,
+      "min": 0.9999999999831353,
+      "n": 281,
+      "pass": true
+    }
+  },
+  "sorted4096": {
+    "batches": 11,
+    "max_abs_diff_vs_single": 2.3492611944675446e-7,
+    "seconds": 111.237567218,
+    "vs_single": {
+      "below_bar": 0,
+      "mean": 0.9999999999995827,
+      "min": 0.9999999999972238,
+      "n": 281,
+      "pass": true
+    },
+    "vs_stored": {
+      "below_bar": 0,
+      "mean": 0.9999999999961413,
+      "min": 0.9999999999831353,
+      "n": 281,
+      "pass": true
+    }
+  },
+  "thread_scaling": {
+    "bench_texts": 192,
+    "bench_tokens": 27788,
+    "rows": [
+      {
+        "bitwise_identical_to_first": true,
+        "blocks_per_s": 1.9313968103637988,
+        "max_abs_diff_vs_first": 0.0,
+        "min_cos_vs_first": 1.0,
+        "seconds": 99.409918754,
+        "threads": 4,
+        "tokens_per_s": 279.52945086661066
+      },
+      {
+        "bitwise_identical_to_first": true,
+        "blocks_per_s": 1.235901292164207,
+        "max_abs_diff_vs_first": 0.0,
+        "min_cos_vs_first": 1.0,
+        "seconds": 155.352212363,
+        "threads": 2,
+        "tokens_per_s": 178.8709640971822
+      },
+      {
+        "bitwise_identical_to_first": true,
+        "blocks_per_s": 0.666271153847376,
+        "max_abs_diff_vs_first": 0.0,
+        "min_cos_vs_first": 1.0,
+        "seconds": 288.170962965,
+        "threads": 1,
+        "tokens_per_s": 96.42886887036919
+      }
+    ]
+  },
+  "tokens": {
+    "longest_fixture_tokens": 512,
+    "mismatches": [],
+    "n": 289
+  }
+}

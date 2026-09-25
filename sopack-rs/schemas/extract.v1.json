@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/extract.v1.json",
+  "title": "sopack extract output (v1)",
+  "description": "The JSON `sopack extract <source> --json` prints to stdout on success: a single-file result, or (with --meta-from-sidecars) a batch result. Produced by crates/sopack-cli/src/commands/extract.rs.",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "single-file result",
+      "required": ["out", "book_code", "lang", "id_rule", "stats", "year_from_source_note", "book_code_collision"],
+      "additionalProperties": false,
+      "properties": {
+        "out": { "type": "string" },
+        "book_code": {},
+        "lang": {},
+        "id_rule": { "type": "string" },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "blocks_in": { "type": "integer" },
+            "blocks_out": { "type": "integer" },
+            "dropped": { "type": "integer" },
+            "damage": { "type": "number" },
+            "words": { "type": "integer" },
+            "dropped_detail": { "type": "array" }
+          }
+        },
+        "year_from_source_note": { "type": ["string", "null"] },
+        "book_code_collision": { "type": ["boolean", "null"] }
+      }
+    },
+    {
+      "type": "object",
+      "title": "batch (--meta-from-sidecars) result",
+      "required": ["written", "errors"],
+      "additionalProperties": false,
+      "properties": {
+        "written": { "type": "array", "items": { "type": "string" } },
+        "errors": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  ]
+}

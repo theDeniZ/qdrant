@@ -119,6 +119,15 @@ corpus predates the pooling change, the live query path is already mismatched.
 Prefer a container so #4, #5, #6 and #14 cannot recur. If it must run on a host,
 POSIX tools only: no `nproc`, no GNU-only `awk`, no bash-4 syntax.
 
+### R13 — The producer is offline and store-agnostic
+`sopack` never connects to a vector store, and a `.sopack` never names one. It
+carries text, payload, deterministic ids, vectors and the embedding contract;
+everything store-specific (collection, vector name, index types, backups) lives in
+a per-backend importer adapter, so the same pack could go into Qdrant or ChromaDB.
+R11's proof moves from live canaries to a committed calibration fixture. Design:
+[SOPACK-AUTONOMY.md](SOPACK-AUTONOMY.md). *(Set 2026-09-24; not yet implemented —
+`sopack canaries --qdrant` is the remaining coupling.)*
+
 ---
 
 ## 3. Shape to aim for

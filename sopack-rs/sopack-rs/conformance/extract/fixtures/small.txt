@@ -1,0 +1,3 @@
+This is the first paragraph of plain text with enough words in it to pass every gate here.
+
+This is the second paragraph of plain text, also long enough to survive the quality gate.

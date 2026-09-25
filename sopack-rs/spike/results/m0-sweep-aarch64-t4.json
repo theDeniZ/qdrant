@@ -1,0 +1,40 @@
+{
+  "rows": [
+    {
+      "batches": 192,
+      "blocks_per_s": 2.7348059185368263,
+      "budget": 0,
+      "min_cos_vs_stored": 0.9999999999868043,
+      "seconds": 70.206078866
+    },
+    {
+      "batches": 70,
+      "blocks_per_s": 2.718344523271919,
+      "budget": 512,
+      "min_cos_vs_stored": 0.9999999999868043,
+      "seconds": 70.631223657
+    },
+    {
+      "batches": 31,
+      "blocks_per_s": 2.693857844532852,
+      "budget": 1024,
+      "min_cos_vs_stored": 0.9999999999868043,
+      "seconds": 71.273248657
+    },
+    {
+      "batches": 16,
+      "blocks_per_s": 2.5133112955794874,
+      "budget": 2048,
+      "min_cos_vs_stored": 0.9999999999863954,
+      "seconds": 76.393242786
+    },
+    {
+      "batches": 5,
+      "blocks_per_s": 1.9600323382713774,
+      "budget": 8192,
+      "min_cos_vs_stored": 0.9999999999863954,
+      "seconds": 97.95756746
+    }
+  ],
+  "threads": 4
+}

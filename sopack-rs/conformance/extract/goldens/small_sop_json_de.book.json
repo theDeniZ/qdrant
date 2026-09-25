@@ -1,0 +1,64 @@
+{
+  "schema": "sopack.book/1",
+  "profile": "sop",
+  "source": {
+    "file": "sopack-rs/conformance/extract/fixtures/de/SMALLDE.json",
+    "sha256": "5fa29c1af3ba5649af40f2518c5c2ac93fbd28cacab7fdf73a3971ff31aae092",
+    "kind": "sop_json",
+    "acquired_from": null,
+    "rights": null
+  },
+  "book": {
+    "book_code": "SMALLDE",
+    "lang": "de",
+    "book_pair": null,
+    "title": "Ein kleines Testbuch",
+    "author": null,
+    "year": 1973,
+    "slug": null,
+    "corpus": null,
+    "page_kind": null
+  },
+  "id_rule": "sop/plain",
+  "alignment": {
+    "en_code": "SMALL",
+    "en_reverse": {
+      "0.1": [
+        "5.1"
+      ],
+      "0.2": [
+        "5.2"
+      ]
+    }
+  },
+  "stats": {
+    "blocks_in": 2,
+    "blocks_out": 2,
+    "dropped": 0,
+    "damage": 0.0,
+    "words": 21,
+    "dropped_detail": []
+  },
+  "blocks": [
+    {
+      "para_key": "5.1",
+      "page": 5,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Dies ist der erste Absatz des deutschen Testbuchs fuer die Konformitaet.",
+      "words": 11
+    },
+    {
+      "para_key": "5.2",
+      "page": 5,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Dies ist der zweite Absatz, ebenfalls Teil des deutschen Testbuchs.",
+      "words": 10
+    }
+  ]
+}

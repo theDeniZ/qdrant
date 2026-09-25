@@ -1,0 +1,75 @@
+{
+  "note": "All 'source' paths are relative to qdrant/ (the directory this file's grandparent's parent sits in) and are the exact strings passed to extract() on both sides, so book.json's source.file matches byte for byte. Regenerate the fixtures + their goldens with: PYTHONPATH=. .venv/bin/python3.11 sopack-rs/conformance/extract/make_extract_goldens.py (run from qdrant/).",
+  "fixtures": [
+    {
+      "name": "small_epub",
+      "kind": "epub",
+      "source": "sopack-rs/conformance/extract/fixtures/small.epub",
+      "options": {
+        "book_code": "TSTW",
+        "corpus": "pioneers",
+        "slug": "test-work"
+      }
+    },
+    {
+      "name": "small_markdown",
+      "kind": "markdown",
+      "source": "sopack-rs/conformance/extract/fixtures/small.md",
+      "options": {
+        "book_code": "MDX",
+        "lang": "en",
+        "title": "MD Fixture",
+        "author": "M. Author",
+        "year": 2020,
+        "corpus": "test",
+        "slug": "md-fixture"
+      }
+    },
+    {
+      "name": "small_text",
+      "kind": "text",
+      "source": "sopack-rs/conformance/extract/fixtures/small.txt",
+      "options": {
+        "book_code": "TXT",
+        "lang": "en",
+        "title": "Text Fixture",
+        "author": "T. Author",
+        "year": 2021,
+        "corpus": "test",
+        "slug": "text-fixture"
+      }
+    },
+    {
+      "name": "small_sop_json",
+      "kind": "sop_json",
+      "source": "sopack-rs/conformance/extract/fixtures/en/SMALL.json",
+      "options": {}
+    },
+    {
+      "name": "small_sop_json_de",
+      "kind": "sop_json",
+      "source": "sopack-rs/conformance/extract/fixtures/de/SMALLDE.json",
+      "options": {}
+    }
+  ],
+  "real_books": [
+    {
+      "name": "wdys",
+      "kind": "epub",
+      "source": "pd-books/converted/andrews__why-do-you-swear__1861__archive.epub",
+      "options": {}
+    },
+    {
+      "name": "come_out_of_her",
+      "kind": "epub",
+      "source": "pd-books/converted/fitch__come-out-of-her-my-people__1843__archive.epub",
+      "options": {}
+    },
+    {
+      "name": "seal_of_the_living_god",
+      "kind": "epub",
+      "source": "pd-books/converted/bates-joseph__a-seal-of-the-living-god__1849__archive.epub",
+      "options": {}
+    }
+  ]
+}

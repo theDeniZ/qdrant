@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/contract-show.v1.json",
+  "title": "sopack contract show output (v1)",
+  "description": "The JSON `sopack contract show --json` prints to stdout: the resolved contract's full detail. Produced by crates/sopack-cli/src/commands/contract_cmd.rs.",
+  "type": "object",
+  "required": ["id", "description", "contract_sha256", "calibration_sha256", "embedding", "model", "chunker", "calibration", "profiles", "id_rules"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string" },
+    "description": { "type": "string" },
+    "contract_sha256": { "type": "string" },
+    "calibration_sha256": { "type": ["string", "null"] },
+    "embedding": {
+      "type": "object",
+      "required": ["model", "pooling", "normalized", "dim", "distance", "max_tokens", "passage_prefix", "query_prefix"],
+      "properties": {
+        "model": { "type": "string" },
+        "pooling": { "type": "string" },
+        "normalized": { "type": "boolean" },
+        "dim": { "type": "integer" },
+        "distance": { "type": "string" },
+        "max_tokens": { "type": "integer" },
+        "passage_prefix": { "type": "string" },
+        "query_prefix": { "type": "string" }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": ["repo", "revision", "onnx", "files_total_bytes"],
+      "properties": {
+        "repo": { "type": "string" },
+        "revision": { "type": "string" },
+        "onnx": { "type": "string" },
+        "files_total_bytes": { "type": "integer" }
+      }
+    },
+    "chunker": {
+      "type": "object",
+      "required": ["max_words", "target_words", "min_words"],
+      "properties": {
+        "max_words": { "type": "integer" },
+        "target_words": { "type": "integer" },
+        "min_words": { "type": "integer" }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "required": ["pack_min_cosine", "probe_min_cosine", "probe_expect_cosine", "fixture_entries"],
+      "properties": {
+        "pack_min_cosine": { "type": "number" },
+        "probe_min_cosine": { "type": "number" },
+        "probe_expect_cosine": { "type": "number" },
+        "fixture_entries": { "type": "integer" }
+      }
+    },
+    "profiles": { "type": "array", "items": { "type": "string" } },
+    "id_rules": { "type": "array", "items": { "type": "string" } }
+  }
+}

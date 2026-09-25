@@ -31,9 +31,8 @@ from sopack import contract  # noqa: E402
 from sopack import verify as verify_mod  # noqa: E402
 
 
-def _canaries(n=2):
-    return [{"id": f"canary-{i}", "collection": "sop", "text": f"canary text {i}"}
-            for i in range(n)]
+def _calibration(n=2):
+    return _helpers.fake_calibration([f"fixture text {i}" for i in range(n)])
 
 
 def _rewrite_zip_entry(path: Path, name: str, data: bytes) -> None:
@@ -65,7 +64,7 @@ class VerifyTests(unittest.TestCase):
                 pack_mod, "TextEmbedding",
                 lambda model_name=None, **kw: _helpers.FakeTextEmbedding(
                     model_name, dim=contract.VECTOR_SIZE)):
-            pack_mod.pack([(book, None)], self.out, _canaries(2),
+            pack_mod.pack([(book, None)], self.out, calibration=_calibration(2),
                           workers=1, progress=lambda *_: None)
 
     def test_clean_pack_has_no_errors(self):

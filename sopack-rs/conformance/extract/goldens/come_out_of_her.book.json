@@ -1,0 +1,730 @@
+{
+  "schema": "sopack.book/1",
+  "profile": "sop",
+  "source": {
+    "file": "pd-books/converted/fitch__come-out-of-her-my-people__1843__archive.epub",
+    "sha256": "d4b19afa8e689dc4c959bce2d81f29a0a0a7dd8bded4015e90853b8bf1374ed1",
+    "kind": "epub",
+    "acquired_from": null,
+    "rights": "Public domain"
+  },
+  "book": {
+    "book_code": "CHMP",
+    "lang": "en",
+    "book_pair": "CHMP",
+    "title": "Come Out of Her, My People: A Sermon",
+    "author": "Charles Fitch",
+    "year": 1843,
+    "slug": null,
+    "corpus": null,
+    "page_kind": "print"
+  },
+  "id_rule": "sop/seq",
+  "alignment": null,
+  "stats": {
+    "blocks_in": 64,
+    "blocks_out": 63,
+    "dropped": 13,
+    "damage": 0.0,
+    "words": 8017,
+    "dropped_detail": [
+      {
+        "para_key": "1.1",
+        "reason": "too short (5 word(s) < 8)",
+        "text": "I. WHAT IS BABYLON? 5"
+      },
+      {
+        "para_key": "1.2",
+        "reason": "too short (3 word(s) < 8)",
+        "text": "Table of Contents"
+      },
+      {
+        "para_key": "1.3",
+        "reason": "too short (4 word(s) < 8)",
+        "text": "Table of Contents 2"
+      },
+      {
+        "para_key": "1.5",
+        "reason": "too short (2 word(s) < 8)",
+        "text": "BABYLON? 14"
+      },
+      {
+        "para_key": "1.7",
+        "reason": "too short (2 word(s) < 8)",
+        "text": "BABYLON? 16"
+      },
+      {
+        "para_key": "1.10",
+        "reason": "too short (6 word(s) < 8)",
+        "text": "“Come out of her, my people”"
+      },
+      {
+        "para_key": "1.11",
+        "reason": "too short (5 word(s) < 8)",
+        "text": "A sermon, by C. Fitch."
+      },
+      {
+        "para_key": "1.13",
+        "reason": "too short (1 word(s) < 8)",
+        "text": "1843."
+      },
+      {
+        "para_key": "2.1",
+        "reason": "too short (4 word(s) < 8)",
+        "text": "I. WHAT IS BABYLON?"
+      },
+      {
+        "para_key": "3.2",
+        "reason": "too short (1 word(s) < 8)",
+        "text": "BABYLON?"
+      },
+      {
+        "para_key": "4.2",
+        "reason": "too short (2 word(s) < 8)",
+        "text": "OF BABYLON?"
+      },
+      {
+        "para_key": "5.2",
+        "reason": "too short (7 word(s) < 8)",
+        "text": "CONSEQUENCES OF REFUSING TO COME OUT OF"
+      },
+      {
+        "para_key": "5.3",
+        "reason": "too short (1 word(s) < 8)",
+        "text": "BABYLON"
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "para_key": "1.4",
+      "page": 1,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "II. WHAT ARE WE TO UNDERSTAND BY THE FALL OF",
+      "words": 10
+    },
+    {
+      "para_key": "1.6",
+      "page": 1,
+      "para": 6,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "III. WHAT IS IT FOR GOD’S PEOPLE TO COME OUT OF",
+      "words": 11
+    },
+    {
+      "para_key": "1.8",
+      "page": 1,
+      "para": 8,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "IV. IT REMAINS THAT I SPEAK OF THE CONSEQUENCES",
+      "words": 9
+    },
+    {
+      "para_key": "1.9",
+      "page": 1,
+      "para": 9,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "OF REFUSING TO COME OUT OF BABYLON 20",
+      "words": 8
+    },
+    {
+      "para_key": "1.12",
+      "page": 1,
+      "para": 12,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Rochester, N. Y. J. V. Himes, 17 arcade E. Shepard’s press.",
+      "words": 11
+    },
+    {
+      "para_key": "3.1",
+      "page": 3,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Revelation 18:1-5: “And after these things I saw another angel coming down from heaven having great power; and the earth was lightened with his glory. And he cried mightily with a strong voice, saying, Babylon, the great is fallen, is fallen, and is become the habitation of devils, and the hold of every foul spirit, and a cage of every unclean and hateful bird. For all nations have drunk of the wine of the wrath of her fornication, and the kings of the earth have committed fornication with her, and the merchants of the earth are waxed rich through the abundance of her delicacies. And I heard another voice from heaven, saying, Come out of her, my people, that ye be not partakers of her sins, and that ye receive not of her plaques. For her sins have reached unto heaven, and God hath remembered her iniquities.”",
+      "words": 147
+    },
+    {
+      "para_key": "3.2",
+      "page": 3,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "21st verse: “And a mighty angel took up a stone like a great millstone, and cast it into the sea, saying, Thus with violence shall that great city Babylon be thrown down, and shall be found no more at all.”",
+      "words": 40
+    },
+    {
+      "para_key": "1.14",
+      "page": 1,
+      "para": 14,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Revelation 14:6-20: “And I saw another angel fly in the midst of heaven, having the everlasting gospel to preached unto them that dwell on the earth, and to every nation, and kindred, and tongue, and people, saying with a loud voice, Fear God, and give glory to him; for the hour of his judgment is come: and worship him that made heaven, and earth, and the sea, and the fountains of waters. And there followed another angel, saying, Babylon is fallen, is fallen, that great city, because she made all nations drink of the wine of the wrath of her fornication. And the third angel followed them, saying with a loud voice, If any man worship the beast and his image, and receive his mark in his forehead, or in his hand, the same shall drink of the wine of the wrath of God, which is poured",
+      "words": 147
+    },
+    {
+      "para_key": "3.3",
+      "page": 3,
+      "para": 3,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 2,
+      "text": "out without mixture into the cup of his indignation; and he shall be tormented with fire and brimstone in the presence of the holy angels, and in the presence of the Lamb: and the smoke of their torment ascendeth up for ever and ever: and they have no rest day nor night, who worship the beast and his image, and whosoever receiveth the mark of his name. Here is the patience of the saints; here are they that keep the commandments of God, and the faith of Jesus. And I heard a voice from heaven, saying unto me, Write, Blessed are the dead which die in the Lord from henceforth: Yea, saith the Spirit, that they may rest from their labors; and their works do follow them. And I looked, and behold a white cloud, and upon the cloud one sat like unto the Son of man, having on his head a golden crown, and in his hands a sharp sickle. And another angel came out of the temple; crying with a loud voice to him that sat on the cloud, Thrust in thy sickle, and reap: for the time is come for thee to reap; for the harvest of the earth is ripe. And he that sat on the cloud thrust in his sickle on the earth;",
+      "words": 218
+    },
+    {
+      "para_key": "3.3",
+      "page": 3,
+      "para": 3,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 2,
+      "text": "and the earth was reaped. And another angel came out of the temple which is in heaven, he also having a sharp sickle. And another angel came out from the altar, which had power over fire; and cried with a loud cry to him that had the sharp sickle, saying, Thrust in thy sharp sickle, and gather the clusters of the vine of the earth; for her grapes are fully ripe. And the angel thrust in his sickle into the earth, and gathered gathered the vine of the earth, and cast it into the great wine-press of the wrath of God. And the wine-press was trodden without the city, and blood came out of the wine-press, even unto the horsebridles, by the space of a thousand and six hundred furlongs.”",
+      "words": 130
+    },
+    {
+      "para_key": "5.1",
+      "page": 5,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "It is Antichrist: all those to whom Christ will say, at his appearing, “Those mine enemies who would not that I should reign over them, bring hither and slay them before me.” It is every thing belonging to the vine of the earth, which, at the appearance of one like the Son of man on a white cloud, is to be reaped, and cast into the great wine-press of the wrath of God.",
+      "words": 73
+    },
+    {
+      "para_key": "5.2",
+      "page": 5,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "What then is Antichrist? 1 John 4: “Beloved, believe not every spirit, but try the spirits whether they are of God, because many false prophets are gone out into the world. Hereby know ye the Spirit of God: every spirit that confesseth that Jesus Christ is come in the flesh, is of God: and every spirit that confesseth not that Jesus Christ is come in the flesh, is not of God: and this is that spirit of antichrist whereof ye have heard that it should come, and even now already is it in the world.” 2 John 1:7: “For many deceivers are entered into the world. who confess not that Jesus Christ is come in the flesh. This is a deceiver and an anti-Christ.”",
+      "words": 124
+    },
+    {
+      "para_key": "2.2",
+      "page": 2,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "It must be admitted that a spirit which is of God, while it confesses that Jesus Christ is come in the flesh, will readily assent and conform to all the objects for which he came. To confess with the lips that Jesus Christ is come in the flesh, and yet to be opposed in heart and life to the objects for which he came, is certainly to be Antichrist. The spirit therefore which is of God, while it confesses that Jesus Christ is come in the flesh, will cordially embrace, and heartily enter into all the objects for which he was thus manifested. All else must be Antichrist. What then was the end for which Jesus Christ was manifested in the flesh? Luke 24:45: “Then opened he their understandings that they might understand the Scriptures, and said unto them. Thus it is written, and thus it behooved Christ to suffer and to rise from the dead the third day: and that repentance and remission of sins should be preached in His name among all nations, beginning at Jerusalem.” This was one object of Christ’s coming in the flesh; and when Peter rebuked Him for foretelling such things concerning himself, Christ turned and rebuked Peter, saying, “Get thee behind me, Satan; for thou savorest not the things that be of God, but the things that be of men.” Peter then, was at that time Antichrist, in being opposed to the sufferings of Christ in",
+      "words": 243
+    },
+    {
+      "para_key": "6.1",
+      "page": 6,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "But did Jesus Christ come in the flesh for no purpose but to suffer? Hear Peter on the day of the Pentecost, after he had been baptized with the Holy Ghost, and fully qualified to set forth the objects of Christ’s coming. Acts 2:29: “Men and brethren, let me freely speak to you of the patriarch David, that he is both dead and buried, and his sepulchre is with us unto this day. Therefore, being a prophet, and knowing that God had sworn with an oath, to him, that of the fruit of his loins, according to the flesh. He would raise up christ to sit on his throne: he, seeing this before, spake of the resurrection of Christ,” etc. Here we are informed that God had sworn with an oath to David, that He would raise up Christ in the flesh to sit on David’s throne. Christ was therefore to come in the flesh to reign on David’s throne, and was raised up from the dead with flesh and bones for that purpose; and in that same body ascended to heaven, and angels declared that He would so come again, in like manner as He went into heaven. Now, as His ascension is personal, His coming must be personal.",
+      "words": 210
+    },
+    {
+      "para_key": "7.1",
+      "page": 7,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Isaiah had prophesied, in his ninth chapter, “Unto us a child is born, unto us a son is given, and the government shall be upon His shoulders: His name shall be called Wonderful, Counsellor, the Mighty God, the Everlasting Father, the Prince of Peace; of the increase of His government and peace there shall be no end, upon the throne of David and upon his kingdom, to order it and to establish it with judgment and with justice, from henceforth, even forever: the zeal of the Lord of hosts shall perform this.”",
+      "words": 92
+    },
+    {
+      "para_key": "7.2",
+      "page": 7,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Again: Jeremiah 33:15: “In those days and at that time will I cause the Branch of righteousness to grow up unto David; and He shall execute judgment and righteousness in the land. In those days shall Judah be saved, and Jerusalem shall dwell safely; and this is the name wherewith He shall be called, the Lord our righteousness. For thus saith the Lord, David shall never want a man to sit upon the throne of the house of Israel.” Verse 20: “Thus saith the Lord, if ye can break my covenant of the day and my covenant of the night, and that there should not be day and night in their season, then may also my covenant be broken with David my servant, that he should not have a son to reign upon his throne.”",
+      "words": 135
+    },
+    {
+      "para_key": "7.3",
+      "page": 7,
+      "para": 3,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Luke 1:30: “And the angel said unto her, Fear not, Mary, for thou hast found favor with God; and, behold, thou shalt conceive in thy womb and bring forth a son, and shalt call his name Jesus. He shall be great, and shall be called the Son of the Highest; and the Lord God shall give unto Him the throne of His father David, and He shall reign over the house of Jacob forever, and of His kingdom there shall be no end.”",
+      "words": 83
+    },
+    {
+      "para_key": "7.4",
+      "page": 7,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Now as surely as the birth of Christ was personal and not spiritual, his life, his death, his resurrection, his ascension, personal, so surely his coming must be. As he has taught in Luke 19., he is now gone into a far country to receive to himself a kingdom, and to return; and “he shall so come again in like manner as ye have seen him go into heaven.” In Psalm 89 we read: “Once have I sworn by my holiness that I will not lie unto David; his seed shall endure forever, and his throne as the sun before me. It shall be established forever as the moon, and as a faithful witness in heaven.”",
+      "words": 116
+    },
+    {
+      "para_key": "2.3",
+      "page": 2,
+      "para": 3,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Then Jesus Christ has come in the flesh to sit on David’s throne— he is to sit upon it personally and for ever. For at the sounding of the seventh trumpet there shall be heard great voices in heaven, saying, “The kingdoms of this world are become the kingdoms of our Lord and of his Christ, and he shall reign for ever and ever.” “He shall have dominion from sea to sea, and from the river to the ends of the earth.” (Psalm 72:8.) He said, indeed, at the bar of Pilate, “My kingdom is not of this world;” and for the reason that the earth which now is, is kept in store, reserved unto fire against the day of judgment and perdition of ungodly men; and as Christ’s kingdom can have no end, God has promised a new earth, wherein dwelleth righteousness, and has said, “As the new heavens and the new earth which I will make shall remain before me, so shall your seed and your name remain.” (See 65th and 66th chap. Isaiah, and 2 Peter 3 chap.) In the new earth wherein dwelleth righteousness, therefore, Christ will sit personally and eternally on David’s throne, ruling the world in righteousness, and of his kingdom there shall be no end.” Thus, as Paul said to the Hebrews, Christ, “for the joy set before him, endured the cross, despising the shame, and is set down at the right hand of God.” He also tells us that Christ is “from henceforth expecting until his enemies shall be made his footstool.” The joy set before him, and for which he endured his sufferings on",
+      "words": 273
+    },
+    {
+      "para_key": "8.1",
+      "page": 8,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "the cross, must be the joy of his eternal kingdom, when he shall reign in glory and blessedness with all his saints. Christ then was manifested in the flesh, and was raised up, and is now immortalized, for the express purpose of coming again, in like manner as he went up into heaven, to reign eternally over the entire world, on David’s throne. Hence it follows, that whoever is opposed to the PERSONAL REIGN of Jesus Christ over this world on David’s throne, is ANTICHRIST; for though he may admit that Jesus Christ has come in the flesh, he is opposed to the object for which he came, and therefore must be Antichrist; for “the kingdoms of this world must become the kingdoms of our Lord and of his Christ, and he shall reign for ever and ever.”",
+      "words": 138
+    },
+    {
+      "para_key": "9.1",
+      "page": 9,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "We have therefore only to inquire who is opposed to the personal reign of christ on David’s throne, in order to ascertain who is ANTICHRIST, or who is in Babylon, to be destroyed when Christ shall appear in the clouds of heaven, to establish his kingdom. Who, then, is opposed to the personal reign of Christ on David’s throne?",
+      "words": 59
+    },
+    {
+      "para_key": "9.2",
+      "page": 9,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "1st. The entire roman catholic church. The primitive church believed in the personal reign of Christ, and looked and longed for it, and waited for his appearing, and loved it as the apostles had done before them. Justin Martyr, one of the primitive Christians, declares that this was the faith in which all the orthodox in the primitive church agreed. But when the papacy came into power, they concluded to have Christ reign, not personally, but spiritually, and hence the Pope entered into the stead of Christ, and undertook to rule the world for him—claiming to be God’s vicegerent on earth. Inasmuch, therefore, as the Papists wish to retain their power, we find them all opposed to Christ’s coming to establish a personal reign. They are willing that Christ should reign spiritually, provided they can be his acknowledged agents, and thus bring the world to bow down wholly to their dictation, and use God’s authority for their own aggrandizement. But to the idea of Christ’s coming to establish a personal reign, they are decidedly and bitterly hostile.",
+      "words": 177
+    },
+    {
+      "para_key": "2.4",
+      "page": 2,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "They will not confess that Jesus Christ has come in the flesh to reign. They are willing to admit that he has come to suffer, but they will not award him his crown, and consent to his taking his seat on",
+      "words": 41
+    },
+    {
+      "para_key": "10.1",
+      "page": 10,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "the throne of David, while they bow down and worship. Hence they are Antichrist. When the Israelites of old departed from the true God, and worshiped idols, and made these their dependence, God charged them with the sin of whoredom toward himself. The Catholics, while claiming to be the church of God, have always, when they could, looked for support to the secular power, instead of trusting God to maintain them. Hence God accuses them of committing fornication with the kings of the earth; and the Romish church is called the great whore that did corrupt the nations, drawing them from the worship and service of the true God, to support her in her nameless and horrid abominations. But,",
+      "words": 119
+    },
+    {
+      "para_key": "2.5",
+      "page": 2,
+      "para": 5,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 2,
+      "text": "2nd. Is the catholic church, only opposed to the personal reign of Christ? What shall we say of Protestant Christendom in this respect? Among all the sects into which the Protestant church is divided, where is one that is not decidedly hostile to the Bible truth that Christ has been raised up to sit personally on David’s throne? Indeed, where has such a notion originated, as that Christ is to have only a spiritual reign? There is nothing in the Bible that furnishes the least shadow of a foundation for such an idea. Paul has, however, given us a clue to the origin of the very thing, (2 Timothy 4:3,) “For the time will come when they will not endure sound doctrine, but after their own lusts shall they heap to themselves teachers, having itching ears, and they shall turn away their ears from the truth, and shall be turned to fables. This is at present true of all sects in Protestant Christendom.",
+      "words": 163
+    },
+    {
+      "para_key": "2.5",
+      "page": 2,
+      "para": 5,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 2,
+      "text": "The sound scriptural doctrine of the personal reign of Christ on David’s throne cannot now be endured, and hence the teachers which the various sects have been heaping to themselves have turned away their ears to the groundless fable of a spiritual reign of Christ, during what is called a temporal millennium, when they expect all the world will be converted; and each sect is expecting at that time to have the predominant influence. Each one of these sects is willing to rule the world, as the Papists have done, FOR Christ; but no one of them is willing to have Christ come in person to rule the world for himself, while they take their place at his feet, to do his bidding; nor are they willing to listen for a moment to what the Bible says respecting Christ’s personal coming. It is only here and there, among all the sects, that a place of worship can be obtained for the",
+      "words": 161
+    },
+    {
+      "para_key": "2.6",
+      "page": 2,
+      "para": 6,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 3,
+      "text": "purpose of showing the people what is contained in the Bible respecting Christ’s coming and kingdom. Nor are these sects honest in their pretended attachment even to the spiritual reign of Christ, for there is not a sect among them all that will now allow Christ to reign over them in a spiritual sense, inasmuch as they do not, as a sect, make Christ’s principles and precepts their rules of life. No one sect can be found that does live by Christ’s rules. They would call it ultraism to think of doing so. Besides, if they had been sincere in their desires for the spiritual reign of Christ, they might have sent the gospel into every dwelling on the face of the earth long ago. Christ said, by their fruits ye shall know them; and the fruit which he expected his true disciples to bear was, obedience to his precepts. “If ye love me, keep my commandments. His precepts were such as these: “Lay not up for yourselves treasures on earth. Sell that ye have, and give alms. Give to him that asketh of thee, and of him that would borrow of thee turn not thou away. Be merciful and do good, and lend hoping for nothing again. Bless them that persecute you.",
+      "words": 213
+    },
+    {
+      "para_key": "2.6",
+      "page": 2,
+      "para": 6,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 3,
+      "text": "Do good to them that hate you, and pray for them that despitefully use you. By such fruits they were to be known. The practical motto in this day is, by their creeds ye shall know them. If a man subscribes to an orthodox creed, and covenants to deny himself all ungodliness and every worldly lust, he may after this serve the devil with both hands, and yet be regarded as a good Christian. With a Presbyterian, or an Episcopalian, or a Methodist, or a Baptist book of discipline in his pocket, he may gird up all the energies of his being to amass wealth, and live solely for purposes of personal aggrandizement, and yet pass among professedly Christian sects as a disciple—a follower of Him who on earth had not where to lay his head, and who has said to his followers, “Lay not up for yourselves treasures on earth. Though the Bible says. “They that will be rich fall into temptation and a snare, and into many foolish and hurtful lusts, which drown men in destruction and perdition,” the various sects of professed Christendom expect that their members will make the accumulation of wealth the object of their lives.",
+      "words": 201
+    },
+    {
+      "para_key": "2.6",
+      "page": 2,
+      "para": 6,
+      "seq": 2,
+      "chunk": 2,
+      "chunks": 3,
+      "text": "And yet they profess to be desiring the spiritual reign of Christ, and to be living for the conversion of the world to the religion of the crucified Nazarene. Tell them, however, that Christ is coming in person, according to the oath of God, to carry out the principles of his own religion for ever, and they are ready to fight against it with all their might. We",
+      "words": 68
+    },
+    {
+      "para_key": "10.2",
+      "page": 10,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "are living in the very state of things predicted by our Savior, “And because iniquity shall abound, the love of many shall wax cold.” To such an extent has the love of this present world abounded, in the hearts of those who say they are Christ’s, that nothing is so unwelcome to the mass of them as to tell them that their Savior, whom they profess to regard as their best friend, is soon coming to take his people to be with him.",
+      "words": 83
+    },
+    {
+      "para_key": "12.1",
+      "page": 12,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "The apostle John writes as follows: “Love not the world, nor the things which are in the world. If any man love the world, the love of the Father is not in him. For all that is in the world, the lust of the flesh, and the lust of the eye, and the pride of life, is not of the Father, but is of the world; and the world passeth away, and the lust thereof, but he that Doeth the will of God abideth for ever. Little children, it is the last time: and as ye have heard that Antichrist shall come, even now there are many Antichrists, whereby we know that it is the last time..” Inasmuch as all these multiplied sects are opposed to the plain Bible truth of Christ’s personal reign on earth, they are anti-Christ.",
+      "words": 139
+    },
+    {
+      "para_key": "2.7",
+      "page": 2,
+      "para": 7,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "John saw a sea of glass mingled with fire, and them that had got the victory over the beast, and over his image, and over his mark, and over the number of his name, standing on that sea of glass, having the harps of God. The Greek word arithmos, here translated number, is also thus defined: “a mob, a worthless multitude, a herd; and some have suggested that these sects make up the number of six hundred three score and six, which is ascribed to the Antichristian beast; and I confess, that the idea of getting the victory over the worthless multitude of the beast, looks to me far more consistent, and far more likely to be ascribed by inspiration to the mind that hath wisdom and understanding, than the usual idea of getting the victory over the Hebrew, or Greek, or Roman letters whose numerical value amounts to 666. These various Protestant sects have no occasion to take credit to themselves on account of their professed desires for converting the world to Christ, for the Pope is as loud in his professions of this sort as they, and far more consistent, and persevering, and efficient in his efforts. But altogether, Catholics and Protestants, are determined on a spiritual reign, and each hopes, in their fabled millennium, to be the predominating sect. If, by the way, either of these sects were to rule",
+      "words": 233
+    },
+    {
+      "para_key": "13.1",
+      "page": 13,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "the world, it might as well be the Catholics as either, inasmuch as sects have always grown carnal and corrupt in proportion as their power, and influence, and wealth, have increased; and there is not a sect among them all but would unquestionably become as corrupt, and as cruel and tyrannical, as the Catholics ever were, by the time they had gained the same summit of greatness to which the Catholics did once obtain. There is not the sect nor the individual on earth that is worthy of being trusted with irresponsible power. Many a sect, if told that they would become as wicked as the Catholics ever were, when once they should have the power— would be ready to exclaim with one of old, “And we dogs that we should do these things?” And yet, like him, when once the power should be in their hands, would go straightforward and do them. None is worthy to reign over this world but Christ—none else has a right to reign; and he is coming in the clouds of heaven for that very purpose: while the whole professed Christian world, Catholic and protestant, are determined that it shall be only a spiritual reign, when each particular sect is hoping to have the ascendancy.",
+      "words": 211
+    },
+    {
+      "para_key": "2.8",
+      "page": 2,
+      "para": 8,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "One most unscriptural feature in all their plans is, to have the world given to a generation of Christians who have never known anything but peace and safety; while the Bible says, “If we suffer, we shall reign with him;” that we are “heirs of God, and joint heirs with Christ if so be that we suffer with Him, that we may be glorified together;” that “blessed are they that are persecuted for righteousness sake, for theirs is the kingdom of heaven;” that through much tribulation we must enter into the kingdom of God; that those which were beheaded for the witness of Jesus and the word of God, shall rise and reign with Christ: and these John heard singing praise, and saying, “Thou hast made us unto our God kings and priests, and we shall reign on the earth.” Notwithstanding all these Scripture declarations respecting those who are to reign with Christ, when the kingdoms of the world are his, and he shall reign for ever and ever, it is now claimed that those shall possess the world and reign without Christ, who shall be born and live in a time of universal peace, and never have a hair plucked from their heads by way of suffering for Christ’s sake. There is no language that can express the immeasurable folly of such Biblical expositions as these. They are immeasurable nonsense. Again, all these pretended Christian",
+      "words": 236
+    },
+    {
+      "para_key": "14.1",
+      "page": 14,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "sects are particularly opposed to the idea that Christ is coming speedily in person, to take the dominion of the world; and especially to the idea that there is Bible evidence for believing that he will come during the present Jewish year. Against this they can find no words to express their indignation. If it could be deferred a thousand years or so, the idea might be endured. But to think that anybody should believe that Christ is coming the present year to take his seat on David’s throne for ever, this is intolerable. In these particulars, therefore, the professed Christian world. Catholic and Protestant, are Antichrist. They will not submit to Christ’s personal reign. They will not love his appearing, and especially not at present Said a professed minister of the gospel, in the State of New Jersey, “If Christ is coming to reign in this world, I’ll not stay with him.” Said another minister in New York, “If Christ is coming thus to destroy his enemies, I’ll not worship him.” Said another minister in the State of Ohio, “God has no right to destroy the world at present. He had no right to make it to be destroyed at such a time. These men were all indulging the very spirit of Antichrist. Thus I have defined what Babylon, or Antichrist is. It is everything that rises in opposition to the personal reign of Christ on David throne, and to the revealed time for his appearing and here we do find the professed Christian world Catholic and Protestant, on the side of Antichrist. They all say, let us take the kingdom, and let Christ, and the departed saints that have suffered with him, to whom the kingdom has been promised, remain where they are.",
+      "words": 295
+    },
+    {
+      "para_key": "3.1",
+      "page": 3,
+      "para": 1,
+      "seq": 1,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "II. WHAT ARE WE TO UNDERSTAND BY THE FALL OF",
+      "words": 10
+    },
+    {
+      "para_key": "3.3",
+      "page": 3,
+      "para": 3,
+      "seq": 2,
+      "chunk": 0,
+      "chunks": 3,
+      "text": "This is fully expressed in Scripture language, “Babylon the great is fallen, is fallen, and is become the habitation of devils, and the hold of every foul spirit, and a cage of every unclean and hateful bird. Babylon is fallen into this dreadful state. No Protestant would think this language too strong to express the true state of things in the Catholic church at the present time; and the Catholics in their turn would say the same things of Protestants. We need not stop to show how the language applies to Catholicism. The justice of the application is sufficiently obvious. But how is it with Protestant Christendom. How is she occupied? Is she not engaged, for her own aggrandizement, in every species of merchandise ascribed to Babylon, even to slaves and the souls of men? The spirit of oppression reigns, in greater or less portions of the leading sects, unrebuked; and a man may sell or buy his fellow-man, and then sit at the communion table, or even minister at the altar of God, and by the mass of Protestant Christendom go unreproved.",
+      "words": 183
+    },
+    {
+      "para_key": "3.3",
+      "page": 3,
+      "para": 3,
+      "seq": 3,
+      "chunk": 1,
+      "chunks": 3,
+      "text": "Lust for power is seen among all the sects, and lust for gold is practically regarded by the multitude of Christ’s professed disciples as a virtue, and they may resort to any means for acquiring wealth which does not amount to positive transgression of human law, and yet stand in the church as accredited members. Things in this respect, in the professed church, are entirely the reverse of what they were when as many as were possessors of houses and lands sold them, to be distributed for the advancement of the cause of Christ. Sumptuous dwellings and apparel, and equipage, are sought after by professed disciples of the meek and lowly Jesus, as though they were the supreme good; and you will see multitudes of such professed Christians puffing and strutting about the world in their proud and lofty bearing, and looking down upon the humble follower of the crucified Nazarene, (who dares be singular enough to carry out the principles of the religion of the cross,) as though they could find no language sufficient to express their contempt. Speak to them about the coming of Christ to take possession of his throne, and they show themselves sufficiently disgusted to spit in your face.",
+      "words": 204
+    },
+    {
+      "para_key": "3.3",
+      "page": 3,
+      "para": 3,
+      "seq": 4,
+      "chunk": 2,
+      "chunks": 3,
+      "text": "Ask them to read anything on the subject, and they put on every possible expression of scorn. Even pretended ministers of the gospel, in multitudes, manifest all these feelings in relation to the",
+      "words": 33
+    },
+    {
+      "para_key": "16.1",
+      "page": 16,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "coming and kingdom of Christ, and do their utmost to perpetuate and increase this state of feeling in their hearers. Mention to them the probability of Christ’s coming in his glory during the present Jewish year, to take the throne of the world; and express to them your belief that the Bible fully teaches this, and they feel insulted that you should dare to mention in their presence a thing to them so utterly contemptible. They are ready to hold their breath, and thrust you from them as with a pair of tongs. Ask them if they have ever examined the Bible evidence of the immediate coming of the Lord, and they evidently feel degraded that you should think them capable of turning their thoughts to such a subject. Who are these mighty sons of pride, that God Almighty must not presume to speak to them through his word? Why, they are the professed disciples and ministers of Christ; and, in truth and reality, Antichrist. They are Babylon in its fallen state; their hearts are the habitations of devils, the hold of every foul spirit, the cage of every unclean and hateful bird. They are in their own estimation of vast consequence, but if they remain what they are a little longer, Jesus Christ will neither be afraid nor ashamed to smite them with the rod of his mouth, and with the breath of his lips to slay them. Many of them may be ready to inquire, “Lord, Lord, have we not prophesied in thy name, and in thy name cast out devils, and in thy name done many wonderful works? But Christ will only protest unto them, “I never knew you, depart from me ye that work iniquity.",
+      "words": 289
+    },
+    {
+      "para_key": "4.1",
+      "page": 4,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "III. WHAT IS IT FOR GOD’S PEOPLE TO COME OUT",
+      "words": 10
+    },
+    {
+      "para_key": "18.1",
+      "page": 18,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 2,
+      "text": "“Come out of her, my people, that ye be not partakers of her sins, and that ye receive not of her plagues. To come out of Babylon is to be converted to the true scriptural doctrine of the personal coming and kingdom of Christ; to receive the truth on this subject with all readiness of mind, as you find it plainly written out on the pages of the Bible: to love Christ’s appearing, and rejoice in it, and fully and faithfully to avow to the world your unshrinking belief in God’s word touching this momentous subject, and to do all in your power to open the eyes of others, and influence them to a similar course, that they may be ready to meet their Lord. Christ has said, “Whoso is ashamed of me and of my words, in this adulterous and sinful generation, of him shall the Son of Man be ashamed when he shall come in the glory of his Father, with the holy angels. Who are you that you should be ashamed of what God has written in his word respecting the kingdom of Christ, and that you should wish to spiritualize it into some other meaning than God has expressed, for the purpose of making it more popular with those that fear not God?",
+      "words": 217
+    },
+    {
+      "para_key": "18.1",
+      "page": 18,
+      "para": 1,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 2,
+      "text": "Stand up before the world and dare honestly to avow your belief in what the Almighty God has spoken. Give up the lust of the flesh, the lust of the eye, and the pride of life; wean yourself from the love of this present world, and be looking for that blessed hope and the glorious appearing of the great God and our Saviour Jesus Christ. Be just as ready, also, to receive and confess all that God has been pleased to reveal touching the time of the establishment of the kingdom of Christ, as any other part of the subject. Why be ashamed of the time of Christ’s coming?",
+      "words": 109
+    },
+    {
+      "para_key": "4.3",
+      "page": 4,
+      "para": 3,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "Many are beginning to say, “We are satisfied that the usual notion about a spiritual kingdom of Christ and a temporal millennium, is altogether groundless, and that the coming of Christ is doubtless near;” but they feel a very great reluctance either to express or to hold any belief respecting the time. It is very popular not to know any thing about it, and a very convenient way of escaping reproach, to be able to say, “we know nothing about it.” Thousands are glad that they don’t know any thing about it, and are very fully determined that they will continue to know nothing about it; and some, though they profess to have examined the subject, are",
+      "words": 117
+    },
+    {
+      "para_key": "18.2",
+      "page": 18,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "hindered from getting any light respecting the time, by the conviction that if they receive the light they must avow it, and this will subject them to reproach. To escape reproach, therefore, they skulk away and hide themselves in darkness. Shame on these miserable skulkers! How will they bear the blazing light of Christ’s face at His glorious appearing! They will want rocks and mountains to hide them in that hour.",
+      "words": 71
+    },
+    {
+      "para_key": "19.1",
+      "page": 19,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "By this time many will begin to say with a sneer of contempt, “You are trying to make it out that none but Millerites can be saved.” Hold one moment, for your soul’s sake, and tell, if you can, how he can be prepared for the kingdom of Christ, who is opposed to Christ’s reigning in person on the throne which God has sworn to give him, and who is ashamed to believe and avow what God has revealed touching the time of Christ’s appearing? If you can see any way into the kingdom of God for such a soul as that, I frankly confess you can see what I cannot. Do you still complain that I should try to make it appear that you are not a Christian? I have no such desire. I pray God that you may make it appear you are a Christian. But I do say, if you are a Christian, come out of Babylon! If you intend to be found a Christian when Christ appears, come out of Babylon, and come out Now! Throw away that miserable medley of ridiculous spiritualizing nonsense with which multitudes have so long been making the word of God of none effect, and dare to believe the Bible. It contains the wisdom of the infinite",
+      "words": 216
+    },
+    {
+      "para_key": "20.1",
+      "page": 20,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "God as it is, and needs no alterations and emendations from men, as though they could tell what God means, better than He has been able to express it in his own language. He has sworn with an oath that he would raise up the seed of David to sit on David’s throne; and the kingdoms of this world shall become the kingdoms of our Lord and of His Christ, and He shall reign for ever and ever!",
+      "words": 78
+    },
+    {
+      "para_key": "4.4",
+      "page": 4,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "And now away forever with your miserable transcendental philosophy, that would make the throne of David a spiritual throne, and the coming of Christ to sit upon it as a spiritual coming, and his reign a spiritual reign. Thanks be to God, His kingdom cannot be blown up into such spiritual bubbles as these, for a thousand, or even 365 thousand years, and then blown for ever away into some",
+      "words": 70
+    },
+    {
+      "para_key": "4.5",
+      "page": 4,
+      "para": 5,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 3,
+      "text": "etherial something, which some sneering infidel has defined, to be sitting on a cloud and singing Psalms to all eternity. No, no. Jesus Christ has been raised up in David’s flesh immortalized, and he shall come in that flesh glorified, “and there shall be given Him dominion and glory, and a kingdom that all people, nations, and languages shall serve Him: His dominion is an everlasting dominion, which shall not pass away, and His kingdom that which shall not be destroyed. And the kingdom and dominion, and the greatness of the kingdom under the whole heaven, shall be given to the people of the saints of the Most High; and the saints of the Most High shall take the kingdom and shall posses the kingdom forever, even forever and ever. This is God’s word; and all the spiritualizers on the footstool cannot alter it. They may undertake to tell what God means by it; but God has given His own meaning in His own language, and He will make it good in fulfilling it as He has caused it to be written. If God had meant something else and not this, He would have told us what He did mean.",
+      "words": 200
+    },
+    {
+      "para_key": "4.5",
+      "page": 4,
+      "para": 5,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 3,
+      "text": "Just as though when God had given us truth in symbolic language, and then interpreted it that it might be fully understood, He had after all left it for men in their upstart folly, to improve His own revelation. My soul is pained when I reflect how the word of God has been rendered powerless upon the consciences and hearts of men, by the attempts which have been made to alter it into something else. And now a multitude of ministers of all the multiplied sects of Antichrist will begin to say, “Thus saying, thou reproachest us also,” and will perhaps accuse me of dealing in wholesale denunciation, when I refuse to acknowledge them to be the true ministers of Christ. All I have to say is, if you are the true ministers of Christ, come out of Babylon, and no longer be opposed to the coming of Christ as the Bible declares he will come, to take his seat forever on the throne which God has sworn to give Him. I do not say that you and your hearers may not have been converted to Christ; but I do say, if you have, it remains for you to show it by coming out of Babylon, and by standing no longer opposed to the reign of Jesus.",
+      "words": 217
+    },
+    {
+      "para_key": "4.5",
+      "page": 4,
+      "para": 5,
+      "seq": 2,
+      "chunk": 2,
+      "chunks": 3,
+      "text": "God never will alter His word to suit your carnal desires. He has written it, and as he has written it he will fulfill it; and if you are ashamed of it, he will be ashamed of you. Dare you believe the Bible? dare you preach it? Dare you bring out its plain testimony respecting the manner, the objects, and the time of Christ’s coming, and tell the world that it is truth, and meet the consequences? Or will you turn away with a",
+      "words": 84
+    },
+    {
+      "para_key": "20.2",
+      "page": 20,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "sneer, and call it Millerism, and go on prating about a spiritual reign of Christ? I tell you, if you continue in that course you will be reckoned with Antichrist, when the glorious Son of David comes to take his throne. “Come out of her, my people, that ye be not partakers of her sins, and that ye receive not of her plagues.”",
+      "words": 63
+    },
+    {
+      "para_key": "5.1",
+      "page": 5,
+      "para": 1,
+      "seq": 1,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "IV. IT REMAINS THAT I SPEAK OF THE",
+      "words": 8
+    },
+    {
+      "para_key": "5.4",
+      "page": 5,
+      "para": 4,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 3,
+      "text": "—God declares her downfall, and foretells her destruction in time to give all His people who may be in her, an opportunity to come out and escape; and then, as a mighty angel would cast a millstone into the sea, God will cast down Babylon, and she shall be found no more at all. And now many will begin to say, if I confess my belief in the personal reign of Christ, and that that reign is immediately to commence, I shall lose my reputation, my influence, my friends, my all that I value on earth. And has not Christ said that you must do this? Has he not positively declared “whosoever he be of you that forsaketh not all that he hath, cannot be my disciple? Do you say, I did that years ago, and have been acquiring friends and reputation since, and did not expect to be called upon to lay these down? And because you have taken up the cross once, do you claim that that ought to be sufficient, and that it is too hard to do it for Christ a second time? Has not Christ said in Luke 9:23, “If any man will come after me, let him deny himself, and take up his cross daily and follow me?",
+      "words": 214
+    },
+    {
+      "para_key": "5.4",
+      "page": 5,
+      "para": 4,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 3,
+      "text": "Having once sacrificed all for Christ, have you now acquired something which is too dear to be given up for him? Is it not he that ENDURETH the cross, to the end, and that denies himself daily, that shall be saved? Do you begin to say, “I acquired this reputation for Christ, and hoped to use it for Him, and that it is now hard to part with it? Very well, if you acquired it for Christ, then show your sincerity by being willing to sacrifice it for Christ when he calls. If you sought the birth of Isaac that God might be glorified in him, then be willing to offer Isaac on God’s altar, that God may be glorified the more. Remember, you can never glorify God in the use of that which you are unwilling God should take away. You will never use anything for God’s glory which you do not perfectly and continually hold at God’s disposal. It is not for you and me to say whether we will have reputation or not; but it is for us to say whether we will please God or not; and having done this, let the Lord decide what our reputation shall be.",
+      "words": 203
+    },
+    {
+      "para_key": "5.4",
+      "page": 5,
+      "para": 4,
+      "seq": 2,
+      "chunk": 2,
+      "chunks": 3,
+      "text": "This he has decided already, that we shall have our names cast out as evil for his sake, and in this we ought ever to rejoice. Will you then, professed disciples of Jesus Christ, find the truth respecting the coming of the Lord, and hold it",
+      "words": 46
+    },
+    {
+      "para_key": "21.1",
+      "page": 21,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "up, and leave the results with God? Friends will be tried and mortified, and feel themselves disgraced by you; your church will call you fanatical and foolish, thus to throw away your influence and curtail your usefulness; Satan will beset you with all manner of temptations, and a wicked world will laugh you to scorn; but can you not endure as much as this for Him who has endured ten thousand times more for you? Just remember then what must be the consequences of refusing to receive the truth and to abide by it. Babylon must be destroyed, and you with it. But, say a multitude of professed ministers and Christians, “I don’t expect to be damned just because I don’t believe in Millerism.” Now don’t let the devil cheat you out of heaven through your fears of bearing a single epithet of reproach. Does the Bible teach the personal coming of Christ to sit on David’s throne? Has the Spirit of Christ which was in the prophets, signified a time, when it spake before of the sufferings of Christ and of the glory that should follow? So Peter has taught.",
+      "words": 191
+    },
+    {
+      "para_key": "23.1",
+      "page": 23,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "If you dare believe God, find out his truth on this subject, and hold it up to the world. If you hate the appearing of Christ, if you are opposed to his reigning personally over the earth, after God has sworn that he shall, if you are afraid or ashamed to receive and avow the truth on these momentous subjects, then blame not me for saying you are Antichrist. I do not say how many Christians, or how few there are in professed Christendom, but I do say, that in their present attitude of opposition to the personal reign of Christ, they are Antichrist, and they must abandon their present position and embrace and defend the truth, or go down with Babylon, into the bottom of the sea, and rise no more at all to life. They can have no resurrection at all, but to damnation.",
+      "words": 146
+    },
+    {
+      "para_key": "23.2",
+      "page": 23,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "To be found at Christ’s appearing, as the numerous sects now are, in an attitude of hostility to His personal reign, ashamed to believe and confess what",
+      "words": 27
+    },
+    {
+      "para_key": "5.5",
+      "page": 5,
+      "para": 5,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "God has revealed as to the manner and time of his coming, must be their ruin. Say not in your heart, I have long been a servant of Christ, and therefore must be safe. He cannot be a faithful servant who for any reason hates his Lord’s return and wishes it deferred, nor can you see His face in peace, while fear, or shame, or love of",
+      "words": 67
+    },
+    {
+      "para_key": "24.1",
+      "page": 24,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "reputation, or anything else, leads you to indulge in any opposition of heart to His immediate appearing.",
+      "words": 17
+    },
+    {
+      "para_key": "24.2",
+      "page": 24,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 2,
+      "text": "Come out of Babylon or perish. If you are a Christian, stand for Christ, and hold out unto the end. I do not undertake to say how many in these professed Christian sects will be saved or lost, but I hesitate not to say that every individual among them, who is found a true child of God in the end, will cease his opposition to Christ’s personal reign, and be found at last faithfully defending the truth. Not one that is ever saved can remain in Babylon. Do not accuse me of a desire to cut you off from salvation. My only desire is to show you your danger, that I may induce you to hasten your escape; but take care I beseech you, that you do not cut yourself off by remaining in Babylon. Do you say, “I am willing that Christ should reign as he pleases? Are you willing to embrace Christ and His truth, and so let your light shine as to meet and unshrinkingly bear the cross? The offence of the cross has not ceased in the case of those who will avow and defend God’s truth; though it must be confessed that in the popular religion of the day, there is no such thing as self denial;",
+      "words": 212
+    },
+    {
+      "para_key": "24.2",
+      "page": 24,
+      "para": 2,
+      "seq": 1,
+      "chunk": 1,
+      "chunks": 2,
+      "text": "and this fact of itself proves that it is not the religion of Jesus. But cast off this ungodly world, carry out the religion of Jesus in all its principles, and from the Bible defend His personal coming in manner and time, His personal and eternal reign, and do your duty in seeking to induce others to prepare for it, and you will not be long in finding the cross. Thus may the Lord help you, reader, to come out of Babylon, and be no more a partaker of her sins, that you receive not of her plagues.",
+      "words": 98
+    }
+  ]
+}

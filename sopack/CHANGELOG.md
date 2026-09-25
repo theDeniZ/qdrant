@@ -2,6 +2,53 @@
 
 Versions before 0.1.4 predate this file; see the git history for those.
 
+## 0.2.0 — store-neutral packs (M1, SOPACK-1.0-PLAN.md)
+
+**`sopack/` no longer connects to a store, or to anything over HTTP, at
+all.** Implements SOPACK-AUTONOMY.md's store-independence design and
+SOPACK-2-FORMAT.md (normative). A test enforces this:
+`sopack/tests/test_neutrality.py` greps the package for HTTP client
+imports, store URLs, and the words `collection`/`vector_name` in real code
+(not docs/comments).
+
+- **Pack format `sopack/2`.** `PackWriter` now always writes `sopack/2`:
+  `target` is `{"profile", "contract"}` (no Qdrant collection/vector/distance
+  fields), a new `contract` block records the contract id + its own sha256 +
+  the calibration fixture's sha256, and `probe` carries the pack's own
+  embeddings of the **committed calibration fixture** plus a `self_check`
+  summary — not a live-canary scroll. `PackReader` accepts both `sopack/1`
+  (legacy) and `sopack/2`, and rejects any other major schema outright.
+- **Calibration replaces canaries.** `sopack canaries`, `sopack pack
+  --canaries` and `sopack/canaries.py` are gone. `sopack.pack.pack()` no
+  longer takes a `canaries` argument; it loads and sha256-verifies the
+  contract's committed `calibration.json` (or an explicit override —
+  `calibration=`), embeds every fixture entry with the same model instance
+  **before embedding any book**, and refuses to build
+  (`CalibrationFailed`, exit code 5) if the self-check scores below
+  `contract.toml`'s `[calibration].pack_min_cosine`. Building the fixture
+  itself is now an importer-side admin command,
+  `python -m app.calibration export` (server repo `app/`), not a sopack
+  command — it is the one place that still needs to read a live store, and
+  sopack must never do that.
+- **The contract is data.** `sopack/contract.py` loads
+  `sopack-rs/contracts/<id>/contract.toml` with `tomllib` instead of hard-coding
+  the embedding contract in Python; `collection`, Qdrant vector-name and
+  payload-index types are no longer part of it at all (moved to the
+  server's `app/store_adapter.py` — an adapter config, not the contract).
+  `check_embedding` compares only the keys SOPACK-2-FORMAT.md §2 lists,
+  with no `library`/`library_version` check — acceptance is decided by the
+  calibration probe, not by which library produced the vectors.
+- **Default `pack` batch size is now 1**, not 128: M0 measured single-text
+  batches at 2.73 blocks/s on CPU vs 0.99 blocks/s at batch 32 — a large
+  batch is a GPU lever, not a CPU one (SOPACK-1.0-PLAN.md §2/§3.3).
+- Server-side (`app/`): the importer now talks to a backend only through a
+  `StoreAdapter` (`app/store_adapter.py`) — `QdrantAdapter` (today's
+  behaviour, reorganised) and an `InMemoryAdapter` used by tests to prove a
+  `.sopack` imports the same way into a second backend. The `sopack/2` probe
+  (`import_service.run_calibration_probe`) is backend-agnostic by
+  construction; the legacy `sopack/1` live-canary probe keeps working
+  unchanged for existing packs.
+
 ## 0.1.4
 
 **Fixed — `extract` produced a `book.json` that `validate` refused, for any book

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/pack.v1.json",
+  "title": "sopack pack output (v1)",
+  "description": "The JSON `sopack pack ... --json` prints to stdout on success. Produced by crates/sopack-cli/src/commands/pack.rs (`PackResult`).",
+  "type": "object",
+  "required": ["out", "pack_id", "profile", "id_rule", "points", "books", "device", "calibration_min_cosine", "calibration_mean_cosine", "resumed"],
+  "additionalProperties": false,
+  "properties": {
+    "out": { "type": "string" },
+    "pack_id": { "type": "string" },
+    "profile": { "type": "string" },
+    "id_rule": { "type": "string" },
+    "points": { "type": "integer", "minimum": 0 },
+    "books": { "type": "integer", "minimum": 0 },
+    "device": { "enum": ["cpu", "coreml", "cuda", "auto"] },
+    "calibration_min_cosine": { "type": "number" },
+    "calibration_mean_cosine": { "type": "number" },
+    "resumed": { "type": "boolean" }
+  }
+}

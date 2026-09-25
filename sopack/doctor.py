@@ -43,7 +43,7 @@ def _check_fastembed() -> _Result:
     except ImportError as exc:
         return _Result("fastembed", False, f"not importable: {exc}")
     got = getattr(fastembed, "__version__", None)
-    want = contract.EMBEDDING["library_version"]
+    want = contract.PYTHON_FASTEMBED_VERSION
     if got != want:
         return _Result("fastembed", False,
                         f"{got} installed, contract requires {want}")

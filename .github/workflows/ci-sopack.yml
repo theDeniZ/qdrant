@@ -1,0 +1,83 @@
+name: CI sopack
+
+# PRs and pushes touching the Rust CLI (sopack-rs/), the Python pack reader and
+# contract loader the server imports (sopack/), or the importer (app/).
+# The release pipeline (release-sopack.yml) repeats the Rust checks and adds
+# the real-model run; this workflow is the fast gate.
+
+on:
+  push:
+    paths: ["sopack-rs/**", "sopack/**", "app/**", ".github/workflows/ci-sopack.yml"]
+  pull_request:
+    paths: ["sopack-rs/**", "sopack/**", "app/**", ".github/workflows/ci-sopack.yml"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    strategy:
+      matrix:
+        runner: [ubuntu-22.04, ubuntu-22.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Devcontainer-only zig linker config; CI has a normal toolchain.
+      - name: Drop the devcontainer-only linker config
+        run: rm -f sopack-rs/.cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: sopack-rs
+
+      - name: Format
+        working-directory: sopack-rs
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        working-directory: sopack-rs
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Tests
+        working-directory: sopack-rs
+        run: cargo test --workspace --locked
+
+      - name: No HTTP client in the binary (plan §3.2)
+        working-directory: sopack-rs
+        run: |
+          if cargo tree -p sopack-cli -e normal --locked | grep -E '\b(reqwest|hyper|ureq)\b'; then
+            echo "::error::sopack-cli links an HTTP client — sopack must stay offline"
+            exit 1
+          fi
+
+  python:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r sopack/requirements.lock -r requirements.txt
+
+      - name: sopack (Python) unit tests
+        run: PYTHONPATH=. python -m unittest discover -s sopack/tests -p 'test_*.py'
+
+      # One process per file: test_admin_import stubs sys.modules at import
+      # time, which leaks into later modules under a single `discover` run.
+      - name: Importer (app) unit tests
+        run: |
+          for f in app/tests/test_*.py; do
+            m=$(echo "${f%.py}" | tr / .)
+            echo "== $m"
+            python -m "$m"
+          done

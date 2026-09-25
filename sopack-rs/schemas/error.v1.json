@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/error.v1.json",
+  "title": "sopack error (v1)",
+  "description": "The JSON any `sopack <command> --json` prints to stdout on failure, in place of that command's normal result (SOPACK-1.0-PLAN.md §3.5). Produced by crates/sopack-cli/src/exit.rs (`CliError::to_json`).",
+  "type": "object",
+  "required": ["ok", "error"],
+  "additionalProperties": false,
+  "properties": {
+    "ok": { "const": false },
+    "error": {
+      "type": "object",
+      "required": ["code", "exit", "message", "hint", "field"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": ["internal", "usage", "input_invalid", "needs_metadata", "calibration_failed", "resources", "interrupted"]
+        },
+        "exit": { "type": "integer", "minimum": 0, "maximum": 7 },
+        "message": { "type": "string" },
+        "hint": { "type": ["string", "null"] },
+        "field": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

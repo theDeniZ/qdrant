@@ -7,11 +7,22 @@ distinguishing collision from re-index, and rollback restoring exactly.
 Plus a couple of end-to-end happy-path checks (apply + dry-run) tying the
 whole stage machine together.
 
+All of this exercises the **legacy ``sopack/1`` live-canary probe path**
+(SOPACK-AUTONOMY.md §4: "the importer accepts sopack/1 ... during the
+transition"), which M1 must keep working unchanged. ``sopack.format.PackWriter``
+now only ever writes ``sopack/2`` (store-neutral, calibration-fixture probe),
+so a /1 pack for these tests is assembled directly here
+(``_write_v1_pack``), byte-for-byte the shape the OLD writer produced —
+``sopack/2``-specific behaviour is covered separately in
+``app/tests/test_store_adapter.py``.
+
 Run: .venv/bin/python3.11 app/tests/test_import_service.py
 """
 
 from __future__ import annotations
 
+import array
+import hashlib
 import json
 import os
 import random
@@ -20,14 +31,14 @@ import sys
 import tempfile
 import time
 import unittest
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from sopack import contract  # noqa: E402
-from sopack.format import PackWriter  # noqa: E402
 
-from app import import_service, jobs  # noqa: E402
+from app import import_service, jobs, store_adapter  # noqa: E402
 from app.tests.fake_qdrant import FakeQdrant  # noqa: E402
 
 DIM = contract.VECTOR_SIZE
@@ -38,10 +49,18 @@ def _vec(seed: int) -> list[float]:
     return [rnd.uniform(-1.0, 1.0) for _ in range(DIM)]
 
 
-def _build_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST", lang="en",
-                slug="test-book", n_points=3, canary_ids=None, canary_vectors=None,
-                titles="auto", point_seed_offset=0):
-    """A minimal, contract-valid .sopack for tests.
+def _f32(vector: list[float]) -> bytes:
+    return array.array("f", vector).tobytes()
+
+
+def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST", lang="en",
+                   slug="test-book", n_points=3, canary_ids=None, canary_vectors=None,
+                   titles="auto", point_seed_offset=0):
+    """A minimal, ``sopack/1``-shaped ``.sopack`` — the legacy live-canary
+    manifest shape ``sopack.format.PackWriter`` produced before M1, assembled
+    directly (not through ``PackWriter``, which now only writes ``sopack/2``)
+    so the /1 import path (probe, preflight, snapshot, upsert, …) keeps
+    being exercised exactly as before.
 
     ``titles="auto"`` (default) attaches a titles.json fragment matching the
     book being built, so tests that aren't specifically about the titles
@@ -50,45 +69,109 @@ def _build_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST", la
     or an explicit dict to control it precisely.
     """
     prof = contract.get_profile(profile)
+    collection = store_adapter.collection_for(profile)
     if titles == "auto":
         titles = ({lang: {book_code: {"titles": [f"{book_code} Title"], "author": "Tester",
                                       "year": 2020, "slug": slug}}}
                   if profile == "sop" else {})
+
+    id_rule = prof.default_id_rule
+    points_lines = []
+    vectors_bytes = b""
     ids = []
-    with PackWriter(path, profile=profile, pack_id=pack_id, created_by="test") as w:
-        first_id = None
-        for i in range(n_points):
-            page, para = i + 1, 1
-            para_key = f"{page}.{para}"
-            if profile == "sop":
-                payload = {
-                    "lang": lang, "book_code": book_code, "book_pair": None,
-                    "page": page, "para": para, "para_key": para_key,
-                    "raw_text": f"paragraph {i} of {book_code}", "aligned": None,
-                    "slug": slug, "title": f"{book_code} Title", "author": "Tester",
-                    "year": 2020,
-                }
-            else:
-                payload = {"bible": book_code, "osis": f"Gen.1.{i + 1}", "text": f"verse {i}"}
-            uid = f"{lang}:{book_code}:{para_key}#0"
-            vector = _vec(point_seed_offset + i)
-            pid = w.add(uid, payload, vector)
-            ids.append(pid)
-            if first_id is None:
-                first_id = pid
-        book = {prof.identity: book_code, "points": n_points, "first_id": first_id,
-               "title": f"{book_code} Title", "author": "Tester", "year": 2020,
-               "id_rule": w.id_rule}
+    first_id = None
+    for i in range(n_points):
+        page, para = i + 1, 1
+        para_key = f"{page}.{para}"
         if profile == "sop":
-            book["lang"] = lang
-            book["slug"] = slug
-        w.set_books([book])
-        if canary_ids:
-            vecs = canary_vectors or [_vec(9000 + i) for i in range(len(canary_ids))]
-            w.set_probe([{"id": cid, "collection": prof.collection} for cid in canary_ids], vecs)
-        if titles is not None:
-            w.set_titles(titles)
+            payload = {
+                "lang": lang, "book_code": book_code, "book_pair": None,
+                "page": page, "para": para, "para_key": para_key,
+                "raw_text": f"paragraph {i} of {book_code}", "aligned": None,
+                "slug": slug, "title": f"{book_code} Title", "author": "Tester",
+                "year": 2020,
+            }
+            fields = {"lang": lang, "book_code": book_code, "para_key": para_key, "seq": 0}
+        else:
+            payload = {"bible": book_code, "osis": f"Gen.1.{i + 1}", "text": f"verse {i}"}
+            fields = {"bible": book_code, "osis": f"Gen.1.{i + 1}"}
+        uid = f"{lang}:{book_code}:{para_key}#0"
+        pid = contract.point_id(id_rule, fields)
+        ids.append(pid)
+        if first_id is None:
+            first_id = pid
+        points_lines.append(json.dumps({"uid": uid, "id": pid, "payload": payload},
+                                       ensure_ascii=False))
+        vectors_bytes += _f32(_vec(point_seed_offset + i))
+
+    book = {prof.identity: book_code, "points": n_points, "first_id": first_id,
+           "title": f"{book_code} Title", "author": "Tester", "year": 2020,
+           "id_rule": id_rule}
+    if profile == "sop":
+        book["lang"] = lang
+        book["slug"] = slug
+
+    probe = None
+    probe_bytes = b""
+    if canary_ids:
+        vecs = canary_vectors or [_vec(9000 + i) for i in range(len(canary_ids))]
+        probe = {"canaries": [{"id": cid, "collection": collection, "vector_offset": i,
+                               "cosine_expected_min": contract.PROBE_MIN_COSINE}
+                              for i, cid in enumerate(canary_ids)],
+                "vectors": "probe.f32"}
+        for v in vecs:
+            probe_bytes += _f32(v)
+
+    points_blob = ("\n".join(points_lines) + "\n").encode("utf-8") if points_lines else b""
+    titles_blob = (json.dumps(titles, ensure_ascii=False, indent=2).encode("utf-8")
+                  if titles is not None else None)
+
+    sha = {"points.jsonl": hashlib.sha256(points_blob).hexdigest(),
+          "vectors.f32": hashlib.sha256(vectors_bytes).hexdigest()}
+    if probe is not None:
+        sha["probe.f32"] = hashlib.sha256(probe_bytes).hexdigest()
+    if titles_blob is not None:
+        sha["titles.json"] = hashlib.sha256(titles_blob).hexdigest()
+
+    manifest = {
+        "schema": "sopack/1",
+        "profile": prof.name,
+        "pack_id": pack_id,
+        "created_by": "test",
+        "target": {"collection": collection, "vector_name": store_adapter.QDRANT_VECTOR_NAME,
+                   "vector_size": DIM, "distance": store_adapter.QDRANT_DISTANCE},
+        "embedding": {"model": contract.EMBEDDING["model"], "library": "fastembed",
+                     "library_version": contract.PYTHON_FASTEMBED_VERSION,
+                     "pooling": contract.EMBEDDING["pooling"],
+                     "normalized": contract.EMBEDDING["normalized"],
+                     "passage_prefix": contract.EMBEDDING["passage_prefix"]},
+        "id_rule": id_rule,
+        "id_rule_doc": contract.ID_RULE_DOC[id_rule],
+        "counts": {"points": n_points, "books": (1 if n_points else 0), "dim": DIM,
+                  "points_bytes": len(points_blob)},
+        "sha256": sha,
+        "books": [book] if n_points else [],
+        "probe": probe,
+    }
+
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+        zf.writestr("points.jsonl", points_blob)
+        info = zipfile.ZipInfo("vectors.f32")
+        info.compress_type = zipfile.ZIP_STORED
+        zf.writestr(info, vectors_bytes)
+        if probe is not None:
+            pinfo = zipfile.ZipInfo("probe.f32")
+            pinfo.compress_type = zipfile.ZIP_STORED
+            zf.writestr(pinfo, probe_bytes)
+        if titles_blob is not None:
+            zf.writestr("titles.json", titles_blob)
     return ids
+
+
+# Kept as the name every existing test call site already uses.
+_build_pack = _write_v1_pack
 
 
 class ImportServiceTestCase(unittest.TestCase):
@@ -102,8 +185,10 @@ class ImportServiceTestCase(unittest.TestCase):
         os.environ["QDRANT_URL"] = self.qdrant.url
         jobs.release_import_lock()
         # The `sop` collection is what every test targets, matching contract.py.
-        self.qdrant.create_collection("sop", contract.VECTOR_NAME, DIM, contract.DISTANCE)
-        self.qdrant.create_collection("bibles", contract.VECTOR_NAME, DIM, contract.DISTANCE)
+        self.qdrant.create_collection("sop", store_adapter.QDRANT_VECTOR_NAME, DIM,
+                                      store_adapter.QDRANT_DISTANCE)
+        self.qdrant.create_collection("bibles", store_adapter.QDRANT_VECTOR_NAME, DIM,
+                                      store_adapter.QDRANT_DISTANCE)
 
     def tearDown(self):
         jobs.release_import_lock()

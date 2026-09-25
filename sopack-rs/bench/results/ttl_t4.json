@@ -1,0 +1,12 @@
+{
+  "label": "ttl_t4",
+  "book_code": "TTL",
+  "blocks": 225,
+  "threads": "default (4)",
+  "batch_tokens": "default (512)",
+  "wall_s": 106.795,
+  "embed_only_elapsed_s": 82.7,
+  "embed_only_tokens": 26294,
+  "blocks_per_s": 2.721,
+  "tokens_per_s": 317.9
+}

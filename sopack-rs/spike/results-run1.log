@@ -1,0 +1,28 @@
+fixture: 281 points, available_parallelism=4
+  tokens extra:de     31 ids identical
+  tokens extra:en     39 ids identical
+  tokens extra:ja     44 ids identical
+  tokens extra:ko     37 ids identical
+  tokens extra:long   512 ids identical
+  tokens extra:mixed  39 ids identical
+  tokens extra:ru     40 ids identical
+  tokens extra:uk     34 ids identical
+1. token ids: 289 texts, 0 mismatches, longest 512 tokens
+model loaded in 3.6s (4 threads); inputs=["input_ids", "attention_mask"]
+2. one-at-a-time (99.7s)
+  rust single vs stored                      n=281  min=1.0000000 mean=1.0000000 below_bar=0
+  rust single vs python fastembed            n=281  min=1.0000000 mean=1.0000000 below_bar=0
+  python fastembed vs stored (sanity)        n=281  min=1.0000000 mean=1.0000000 below_bar=0
+3. ordered batches of 32 (286.6s)
+  rust ordered-32 vs stored                  n=281  min=1.0000000 mean=1.0000000 below_bar=0
+4. sorted, budget 4096 tokens: 11 batches (111.2s)
+  rust sorted-4096 vs stored                 n=281  min=1.0000000 mean=1.0000000 below_bar=0
+  rust sorted-4096 vs rust single            n=281  min=1.0000000 mean=1.0000000 below_bar=0
+4. sorted, budget 16384 tokens: 4 batches (152.8s)
+  rust sorted-16384 vs stored                n=281  min=1.0000000 mean=1.0000000 below_bar=0
+  rust sorted-16384 vs rust single           n=281  min=1.0000000 mean=1.0000000 below_bar=0
+5. thread scaling: 192 bench texts, 27788 tokens
+   threads=4     99.4s    1.93 blocks/s      280 tokens/s  identical_to_first=true max_abs=0e0 min_cos=1.000000000
+   threads=2    155.4s    1.24 blocks/s      179 tokens/s  identical_to_first=true max_abs=0e0 min_cos=1.000000000
+   threads=1    288.2s    0.67 blocks/s       96 tokens/s  identical_to_first=true max_abs=0e0 min_cos=1.000000000
+report → results/m0-aarch64.json

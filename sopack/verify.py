@@ -73,10 +73,15 @@ def verify(pack_path) -> list[str]:
                     f"book {code!r} has {counts[code]} points but no entry in manifest.books")
 
         probe_vectors = reader.probe_vectors()
-        probe_meta = (reader.manifest.get("probe") or {}).get("canaries") or []
+        probe = reader.manifest.get("probe") or {}
+        # sopack/1 declared canaries under "canaries"; sopack/2 declares
+        # calibration-fixture entries under "entries" (SOPACK-2-FORMAT.md §2).
+        probe_meta = probe.get("entries") if reader.manifest.get("schema") != "sopack/1" \
+            else probe.get("canaries")
+        probe_meta = probe_meta or []
         if probe_meta and len(probe_vectors) != len(probe_meta):
             errors.append(
-                f"probe: manifest declares {len(probe_meta)} canaries, "
+                f"probe: manifest declares {len(probe_meta)} probe entr(y/ies), "
                 f"probe.f32 holds {len(probe_vectors)} vectors")
         for v in probe_vectors:
             if len(v) != reader.dim:

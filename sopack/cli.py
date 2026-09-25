@@ -1,5 +1,5 @@
-"""``sopack`` — the Mac-side CLI: ``extract``, ``inspect``, ``canaries``,
-``pack``, ``verify``, ``doctor``.
+"""``sopack`` — the Mac-side CLI: ``extract``, ``inspect``, ``pack``,
+``verify``, ``doctor``.
 
 Every subcommand's real implementation is imported **inside** its handler,
 never at module level, so that (a) running ``sopack doctor`` never needs
@@ -142,22 +142,17 @@ def _cmd_inspect(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_canaries(args: argparse.Namespace) -> int:
-    from . import canaries as canaries_mod
-    result = canaries_mod.fetch(args.qdrant, args.collection, n=args.n)
-    canaries_mod.save(result, args.out)
-    print(f"wrote {len(result)} canaries to {args.out}")
-    return 0
-
-
 def _cmd_pack(args: argparse.Namespace) -> int:
     from . import pack as pack_mod
     try:
         manifest = pack_mod.pack(
-            args.books, args.out, args.canaries,
+            args.books, args.out,
             profile=args.profile, pack_id=args.pack_id,
             id_rule=args.id_rule, batch_size=args.batch_size,
             workers=args.workers)
+    except pack_mod.CalibrationFailed as exc:
+        print(f"pack failed: {exc}", file=sys.stderr)
+        return 5
     except pack_mod.PackBuildError as exc:
         print(f"pack failed: {exc}", file=sys.stderr)
         return 1
@@ -218,21 +213,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_inspect.add_argument("book_json", type=Path)
     p_inspect.set_defaults(func=_cmd_inspect)
 
-    p_canaries = sub.add_parser("canaries", help="refresh canaries.json from live Qdrant")
-    p_canaries.add_argument("--qdrant", required=True, help="Qdrant base URL")
-    p_canaries.add_argument("--collection", default="sop")
-    p_canaries.add_argument("-n", type=int, default=8)
-    p_canaries.add_argument("-o", "--out", default="canaries.json", type=Path)
-    p_canaries.set_defaults(func=_cmd_canaries)
-
     p_pack = sub.add_parser("pack", help="book.json(s) -> .sopack (embeds, slow)")
     p_pack.add_argument("books", nargs="+", type=Path)
-    p_pack.add_argument("--canaries", required=True, type=Path)
     p_pack.add_argument("-o", "--out", required=True, type=Path)
     p_pack.add_argument("--profile", default=None)
     p_pack.add_argument("--pack-id", default=None)
     p_pack.add_argument("--id-rule", default=None)
-    p_pack.add_argument("--batch-size", type=int, default=128)
+    p_pack.add_argument("--batch-size", type=int, default=1,
+                        help="default 1: on CPU, single-text batches measured "
+                             "2.73 blocks/s vs 0.99 at batch 32 (M0) — a large "
+                             "batch is a GPU lever, not a CPU one")
     p_pack.add_argument("--workers", type=int, default=None,
                         help="fastembed parallel worker PROCESSES (default: 0, "
                              "single-process). Each worker loads its own copy "

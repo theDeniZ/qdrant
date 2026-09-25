@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sopack.sdarm.org/schemas/model.v1.json",
+  "title": "sopack model fetch|import|verify output (v1)",
+  "description": "The JSON `sopack model fetch|import|verify --json` prints to stdout. `sopack model path` has its own shape (model-path.v1.json). Produced by crates/sopack-cli/src/commands/model.rs (`ModelActionResult`).",
+  "type": "object",
+  "required": ["action", "model_dir", "files", "bytes"],
+  "additionalProperties": false,
+  "properties": {
+    "action": { "enum": ["fetch", "import", "verify"] },
+    "model_dir": { "type": "string" },
+    "files": { "type": "integer", "minimum": 0 },
+    "bytes": { "type": "integer", "minimum": 0 }
+  }
+}

@@ -4,6 +4,9 @@
 order of work: the vector-equivalence spike (§4, step 0) is the go/no-go gate, and
 no porting starts before it passes.
 
+> **Superseded as the working plan by [SOPACK-1.0-PLAN.md](SOPACK-1.0-PLAN.md)**
+> (Rust chosen, 2026-09-24). This file remains the language analysis and risk list.
+
 Related: [IMPORT-PIPELINE.md](IMPORT-PIPELINE.md) (requirements R1–R12, failures
 #1–#15), [IMPORT-PIPELINE-PLAN.md](IMPORT-PIPELINE-PLAN.md) (the current design),
 [../Formula/sopack.rb](../Formula/sopack.rb), [../sopack/README.md](../sopack/README.md).

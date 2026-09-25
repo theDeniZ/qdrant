@@ -1,0 +1,14 @@
+{
+  "label": "wdys_t4",
+  "book_code": "WDYS",
+  "blocks": 23,
+  "threads": "default (4)",
+  "batch_tokens": "default (512)",
+  "wall_s": 31.746,
+  "embed_only_elapsed_s": 6.91,
+  "embed_only_tokens": 2232,
+  "blocks_per_s": 3.329,
+  "tokens_per_s": 323.0,
+  "peak_rss_kb": 1714328,
+  "note": "peak_rss_kb sampled via /proc/<pid>/status VmHWM by bench/run_bench.sh on a separate --threads 4 run of the same book.json"
+}

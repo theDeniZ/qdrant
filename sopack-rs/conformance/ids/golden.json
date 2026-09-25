@@ -1,0 +1,134 @@
+[
+  {
+    "rule": "sop/plain",
+    "fields": {
+      "lang": "en",
+      "book_code": "WDYS",
+      "para_key": "1.1"
+    },
+    "uid": "en:WDYS:1.1",
+    "id": "6cb14643-3cc8-5e9e-aa51-ba57cc137475"
+  },
+  {
+    "rule": "sop/plain",
+    "fields": {
+      "lang": "de",
+      "book_code": "GC",
+      "para_key": "12.7"
+    },
+    "uid": "de:GC:12.7",
+    "id": "0fb79068-d263-59e7-b88d-2d7e59d78607"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "en",
+      "book_code": "WDYS",
+      "para_key": "1.1",
+      "seq": 0
+    },
+    "uid": "en:WDYS:1.1#0",
+    "id": "41265457-5d67-50cc-a5ad-fd24b69403d9"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "en",
+      "book_code": "WDYS",
+      "para_key": "1.1",
+      "seq": 3
+    },
+    "uid": "en:WDYS:1.1#3",
+    "id": "4c07d5a4-9553-55eb-bcb3-731258cabb9d"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "de",
+      "book_code": "GC",
+      "para_key": "12.7",
+      "seq": 12
+    },
+    "uid": "de:GC:12.7#12",
+    "id": "68fc7920-36ed-56d9-bc70-02307e162917"
+  },
+  {
+    "rule": "sop/plain",
+    "fields": {
+      "lang": "de",
+      "book_code": "Ünïcödé-Büch",
+      "para_key": "Kapítel§1"
+    },
+    "uid": "de:Ünïcödé-Büch:Kapítel§1",
+    "id": "c10f7a07-ee2d-5538-affc-a7e0d6331b29"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "ja",
+      "book_code": "ABC",
+      "para_key": "1.1",
+      "seq": 0
+    },
+    "uid": "ja:ABC:1.1#0",
+    "id": "a4eabab6-cf08-5660-8aae-057905850275"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "ko",
+      "book_code": "테스트",
+      "para_key": "1.1",
+      "seq": 5
+    },
+    "uid": "ko:테스트:1.1#5",
+    "id": "c331c5b9-3f5c-5d2f-8f90-a795348d5d48"
+  },
+  {
+    "rule": "sop/seq",
+    "fields": {
+      "lang": "ru",
+      "book_code": "ИСПЫТАНИЯ",
+      "para_key": "3.14",
+      "seq": 1
+    },
+    "uid": "ru:ИСПЫТАНИЯ:3.14#1",
+    "id": "71979051-8437-5a30-8e20-087f3aaa2413"
+  },
+  {
+    "rule": "bible/v1",
+    "fields": {
+      "bible": "kjv",
+      "osis": "Gen.1.1"
+    },
+    "uid": "bible:kjv:Gen.1.1",
+    "id": "5a8a13ad-3de5-54fd-b5cf-28fe1210bc73"
+  },
+  {
+    "rule": "bible/v1",
+    "fields": {
+      "bible": "luther1912",
+      "osis": "Ps.51.1"
+    },
+    "uid": "bible:luther1912:Ps.51.1",
+    "id": "cc782f50-338d-5148-b33f-33910d6e00ae"
+  },
+  {
+    "rule": "bible/v1",
+    "fields": {
+      "bible": "elberfelder1905",
+      "osis": "Röm.8.28"
+    },
+    "uid": "bible:elberfelder1905:Röm.8.28",
+    "id": "09be5785-1065-584f-b776-c8cf049b6f13"
+  },
+  {
+    "rule": "bible/v1",
+    "fields": {
+      "bible": "japkougo",
+      "osis": "John.3.16"
+    },
+    "uid": "bible:japkougo:John.3.16",
+    "id": "5ba4d2bb-d0b3-5fd6-a416-00061387f911"
+  }
+]

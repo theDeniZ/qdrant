@@ -1,4 +1,5 @@
-"""``book.json`` (+ live canaries) → ``.sopack`` — the slow, Mac-only step.
+"""``book.json`` (+ the committed calibration fixture) → ``.sopack`` — the
+slow, Mac-only step.
 
 This is the **only** module in the pipeline that imports an embedding
 library, and it imports it **at module import time**, not inside a function.
@@ -22,6 +23,7 @@ whatever shape ``Book`` turns out to have.
 from __future__ import annotations
 
 import hashlib
+import json
 import platform
 import secrets
 from datetime import datetime, timezone
@@ -35,11 +37,18 @@ from . import contract
 from .book import Book, Block, BookError, load, to_payload, uid  # noqa: F401  (seam)
 from .format import PackWriter
 
-__all__ = ["pack", "PackBuildError"]
+__all__ = ["pack", "PackBuildError", "CalibrationFailed"]
 
 
 class PackBuildError(Exception):
     """The pack could not be built — a contract violation or bad input."""
+
+
+class CalibrationFailed(PackBuildError):
+    """The pack-time calibration self-check scored below
+    ``contract.PACK_MIN_COSINE`` (SOPACK-AUTONOMY.md §3.1). Raised before any
+    book is embedded — a broken environment fails in seconds, not twenty
+    minutes into a real run."""
 
 
 # ── preflight (R7) ───────────────────────────────────────────────────────────
@@ -49,15 +58,18 @@ def _preflight() -> None:
 
     ``import fastembed`` already happened at module level (see the module
     docstring); what is left is asserting it is the *right* fastembed —
-    version and, transitively, pooling (contract.py records which pooling
-    each version uses; a version match is what stands in for a pooling
-    check, since pooling is not introspectable from the outside).
+    version and, transitively, pooling. This pin is a property of THIS
+    Python reference implementation, not of the neutral contract (a Rust
+    build has no fastembed at all) — acceptance of the vectors themselves is
+    decided by the calibration self-check below, not by the library version;
+    this check only turns a silently-wrong pooling into a fast, readable
+    failure instead of a self-check that fails anyway but says less.
     """
     got_version = getattr(fastembed, "__version__", None)
-    want_version = contract.EMBEDDING["library_version"]
+    want_version = contract.PYTHON_FASTEMBED_VERSION
     if got_version != want_version:
         raise PackBuildError(
-            f"fastembed {got_version!r} is installed, contract requires "
+            f"fastembed {got_version!r} is installed, this sopack build requires "
             f"{want_version!r} — pin the right version before packing. "
             "A different fastembed version can silently use different "
             "pooling, which writes vectors into a different geometric space "
@@ -99,6 +111,35 @@ def _default_created_by() -> str:
             f"{platform.system()} {platform.release()} {platform.machine()}")
 
 
+def _load_calibration(calibration) -> tuple[dict, str]:
+    """Resolve *calibration* (the ``pack()`` parameter) into ``(fixture_doc,
+    fixture_sha256)``.
+
+    ``None`` (the normal case) loads and sha256-verifies the contract's own
+    committed fixture via :func:`contract.load_calibration`; the sha is the
+    contract's own ``CALIBRATION_SHA256``. A path, dict or list (tests: an
+    explicit override) has no committed file to check against, so its sha is
+    computed from its own canonical JSON (:func:`contract.calibration_fixture_sha256`)
+    — the importer, given that SAME override, computes the identical sha, so
+    the two sides still agree on what "this fixture" is."""
+    if calibration is None:
+        return contract.load_calibration(), contract.CALIBRATION_SHA256
+    if isinstance(calibration, (str, Path)):
+        try:
+            raw = Path(calibration).read_bytes()
+        except OSError as exc:
+            raise PackBuildError(f"cannot read calibration fixture {calibration}: {exc}") from exc
+        try:
+            doc = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise PackBuildError(f"{calibration}: not valid JSON: {exc}") from exc
+    elif isinstance(calibration, dict):
+        doc = calibration
+    else:
+        doc = {"schema": contract.SCHEMA_CALIBRATION, "entries": list(calibration)}
+    return doc, contract.calibration_fixture_sha256(doc)
+
+
 def _titles_fragment(profile: contract.Profile, book_entries: list[dict]) -> dict | None:
     """Additive fragment matching ``app/data/sop_books.json``'s shape —
     ``{lang: {code: {"titles": [...], author?, year?, corpus?, en_code?}}}`` —
@@ -128,16 +169,22 @@ def _titles_fragment(profile: contract.Profile, book_entries: list[dict]) -> dic
     return frag
 
 
-def pack(books, out_path, canaries, *, profile: str | None = None,
+def pack(books, out_path, *, profile: str | None = None,
           pack_id: str | None = None, created_by: str | None = None,
-          id_rule: str | None = None, batch_size: int = 128,
-          workers: int | None = None, progress=print) -> dict:
+          id_rule: str | None = None, batch_size: int = 1,
+          workers: int | None = None, progress=print,
+          calibration=None, device: str = "cpu", threads: int = 1) -> dict:
     """Embed every block of *books* and write ``out_path`` as a ``.sopack``.
 
     ``books`` — paths to ``book.json`` files (or, for tests / reuse,
     ``(book, sha256_or_None)`` pairs already loaded).
-    ``canaries`` — a path to a ``canaries.json`` (see ``sopack.canaries``), or
-    an already-loaded list of ``{"id", "collection", "text"}``.
+    ``calibration`` — ``None`` (the normal case: load and sha256-verify the
+    contract's own committed fixture, ``contracts/<id>/calibration.json``), a
+    path to an alternate fixture file, or an already-loaded fixture
+    doc/entry-list (tests). See :func:`_load_calibration`.
+    ``batch_size`` — defaults to **1**, not a larger number: M0 measured
+    single-text batches at 2.73 blocks/s on CPU vs 0.99 blocks/s at batch 32
+    (large batches are a GPU lever, not a CPU one — SOPACK-1.0-PLAN.md §2/§3.3).
     ``workers`` — ``fastembed`` parallel worker count; ``None``/``0`` (the
     default) means single-process — see the note above the workers-resolution
     line for why this does NOT default to ``os.cpu_count()``. When a caller
@@ -174,15 +221,12 @@ def pack(books, out_path, canaries, *, profile: str | None = None,
             "pack them separately, one profile per .sopack")
     prof = contract.get_profile(profile_name)
 
-    if isinstance(canaries, (str, Path)):
-        from . import canaries as canaries_mod
-        canary_list = canaries_mod.load(canaries)
-    else:
-        canary_list = list(canaries)
-    if not canary_list:
+    fixture, fixture_sha = _load_calibration(calibration)
+    fixture_entries = fixture.get("entries") or []
+    if not fixture_entries:
         raise PackBuildError(
-            "no canaries given — the probe is not skippable (R11); run "
-            "`sopack canaries` first")
+            "calibration fixture has no entries — the self-check is not "
+            "skippable (R11); see docs/SOPACK-AUTONOMY.md §3.1")
 
     if id_rule is not None:
         resolved_id_rule = id_rule
@@ -226,13 +270,44 @@ def pack(books, out_path, canaries, *, profile: str | None = None,
     if workers:
         embed_kwargs["parallel"] = workers
 
+    # Calibration self-check (SOPACK-AUTONOMY.md §3.1, R11) — BEFORE any book
+    # is embedded, with the same model instance and settings the books will
+    # use. A broken environment (wrong pooling, a bad ORT build, …) then
+    # fails in seconds instead of after however long the books take.
+    progress(f"calibration self-check: embedding {len(fixture_entries)} "
+             f"fixture entr{'y' if len(fixture_entries) == 1 else 'ies'} …")
+    fixture_texts = [prefix + e["text"] for e in fixture_entries]
+    fixture_vectors = [_to_list(v) for v in model.embed(fixture_texts, **embed_kwargs)]
+    for v in fixture_vectors:
+        if len(v) != contract.VECTOR_SIZE:
+            raise PackBuildError(
+                f"calibration embedding produced dimension {len(v)}, contract "
+                f"requires {contract.VECTOR_SIZE}")
+    cosines = [contract.cosine(fv, e["vector"]) for fv, e in zip(fixture_vectors, fixture_entries)]
+    min_cosine = min(cosines)
+    mean_cosine = sum(cosines) / len(cosines)
+    if min_cosine < contract.PACK_MIN_COSINE:
+        raise CalibrationFailed(
+            f"calibration self-check FAILED: min cosine {min_cosine:.8f} < "
+            f"{contract.PACK_MIN_COSINE} (mean {mean_cosine:.8f}, n={len(cosines)}) — "
+            "this machine's embeddings do not reproduce the committed fixture's; "
+            "refusing to embed any book. This is exactly the failure the "
+            "calibration gate exists to catch (a pooling/library/model change "
+            "silently moving vectors into a different geometric space) — see "
+            "docs/SOPACK-AUTONOMY.md §3.1.")
+    progress(f"  calibration ok: min cosine {min_cosine:.8f}, mean {mean_cosine:.8f} "
+             f"(threshold {contract.PACK_MIN_COSINE})")
+    self_check = {"n": len(cosines), "min_cosine": min_cosine, "mean_cosine": mean_cosine,
+                  "threshold": contract.PACK_MIN_COSINE}
+
     out_path = Path(out_path)
     book_entries: list[dict] = []
     seen_dim: int | None = None
 
     with PackWriter(out_path, profile=prof.name, pack_id=pack_id,
                      created_by=created_by, id_rule=resolved_id_rule,
-                     dim=contract.VECTOR_SIZE) as writer:
+                     dim=contract.VECTOR_SIZE, device=device, threads=threads,
+                     batch_tokens=batch_size) as writer:
         for book_obj, book_sha256 in loaded:
             blocks = _attr(book_obj, "blocks") or []
             blocks = list(blocks)
@@ -282,19 +357,9 @@ def pack(books, out_path, canaries, *, profile: str | None = None,
                 "book_sha256": book_sha256,
             })
 
-        progress(f"embedding {len(canary_list)} canaries with the same model instance …")
-        canary_texts = [prefix + c["text"] for c in canary_list]
-        canary_vectors = [_to_list(v) for v in model.embed(canary_texts, **embed_kwargs)]
-        for v in canary_vectors:
-            if len(v) != contract.VECTOR_SIZE:
-                raise PackBuildError(
-                    f"canary embedding produced dimension {len(v)}, contract "
-                    f"requires {contract.VECTOR_SIZE}")
-
         writer.set_books(book_entries)
-        writer.set_probe(
-            [{"id": c["id"], "collection": c["collection"]} for c in canary_list],
-            canary_vectors)
+        writer.set_probe(fixture_entries, fixture_vectors, self_check=self_check,
+                         fixture_sha256=fixture_sha)
         titles = _titles_fragment(prof, book_entries)
         if titles is not None:
             writer.set_titles(titles)

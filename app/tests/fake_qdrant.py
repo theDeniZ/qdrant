@@ -22,26 +22,41 @@ class _NotFound(Exception):
     pass
 
 
+def _cond_match(payload: dict, cond: dict) -> bool:
+    """One filter condition — ``match``, ``range`` or ``is_empty`` (the last
+    is what app/calibration.py uses to find EGW points, which never carry a
+    ``corpus`` key)."""
+    if "is_empty" in cond:
+        key = cond["is_empty"]["key"]
+        return key not in payload or payload.get(key) in (None, [], "")
+    key = cond["key"]
+    val = payload.get(key)
+    m = cond.get("match")
+    if m is not None:
+        if "value" in m and val != m["value"]:
+            return False
+        if "any" in m and val not in m["any"]:
+            return False
+    rng = cond.get("range")
+    if rng is not None:
+        if val is None:
+            return False
+        if "gte" in rng and not (val >= rng["gte"]):
+            return False
+        if "lte" in rng and not (val <= rng["lte"]):
+            return False
+    return True
+
+
 def _match(payload: dict, flt: dict | None) -> bool:
     if not flt:
         return True
     for cond in flt.get("must", []):
-        key = cond["key"]
-        val = payload.get(key)
-        m = cond.get("match")
-        if m is not None:
-            if "value" in m and val != m["value"]:
-                return False
-            if "any" in m and val not in m["any"]:
-                return False
-        rng = cond.get("range")
-        if rng is not None:
-            if val is None:
-                return False
-            if "gte" in rng and not (val >= rng["gte"]):
-                return False
-            if "lte" in rng and not (val <= rng["lte"]):
-                return False
+        if not _cond_match(payload, cond):
+            return False
+    for cond in flt.get("must_not", []):
+        if _cond_match(payload, cond):
+            return False
     return True
 
 
@@ -149,8 +164,15 @@ def _dispatch(store: FakeQdrant, method: str, segs: list[str], body: dict):
         if rest == ["points", "scroll"] and method == "POST":
             flt = body.get("filter")
             limit = int(body.get("limit", 10))
-            matched = [{"id": pid, "payload": p["payload"]}
-                      for pid, p in c["points"].items() if _match(p["payload"], flt)]
+            with_vector = bool(body.get("with_vector", False))
+            matched = []
+            for pid, p in c["points"].items():
+                if not _match(p["payload"], flt):
+                    continue
+                row = {"id": pid, "payload": p["payload"]}
+                if with_vector:
+                    row["vector"] = {vec_name: p["vector"]} if vec_name else p["vector"]
+                matched.append(row)
             return {"points": matched[:limit], "next_page_offset": None}, 200
 
         if rest == ["points", "count"] and method == "POST":

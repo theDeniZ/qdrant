@@ -47,10 +47,9 @@ sopack extract /path/generator/data/sop/de/BH.json --kind sop_json -o bh.book.js
 
 sopack inspect book.json          # counts, damage, what was dropped and why
 
-# 8 points that are ALREADY in the live collection — the probe's reference
-sopack canaries --qdrant http://10.10.10.10:6333 --collection sop -n 8 -o canaries.json
-
-sopack pack *.book.json --canaries canaries.json -o quarter.sopack
+# embeds every block; self-checks against the committed calibration fixture
+# FIRST, before any book, and writes a sopack/2 pack
+sopack pack *.book.json -o quarter.sopack
 sopack verify quarter.sopack      # offline: checksums, ids, counts, probe shape
 ```
 
@@ -95,31 +94,43 @@ duplicates instead of an update. The two sop rules are not interchangeable:
 `sop/plain` is what the EGW corpus uses, `sop/seq` (always a `#<seq>` suffix) is what
 the pioneer corpus uses. Both were verified against live point ids.
 
-## The probe — why `canaries.json` is required
+## The probe — why `pack` needs no `--canaries` any more
 
-The server has no embedding model, so it cannot re-embed anything to check that your
-vectors live in the same space as the collection's. Instead **the pack carries the
-proof**: `pack` embeds the canaries' text with the same model instance that embedded
-your books, and the server cosines those against the canaries' stored vectors.
+`sopack` never talks to a store at all (see
+[../docs/SOPACK-AUTONOMY.md](../docs/SOPACK-AUTONOMY.md),
+[../docs/SOPACK-2-FORMAT.md](../docs/SOPACK-2-FORMAT.md)) — `sopack/tests/test_neutrality.py`
+enforces it: no HTTP client, no store URL, no `collection`/`vector_name` in code. The
+canary probe's live-Qdrant scroll is replaced by a **committed calibration fixture**,
+`contracts/<id>/calibration.json`, shipped next to `contract.toml`.
 
-Below 0.95 the import aborts before a single point is written. There is no flag to skip
-it, a pack without a probe is refused, and a pack cannot lower its own threshold — the
-floor is a server constant. This is the one guard against the damage that cannot be
-seen (a silent pooling change puts every new vector in a different geometry; retrieval
-just quietly degrades).
+`pack` loads and sha256-verifies that fixture, embeds every entry with the same model
+instance that will embed your books — **before** embedding any book — and refuses to
+build (`CalibrationFailed`, exit code 5) if any cosine against the fixture's own stored
+vector falls below `contract.toml`'s `[calibration].pack_min_cosine`. A broken
+environment (wrong pooling, a bad onnxruntime build, …) then fails in seconds, not
+twenty minutes into a real run. The pack's own fresh fixture embeddings become its
+probe, written into the pack alongside a `self_check` summary.
 
-So: refresh `canaries.json` from the collection you are importing into, and build the
-pack on the same machine that produced it.
+The importer repeats an equivalent, model-free comparison offline against its own copy
+of the same fixture, plus a second comparison of the fixture against what is actually
+stored in the target collection (SOPACK-2-FORMAT.md §4) — so acceptance is still,
+transitively, "this pack's vectors match the collection's space", exactly as the old
+canary probe proved, just without sopack ever making a network call to get there.
+
+The fixture is regenerated only when the embedding contract changes (a new model, a new
+collection) — a maintained, importer-side admin command
+(`python -m app.calibration export`, in the server repo's `app/`), not a sopack command,
+since building it is the one operation that still needs to read a live store.
 
 ## Layout
 
 | File | |
 |---|---|
-| `contract.py` | **shared with the server.** Model, vector name/size, pooling, prefix, profiles, payload schemas, id rules. Stdlib only. |
-| `format.py` | **shared with the server.** `.sopack` reader/writer. Stdlib only. |
+| `contract.py` | **shared with the server.** Loads `contracts/<id>/contract.toml` (`tomllib`) — model, pooling, prefixes, dim, calibration thresholds, profiles (payload schemas, id rules). No collection names, Qdrant vector names or index types — those are the server's `app/store_adapter.py`. Stdlib only. |
+| `format.py` | **shared with the server.** `.sopack` reader/writer (writes `sopack/2`, reads `sopack/1` + `sopack/2`). Stdlib only. |
 | `book.py` | the `book.json` seam: `Block`, `Book`, `load`, `dump`, `validate`, `to_payload`, `uid` |
 | `extract/` | `epub`, `markdown`, `text`, `sop_json` + the chunker |
-| `canaries.py` · `pack.py` · `verify.py` · `doctor.py` · `cli.py` | the commands |
+| `pack.py` · `verify.py` · `doctor.py` · `cli.py` | the commands |
 | `requirements.lock` | the pinned closure — 27 packages, resolved not hand-listed |
 
 `contract.py` and `format.py` are imported by the server too, which is why they must

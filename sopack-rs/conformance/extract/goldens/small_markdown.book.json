@@ -1,0 +1,75 @@
+{
+  "schema": "sopack.book/1",
+  "profile": "sop",
+  "source": {
+    "file": "sopack-rs/conformance/extract/fixtures/small.md",
+    "sha256": "9ae29619ed8e1aeb06763808b3cdeb0aa25ce375a3b45c1a3e9b099bb96615a0",
+    "kind": "markdown",
+    "acquired_from": null,
+    "rights": null
+  },
+  "book": {
+    "book_code": "MDX",
+    "lang": "en",
+    "book_pair": "MDX",
+    "title": "MD Fixture",
+    "author": "M. Author",
+    "year": 2020,
+    "slug": "md-fixture",
+    "corpus": "test",
+    "page_kind": "chapter"
+  },
+  "id_rule": "sop/seq",
+  "alignment": null,
+  "stats": {
+    "blocks_in": 5,
+    "blocks_out": 3,
+    "dropped": 2,
+    "damage": 0.0,
+    "words": 45,
+    "dropped_detail": [
+      {
+        "para_key": "2.0",
+        "reason": "heading",
+        "text": "Chapter One"
+      },
+      {
+        "para_key": "3.0",
+        "reason": "heading",
+        "text": "Chapter Two"
+      }
+    ]
+  },
+  "blocks": [
+    {
+      "para_key": "2.1",
+      "page": 2,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "This is the first paragraph of chapter one, with plenty of words to pass every gate.",
+      "words": 16
+    },
+    {
+      "para_key": "2.2",
+      "page": 2,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "This is the second paragraph of chapter one, likewise readable nineteenth century prose.",
+      "words": 13
+    },
+    {
+      "para_key": "3.1",
+      "page": 3,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "This is the first paragraph of chapter two, again with enough words in it to survive.",
+      "words": 16
+    }
+  ]
+}

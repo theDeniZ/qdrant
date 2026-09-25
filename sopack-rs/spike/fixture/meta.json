@@ -1,0 +1,22 @@
+{
+  "fastembed": "0.8.0",
+  "python_embed_seconds": 348.58,
+  "python_batch_size": 32,
+  "n": 281,
+  "onnxruntime": "1.30.0",
+  "tokenizers": "0.23.2",
+  "truncation": {
+    "max_length": 512,
+    "stride": 0,
+    "strategy": "longest_first",
+    "direction": "right"
+  },
+  "padding": {
+    "length": null,
+    "pad_to_multiple_of": null,
+    "pad_id": 1,
+    "pad_token": "<pad>",
+    "pad_type_id": 0,
+    "direction": "right"
+  }
+}

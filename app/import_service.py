@@ -18,9 +18,12 @@ next (R8). Public entry points for the admin UI::
     restore_snapshot(job_id)
 
 Jobs run in a worker thread under the one global import lock
-(``jobs.try_acquire_import_lock``). Stdlib + ``requests`` only — this module
-must never import fastembed, onnxruntime, numpy or qdrant_client (rule #5 of
-the brief); only ``sopack.pack`` on the Mac may.
+(``jobs.try_acquire_import_lock``). Every stage talks to the backend only
+through ``ctx.adapter`` (``app/store_adapter.py``, M1: SOPACK-AUTONOMY.md
+§3.3) — this module itself makes no HTTP calls and no longer imports
+``requests``. Stdlib only, and must never import fastembed, onnxruntime,
+numpy or qdrant_client (rule #5 of the brief); only ``sopack.pack`` on the
+Mac may.
 """
 
 from __future__ import annotations
@@ -33,12 +36,10 @@ import threading
 import time
 from pathlib import Path
 
-import requests
-
 from sopack import contract
 from sopack.format import PackError, PackReader
 
-from . import jobs, snapshots
+from . import jobs, snapshots, store_adapter
 
 _TIMEOUT_S = float(os.environ.get("IMPORT_TIMEOUT_S", "60"))
 _UPSERT_TIMEOUT_S = float(os.environ.get("IMPORT_UPSERT_TIMEOUT_S", "120"))
@@ -71,10 +72,6 @@ def _packs_dir() -> Path:
     return Path(os.environ.get("PACKS_DIR", "/data/packs"))
 
 
-class QdrantError(Exception):
-    """A Qdrant REST call failed."""
-
-
 class StageFailure(Exception):
     """A stage refuses to hand a half-result to the next one. Fails the job."""
 
@@ -91,82 +88,19 @@ class Cancelled(Exception):
     """The job was asked to cancel mid-stage."""
 
 
-# ── plain-requests Qdrant helpers (match app/sop_tools.py's style) ──────────
-
-def _collection_url(collection: str, path: str = "") -> str:
-    url = f"{_qdrant_url()}/collections/{collection}"
-    return f"{url}/{path}" if path else url
-
-
-def _post(collection: str, path: str, body: dict, timeout: float | None = None) -> object:
-    try:
-        r = requests.post(_collection_url(collection, path), json=body,
-                          timeout=timeout or _TIMEOUT_S)
-    except requests.RequestException as exc:
-        raise QdrantError(f"POST {collection}/{path}: {exc}") from exc
-    if r.status_code >= 300:
-        raise QdrantError(f"POST {collection}/{path}: HTTP {r.status_code} {r.text[:400]}")
-    return (r.json() or {}).get("result")
-
-
-def _put(collection: str, path: str, body: dict, params: dict | None = None,
-         timeout: float | None = None) -> object:
-    try:
-        r = requests.put(_collection_url(collection, path), json=body, params=params,
-                         timeout=timeout or _TIMEOUT_S)
-    except requests.RequestException as exc:
-        raise QdrantError(f"PUT {collection}/{path}: {exc}") from exc
-    if r.status_code >= 300:
-        raise QdrantError(f"PUT {collection}/{path}: HTTP {r.status_code} {r.text[:400]}")
-    return (r.json() or {}).get("result")
-
-
-def _get_collection_info(collection: str) -> dict | None:
-    try:
-        r = requests.get(_collection_url(collection), timeout=_TIMEOUT_S)
-    except requests.RequestException as exc:
-        raise QdrantError(f"GET {collection}: {exc}") from exc
-    if r.status_code == 404:
-        return None
-    if r.status_code >= 300:
-        raise QdrantError(f"GET {collection}: HTTP {r.status_code} {r.text[:400]}")
-    return (r.json() or {}).get("result")
-
-
-def _create_collection(collection: str, vector_name: str, size: int, distance: str) -> None:
-    body = {"vectors": {vector_name: {"size": size, "distance": distance}}}
-    try:
-        r = requests.put(_collection_url(collection), json=body, timeout=_TIMEOUT_S)
-    except requests.RequestException as exc:
-        raise QdrantError(f"PUT {collection}: {exc}") from exc
-    if r.status_code >= 300:
-        raise QdrantError(f"create collection {collection}: HTTP {r.status_code} {r.text[:400]}")
-
-
-def _delete_collection(collection: str) -> None:
-    try:
-        r = requests.delete(_collection_url(collection), timeout=_TIMEOUT_S)
-    except requests.RequestException:
-        return
-    # Not fatal either way — this is best-effort scratch-collection cleanup.
-    del r
-
-
-def _points_upsert(collection: str, points: list[dict]) -> None:
-    _put(collection, "points", {"points": points}, params={"wait": "true"},
-        timeout=_UPSERT_TIMEOUT_S)
-
-
-def _points_delete(collection: str, ids: list[str]) -> None:
-    for i in range(0, len(ids), _UNDO_BATCH):
-        _post(collection, "points/delete", {"points": ids[i:i + _UNDO_BATCH]},
-             timeout=_UPSERT_TIMEOUT_S)
-
-
 # ── job context (transient, per worker-thread run; never persisted) ─────────
 
+def _make_adapter() -> store_adapter.QdrantAdapter:
+    """The adapter every real job uses. A separate function (rather than
+    inlining ``store_adapter.QdrantAdapter(_qdrant_url())`` at each call site)
+    so a future multi-backend deployment has one place to choose an adapter
+    from job/profile config; for M1 there is exactly one backend."""
+    return store_adapter.QdrantAdapter(_qdrant_url(), timeout_s=_TIMEOUT_S,
+                                       upsert_timeout_s=_UPSERT_TIMEOUT_S)
+
+
 class _Ctx:
-    def __init__(self, job_id: str):
+    def __init__(self, job_id: str, adapter: store_adapter.StoreAdapter | None = None):
         job = jobs.load(job_id)
         self.job_id = job_id
         self.pack_id = job["pack_id"]
@@ -178,8 +112,8 @@ class _Ctx:
         self.target_collection = (self.collection if self.mode == "apply"
                                   else f"{self.collection}__dryrun")
         self.reader: PackReader | None = None
-        self.live_vector_config: dict | None = None
         self.merged_titles: dict | None = None
+        self.adapter = adapter or _make_adapter()
 
     def close(self) -> None:
         if self.reader is not None:
@@ -209,28 +143,136 @@ def _stage_open(ctx: _Ctx, job_id: str) -> dict:
 
 
 def _stage_contract(ctx: _Ctx, job_id: str) -> dict:
-    info = _get_collection_info(ctx.collection)
-    if info is None:
-        raise StageFailure("contract", f"collection {ctx.collection!r} does not exist "
-                                       f"on {_qdrant_url()}")
-    vectors_cfg = ((info.get("config") or {}).get("params") or {}).get("vectors") or {}
-    vec = vectors_cfg.get(contract.VECTOR_NAME)
-    if not vec:
-        raise StageFailure("contract", f"collection {ctx.collection!r} has no vector named "
-                                       f"{contract.VECTOR_NAME!r}")
-    problems = []
-    if int(vec.get("size", -1)) != contract.VECTOR_SIZE:
-        problems.append(f"vector size {vec.get('size')} != {contract.VECTOR_SIZE}")
-    if str(vec.get("distance", "")) != contract.DISTANCE:
-        problems.append(f"distance {vec.get('distance')!r} != {contract.DISTANCE!r}")
-    if problems:
-        raise StageFailure("contract", "; ".join(problems))
-    ctx.live_vector_config = vec
+    try:
+        ctx.adapter.ensure_collection(ctx.profile.name, contract.VECTOR_SIZE)
+    except store_adapter.AdapterError as exc:
+        raise StageFailure("contract", str(exc)) from exc
     return {"detail": f"live collection {ctx.collection!r} matches "
-                      f"{contract.VECTOR_NAME}/{contract.VECTOR_SIZE}/{contract.DISTANCE}"}
+                      f"{store_adapter.QDRANT_VECTOR_NAME}/{contract.VECTOR_SIZE}/"
+                      f"{store_adapter.QDRANT_DISTANCE}"}
+
+
+def run_calibration_probe(reader: PackReader, adapter: store_adapter.StoreAdapter,
+                          profile, collection: str, *, fixture: dict | None = None) -> str:
+    """The ``sopack/2`` probe (SOPACK-2-FORMAT.md §4, steps 1-3), model-free.
+
+    Store-neutral by construction — everything it touches goes through
+    *adapter*, so this same function is what ``_stage_probe_v2`` runs against
+    a live Qdrant AND what the round-trip acceptance test
+    (app/tests/test_store_adapter.py) runs against an ``InMemoryAdapter``,
+    proving the same ``.sopack`` verifies the same way against a second
+    backend (SOPACK-AUTONOMY.md §5.5).
+
+    *fixture* defaults to ``None``, which loads this importer's own committed
+    calibration fixture (production, always). Tests pass the SAME fixture
+    doc a test pack was calibrated against (``sopack.pack.pack``'s
+    ``calibration=`` override), so the two sides agree on what "this
+    fixture" hashes to without a real committed file
+    (``contract.calibration_fixture_sha256``).
+
+    Raises :class:`StageFailure` (stage ``"probe"``) on any violation;
+    returns a human-readable detail string on success.
+    """
+    manifest_probe = reader.manifest.get("probe") or {}
+    entries = manifest_probe.get("entries") or []
+    if not entries:
+        raise StageFailure("probe", "pack carries no calibration probe — refusing (not "
+                                    "skippable, no flag)")
+    pack_vectors = reader.probe_vectors()
+    if len(pack_vectors) != len(entries):
+        raise StageFailure("probe", f"probe vector count ({len(pack_vectors)}) != entry count "
+                                    f"({len(entries)})")
+
+    if fixture is None:
+        try:
+            fixture = contract.load_calibration()
+        except contract.CalibrationError as exc:
+            raise StageFailure("probe", f"this importer's calibration fixture is unusable: "
+                                        f"{exc}") from exc
+        importer_fixture_sha = contract.CALIBRATION_SHA256
+    else:
+        importer_fixture_sha = contract.calibration_fixture_sha256(fixture)
+
+    # Step 1: pack <-> fixture.
+    fixture_sha = manifest_probe.get("fixture_sha256")
+    if fixture_sha != importer_fixture_sha:
+        raise StageFailure(
+            "probe", f"pack was calibrated against a different fixture "
+                     f"(fixture_sha256 {fixture_sha!r} != this importer's "
+                     f"{importer_fixture_sha!r})")
+    fixture_by_id = {e["id"]: e for e in fixture["entries"]}
+    problems = []
+    worst1 = 1.0
+    for i, e in enumerate(entries):
+        fx = fixture_by_id.get(e.get("id"))
+        if fx is None:
+            problems.append(f"fixture entry {e.get('id')} not found in this importer's "
+                            "calibration.json")
+            continue
+        cos = contract.cosine(pack_vectors[i], fx["vector"])
+        worst1 = min(worst1, cos)
+        if cos < contract.PROBE_MIN_COSINE:
+            problems.append(f"pack<->fixture {e.get('id')}: cosine {cos:.5f} < "
+                            f"{contract.PROBE_MIN_COSINE}")
+    if problems:
+        raise StageFailure("probe", "; ".join(problems))
+
+    # Step 2: fixture <-> store (only the entries relevant to THIS profile).
+    relevant = [e for e in fixture["entries"] if e.get("profile") == profile.name]
+    ids = [e["id"] for e in relevant]
+    stored_by_id = {}
+    if ids:
+        for row in adapter.retrieve(collection, ids, with_payload=False, with_vector=True):
+            if row.get("vector"):
+                stored_by_id[row["id"]] = row["vector"]
+    present = [e for e in relevant if e["id"] in stored_by_id]
+
+    if not present:
+        # Step 3: empty store (or none of the fixture's ids are in it yet) —
+        # the fixture DEFINES the store's space; record the contract
+        # fingerprint on first import, and refuse a later import under a
+        # different one.
+        existing_fp = adapter.get_fingerprint(collection)
+        if existing_fp is None:
+            adapter.set_fingerprint(collection, contract.CONTRACT_SHA256)
+            fp_detail = (f"empty store: recorded contract fingerprint "
+                        f"{contract.CONTRACT_SHA256[:12]}…")
+        elif existing_fp != contract.CONTRACT_SHA256:
+            raise StageFailure(
+                "probe", f"store {collection!r} was previously imported under a different "
+                         f"contract (recorded fingerprint {existing_fp[:12]}… != this pack's "
+                         f"{contract.CONTRACT_SHA256[:12]}…) — refusing")
+        else:
+            fp_detail = (f"empty store: contract fingerprint {contract.CONTRACT_SHA256[:12]}… "
+                        "already recorded, matches")
+    else:
+        step2_problems = []
+        worst2 = 1.0
+        for e in present:
+            cos = contract.cosine(stored_by_id[e["id"]], e["vector"])
+            worst2 = min(worst2, cos)
+            if cos < contract.PROBE_MIN_COSINE:
+                step2_problems.append(f"fixture<->store {e['id']}: cosine {cos:.5f} < "
+                                      f"{contract.PROBE_MIN_COSINE}")
+        if step2_problems:
+            raise StageFailure("probe", "; ".join(step2_problems))
+        fp_detail = f"fixture<->store: {len(present)} fixture point(s), worst cosine {worst2:.5f}"
+
+    return (f"{len(entries)} calibration entries: pack<->fixture worst cosine {worst1:.5f}; "
+           f"{fp_detail}")
 
 
 def _stage_probe(ctx: _Ctx, job_id: str) -> dict:
+    """Schema-aware (SOPACK-2-FORMAT.md §4): a ``sopack/1`` pack keeps the
+    live-canary probe (unchanged since before M1); a ``sopack/2`` pack runs
+    the three-step calibration probe instead."""
+    schema = ctx.reader.manifest.get("schema")
+    if schema == contract.SCHEMA_PACK_V1:
+        return _stage_probe_v1(ctx, job_id)
+    return _stage_probe_v2(ctx, job_id)
+
+
+def _stage_probe_v1(ctx: _Ctx, job_id: str) -> dict:
     probe = ctx.reader.manifest.get("probe") or {}
     canaries = probe.get("canaries") or []
     if not canaries:
@@ -248,9 +290,8 @@ def _stage_probe(ctx: _Ctx, job_id: str) -> dict:
     found: dict[str, dict] = {}
     for coll, idxs in by_collection.items():
         ids = [canaries[i]["id"] for i in idxs]
-        result = _post(coll, "points", {"ids": ids, "with_payload": False, "with_vector": True})
-        for p in (result or []):
-            found[str(p["id"])] = p
+        for row in ctx.adapter.retrieve(coll, ids, with_payload=False, with_vector=True):
+            found[row["id"]] = row
 
     worst = 1.0
     problems = []
@@ -261,10 +302,8 @@ def _stage_probe(ctx: _Ctx, job_id: str) -> dict:
             problems.append(f"canary {pid} missing from {c.get('collection') or ctx.collection}")
             continue
         stored = point.get("vector")
-        if isinstance(stored, dict):
-            stored = stored.get(contract.VECTOR_NAME)
         if not stored:
-            problems.append(f"canary {pid} carries no {contract.VECTOR_NAME!r} vector")
+            problems.append(f"canary {pid} carries no vector")
             continue
         cos = contract.cosine(vectors[i], stored)
         worst = min(worst, cos)
@@ -276,31 +315,38 @@ def _stage_probe(ctx: _Ctx, job_id: str) -> dict:
     return {"detail": f"{len(canaries)} canaries, worst cosine {worst:.5f}"}
 
 
-def _identity_probe(collection: str, profile, code, lang) -> tuple[bool, str | None]:
+def _stage_probe_v2(ctx: _Ctx, job_id: str) -> dict:
+    detail = run_calibration_probe(ctx.reader, ctx.adapter, ctx.profile, ctx.collection)
+    return {"detail": detail}
+
+
+def _identity_probe(adapter: store_adapter.StoreAdapter, collection: str, profile, code,
+                    lang) -> tuple[bool, str | None]:
     """Does (code[, lang]) already exist? For the sop profile also returns a
     sample existing point's ``slug``, which is what tells a re-index apart
     from a genuine collision (failure #10): same slug -> re-index, different
-    (non-empty) slug -> a different work claiming a taken code."""
+    (non-empty) slug -> a different work claiming a taken code.
+
+    Existence + sample come from one ``scroll(limit=1)`` call rather than a
+    ``facet`` + a second ``scroll`` (the two calls the pre-adapter code made)
+    — a store-neutral adapter need not expose Qdrant's faceting endpoint for
+    this, and one call is strictly less work for the same answer."""
     must = [{"key": profile.identity, "match": {"value": code}}]
     if lang and profile.name == "sop":
         must.append({"key": "lang", "match": {"value": lang}})
-    facet = _post(collection, "facet", {"key": profile.identity, "exact": True, "limit": 1,
-                                        "filter": {"must": must}})
-    hits = (facet or {}).get("hits") or []
-    if not hits:
+    rows = adapter.scroll(collection, {"must": must}, 1, with_payload=True)
+    if not rows:
         return False, None
     if profile.name != "sop":
         return True, None
-    sample = _post(collection, "points/scroll",
-                   {"limit": 1, "with_payload": True, "filter": {"must": must}})
-    points = (sample or {}).get("points") or []
-    slug = points[0]["payload"].get("slug") if points else None
+    slug = rows[0].get("payload", {}).get("slug")
     return True, slug
 
 
-def _retrieve_existing_ids(collection: str, ids: list[str]) -> set[str]:
-    result = _post(collection, "points", {"ids": ids, "with_payload": False, "with_vector": False})
-    return {str(p["id"]) for p in (result or [])}
+def _retrieve_existing_ids(adapter: store_adapter.StoreAdapter, collection: str,
+                           ids: list[str]) -> set[str]:
+    rows = adapter.retrieve(collection, ids, with_payload=False, with_vector=False)
+    return {row["id"] for row in rows}
 
 
 def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
@@ -311,7 +357,7 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
     for b in books:
         code = b.get(profile.identity)
         lang = b.get("lang")
-        exists, existing_slug = _identity_probe(ctx.collection, profile, code, lang)
+        exists, existing_slug = _identity_probe(ctx.adapter, ctx.collection, profile, code, lang)
         if not exists:
             new_books.append(f"{lang + ':' if lang else ''}{code}")
             continue
@@ -336,7 +382,7 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
     for points, _vectors in ctx.reader.batches(size=_PREFLIGHT_BATCH):
         _check_cancel(job_id)
         ids = [p["id"] for p in points]
-        existing = _retrieve_existing_ids(ctx.collection, ids)
+        existing = _retrieve_existing_ids(ctx.adapter, ctx.collection, ids)
         for pid in ids:
             if pid in existing:
                 overwrite_ids.append(pid)
@@ -367,9 +413,7 @@ def _overwrite_ids(job_id: str) -> list[str]:
 
 def _stage_snapshot(ctx: _Ctx, job_id: str) -> dict:
     if ctx.mode == "dry-run":
-        vec = ctx.live_vector_config
-        _create_collection(ctx.target_collection, contract.VECTOR_NAME,
-                           int(vec["size"]), str(vec["distance"]))
+        ctx.adapter.create_scratch_collection(ctx.target_collection, contract.VECTOR_SIZE)
         return {"skipped": True,
                 "detail": f"dry-run: scratch collection {ctx.target_collection} created "
                           "instead of a snapshot"}
@@ -396,14 +440,10 @@ def _stage_undo(ctx: _Ctx, job_id: str) -> dict:
         for i in range(0, len(overwrite_ids), _UNDO_BATCH):
             _check_cancel(job_id)
             chunk = overwrite_ids[i:i + _UNDO_BATCH]
-            result = _post(ctx.collection, "points",
-                           {"ids": chunk, "with_payload": True, "with_vector": True}) or []
+            result = ctx.adapter.retrieve(ctx.collection, chunk, with_payload=True, with_vector=True)
             for p in result:
-                vector = p.get("vector")
-                if isinstance(vector, dict):
-                    vector = vector.get(contract.VECTOR_NAME)
                 fh.write(json.dumps({"id": p["id"], "payload": p.get("payload") or {},
-                                     "vector": vector}, ensure_ascii=False) + "\n")
+                                     "vector": p.get("vector")}, ensure_ascii=False) + "\n")
                 captured += 1
 
     if captured != len(overwrite_ids):
@@ -412,14 +452,15 @@ def _stage_undo(ctx: _Ctx, job_id: str) -> dict:
     return {"detail": f"captured {captured} point(s) for rollback"}
 
 
-def _upsert_with_retry(collection: str, points: list[dict], job_id: str) -> None:
+def _upsert_with_retry(adapter: store_adapter.StoreAdapter, collection: str,
+                       points: list[dict], job_id: str) -> None:
     delay = 1.0
     last_exc: Exception | None = None
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
-            _points_upsert(collection, points)
+            adapter.upsert(collection, points)
             return
-        except (QdrantError, requests.RequestException) as exc:
+        except store_adapter.AdapterError as exc:
             last_exc = exc
             if attempt == _MAX_RETRIES:
                 break
@@ -443,10 +484,10 @@ def _stage_upsert(ctx: _Ctx, job_id: str) -> dict:
         for points, vectors in ctx.reader.batches(size=_UPSERT_BATCH):
             _check_cancel(job_id)
             body_points = [
-                {"id": p["id"], "vector": {contract.VECTOR_NAME: v}, "payload": p["payload"]}
+                {"id": p["id"], "vector": v, "payload": p["payload"]}
                 for p, v in zip(points, vectors)
             ]
-            _upsert_with_retry(ctx.target_collection, body_points, job_id)
+            _upsert_with_retry(ctx.adapter, ctx.target_collection, body_points, job_id)
             for p in points:
                 if p["id"] not in overwrite_ids:
                     created_fh.write(p["id"] + "\n")
@@ -469,11 +510,10 @@ def _stage_upsert(ctx: _Ctx, job_id: str) -> dict:
 
 def _stage_indexes(ctx: _Ctx, job_id: str) -> dict:
     created = []
-    for field, schema in ctx.profile.indexes.items():
+    for field, schema in store_adapter.indexes_for(ctx.profile.name).items():
         try:
-            _put(ctx.target_collection, "index", {"field_name": field, "field_schema": schema},
-                params={"wait": "true"})
-        except QdrantError as exc:
+            ctx.adapter.ensure_index(ctx.target_collection, field, schema)
+        except store_adapter.AdapterError as exc:
             raise StageFailure("indexes", f"could not ensure index {field!r}: {exc}") from exc
         created.append(field)
     return {"detail": f"ensured payload index(es): {', '.join(created)}"}
@@ -570,17 +610,13 @@ def _filter_for(profile, code, lang) -> dict:
     return {"must": must}
 
 
-def _points_count(collection: str, profile, code, lang) -> int:
-    result = _post(collection, "points/count",
-                   {"filter": _filter_for(profile, code, lang), "exact": True})
-    return int((result or {}).get("count", 0))
+def _points_count(adapter: store_adapter.StoreAdapter, collection: str, profile, code, lang) -> int:
+    return adapter.count(collection, _filter_for(profile, code, lang))
 
 
-def _retrievable(collection: str, profile, code, lang) -> bool:
-    result = _post(collection, "points/scroll",
-                   {"limit": 1, "with_payload": False, "with_vector": False,
-                    "filter": _filter_for(profile, code, lang)})
-    return bool((result or {}).get("points"))
+def _retrievable(adapter: store_adapter.StoreAdapter, collection: str, profile, code, lang) -> bool:
+    rows = adapter.scroll(collection, _filter_for(profile, code, lang), 1, with_payload=False)
+    return bool(rows)
 
 
 def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
@@ -591,12 +627,12 @@ def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
         code = b.get(ctx.profile.identity)
         lang = b.get("lang")
         want = int(b.get("points", 0))
-        got = _points_count(ctx.target_collection, ctx.profile, code, lang)
+        got = _points_count(ctx.adapter, ctx.target_collection, ctx.profile, code, lang)
         if got != want:
             problems.append(f"{lang or ''}:{code}: expected {want} point(s), found {got}")
         # The real retrieval check (failure #12): an imported book that a
         # filtered search cannot reach is a failed import, not a quiet success.
-        if not _retrievable(ctx.target_collection, ctx.profile, code, lang):
+        if not _retrievable(ctx.adapter, ctx.target_collection, ctx.profile, code, lang):
             problems.append(f"{lang or ''}:{code}: not reachable by a filtered search")
         if ctx.profile.name == "sop" and not titles_table.get(lang, {}).get(code):
             problems.append(f"{lang}:{code}: no title-table entry")
@@ -655,7 +691,7 @@ def _cleanup(ctx: _Ctx, job_id: str) -> None:
     ctx.close()
     if ctx.mode == "dry-run":
         try:
-            _delete_collection(ctx.target_collection)
+            ctx.adapter.delete_collection(ctx.target_collection)
             jobs.append_log(job_id, "report", "info",
                             f"dropped scratch collection {ctx.target_collection}")
         except Exception as exc:  # best-effort; never masks the real outcome
@@ -743,7 +779,7 @@ def start_job(pack_id: str, mode: str, allow_overwrite: bool, operator: str) -> 
         raise Busy("another import job is already running")
     try:
         jobs.create(job_id, pack_id=pack_id, mode=mode, profile=profile.name,
-                   collection=profile.collection, operator=operator,
+                   collection=store_adapter.collection_for(profile.name), operator=operator,
                    allow_overwrite=allow_overwrite)
     except Exception:
         jobs.release_import_lock()
@@ -788,13 +824,14 @@ def resume(job_id: str) -> None:
 def _do_rollback(job_id: str) -> None:
     job = jobs.load(job_id)
     collection = job["collection"]
+    adapter = _make_adapter()
     d = jobs.job_dir(job_id)
     try:
         created_path = d / "created_ids.txt"
         created = [ln for ln in created_path.read_text(encoding="utf-8").splitlines() if ln] \
             if created_path.is_file() else []
         if created:
-            _points_delete(collection, created)
+            adapter.delete_points(collection, created)
             jobs.append_log(job_id, "rollback", "info", f"deleted {len(created)} created point(s)")
 
         undo_path = d / "undo.jsonl"
@@ -806,14 +843,13 @@ def _do_rollback(job_id: str) -> None:
                 if not line:
                     continue
                 rec = json.loads(line)
-                batch.append({"id": rec["id"], "vector": {contract.VECTOR_NAME: rec["vector"]},
-                             "payload": rec["payload"]})
+                batch.append({"id": rec["id"], "vector": rec["vector"], "payload": rec["payload"]})
                 if len(batch) >= _UNDO_BATCH:
-                    _points_upsert(collection, batch)
+                    adapter.upsert(collection, batch)
                     restored += len(batch)
                     batch = []
             if batch:
-                _points_upsert(collection, batch)
+                adapter.upsert(collection, batch)
                 restored += len(batch)
         jobs.append_log(job_id, "rollback", "info", f"restored {restored} overwritten point(s)")
 

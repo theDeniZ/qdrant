@@ -1,0 +1,54 @@
+{
+  "schema": "sopack.book/1",
+  "profile": "sop",
+  "source": {
+    "file": "sopack-rs/conformance/extract/fixtures/en/SMALL.json",
+    "sha256": "5c9db21cab5880ba1ba089e3d90163eb7d2244403a6efeec5094143f31a8deaf",
+    "kind": "sop_json",
+    "acquired_from": null,
+    "rights": null
+  },
+  "book": {
+    "book_code": "SMALL",
+    "lang": "en",
+    "book_pair": null,
+    "title": "A Small Fixture Book",
+    "author": null,
+    "year": null,
+    "slug": null,
+    "corpus": null,
+    "page_kind": null
+  },
+  "id_rule": "sop/plain",
+  "alignment": null,
+  "stats": {
+    "blocks_in": 2,
+    "blocks_out": 2,
+    "dropped": 0,
+    "damage": 0.0,
+    "words": 21,
+    "dropped_detail": []
+  },
+  "blocks": [
+    {
+      "para_key": "0.1",
+      "page": 0,
+      "para": 1,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "This is the first paragraph of the English conformance fixture.",
+      "words": 10
+    },
+    {
+      "para_key": "0.2",
+      "page": 0,
+      "para": 2,
+      "seq": 0,
+      "chunk": 0,
+      "chunks": 1,
+      "text": "This is the second paragraph, also part of the conformance preface.",
+      "words": 11
+    }
+  ]
+}

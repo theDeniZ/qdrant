@@ -13,7 +13,7 @@ class Sopack < Formula
   homepage "https://github.com/theDeniZ/qdrant"
   # url and sha256 are rewritten by .github/workflows/release-sopack.yml on every release tag
   url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v0.9.0/sopack-0.9.0-aarch64-apple-darwin.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  sha256 "b281c3c78cb943acf23cec22c805122b9d4f28032d9a0b64bca0ce4193fc9a98"
 
   # Prebuilt Rust binary + Microsoft ONNX Runtime 1.30.0 (bundled, the version
   # the calibration gate was measured with). No Python, no venv, no post_install.

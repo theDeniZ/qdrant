@@ -1,8 +1,8 @@
 # Metadata rules for `corpus-prep`
 
 Conventions for resolving the metadata fields `sopack extract` takes, with
-real examples from `pd-books/converted/MANIFEST.md` and
-`pd-books/converted/_results_pioneers2026.json`. `sopack` drafts nothing:
+real examples from `local-archive/imported/pioneers/converted/MANIFEST.md` and
+`local-archive/imported/pioneers/converted/_results_pioneers2026.json`. `sopack` drafts nothing:
 every value comes from you, resolved by research against the source, never
 by picking the first plausible string.
 
@@ -152,7 +152,7 @@ Normalise an `archive.org/download/<id>/...` URL to its details-page form:
 `"Public domain"` (however capitalized/spaced in the OPF) → `"public-domain"`
 — lowercase, spaces to hyphens.
 
-Every file under `pd-books/converted/` was checked individually for a live
+Every file under `local-archive/imported/pioneers/converted/` was checked individually for a live
 copyright assertion (`docs/... MANIFEST.md`'s provenance section) — do not
 assume `rights` is `public-domain` just because a source is "old"; confirm the
 OPF's `<dc:rights>` (or the acquisition's documented finding) says so. A file

@@ -1,5 +1,22 @@
 # Finding: the German `aligned` field in the live `sop` collection is inverted
 
+> **Status 2026-09-26: FIXED in code and in the live collection** (repair run with the user's go-ahead;
+> a follow-up dry run reports 0 points to change; live check: DE BH 5.1 → [7.1], EN SL 7.1 → [5.1]).
+> Step 1 is done: `build_sop_vector_index.alignment_maps()` reads `en_reverse` (and
+> `en_reverse_by_code`) as EN → DE for both directions, verified on the pair below
+> (DE BH 5.1 ↔ EN SL 7.1). Step 2 is ready as a payload-only mode of the same tool:
+>
+> ```bash
+> PYTHONPATH=generator/src .venv/bin/python3.11 -m sdarm.tools.build_sop_vector_index \
+>     --fix-aligned --dry-run --qdrant-url http://10.10.10.10:6333   # counts only
+> #   drop --dry-run to write; idempotent, only differing points are updated (~20 s)
+> ```
+>
+> Dry run on the live collection: de 94 638 / 104 993 points would change (96 458 carry an
+> alignment afterwards); en 69 485 / 74 744 (69 133 afterwards). The SBL translation
+> pipeline no longer reads `aligned` (it pairs paragraphs by stored vectors), but
+> `sop_parallel` does.
+
 **Found 2026-09-22 while building the import pipeline. Not caused by it.**
 **Severity: silent wrong answers. ~97 % of German alignments are incorrect.**
 

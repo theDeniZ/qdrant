@@ -66,7 +66,7 @@ from the source and the acquisition records, per
 Where to look: the title page and imprint (read the first spine documents
 of the EPUB yourself), the OPF metadata, the pd-books filename
 (`<author_key>__<title_kebab>__<year>__<source>`), and the acquisition
-records (`pd-books/converted/MANIFEST.md`, `_results_pioneers2026.json`,
+records (`local-archive/imported/pioneers/converted/MANIFEST.md`, `_results_pioneers2026.json`,
 `downloads/**/ACQUIRED-*.json`). Treat every one of these as evidence to
 cross-check, not as an answer — a scanned 19th-century EPUB's OPF often
 carries the digital edition's date, and a "BY …" line can be part of the
@@ -141,7 +141,7 @@ junk/too-short fragments like running-head/TOC lines, not real content
 silently lost), `collided_para_keys` and `split_blocks`. There is no
 chunker-tuning flag on `extract` — if something here looks structurally
 wrong (not just "OCR is messy" but e.g. whole chapters missing, block count
-wildly off from the word/chapter counts in `pd-books/converted/MANIFEST.md`
+wildly off from the word/chapter counts in `local-archive/imported/pioneers/converted/MANIFEST.md`
 or `_results_pioneers2026.json` if this book has an entry there — expect a
 **close, not exact** match, since the manifest's word count comes from a
 different pypdf-based conversion path than the EPUB chunker), stop and

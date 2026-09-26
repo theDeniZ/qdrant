@@ -15,8 +15,9 @@ writings (12 languages), offered in three parts:
 ```
 .
 ├── app/                    MCP server + admin UI (Python, Starlette, FastMCP)
-│   └── data/sop_books.json SoP book code → title tables (scripts/export_book_titles.py)
-├── sopack/                 CLI for extracting and packing corpus data (Python 3.14)
+│   └── data/sop_books.json SoP book code → title tables (seed; the importer maintains /data/sop_books.json)
+├── sopack-rs/              `sopack` — Rust CLI that creates packs (Homebrew tap: Formula/)
+├── sopack/                 Python pack reader used by the import service (format.py, contract.py)
 ├── Dockerfile, docker-compose.yml, requirements.txt
 ├── Formula/                sopack.rb — this repo is the Homebrew tap (Formula/README.md)
 ├── .github/workflows/      release-sopack.yml (GitHub Actions)
@@ -24,8 +25,8 @@ writings (12 languages), offered in three parts:
 ├── plugin/                 the bible-sop plugin (.mcp.json + skills/)
 ├── .claude/skills/         corpus-prep — maintainer-only sopack skill (not in the plugin)
 ├── references/             CANONICAL skill references; copied into each skill by the build
-├── scripts/                build_plugin.py, export_book_titles.py, merge_corpus_titles.py
-└── docs/                   INTEGRATION.md, PROJECT-INSTRUCTIONS.md, IMPORT-PIPELINE.md, IMPORT-API.md
+├── scripts/                build_plugin.py
+└── docs/                   INTEGRATION, PROJECT-INSTRUCTIONS, IMPORT-PIPELINE, IMPORT-API, SOPACK-*, acquisition lists
 ```
 
 ## Tools
@@ -137,9 +138,10 @@ QDRANT_URL=http://10.10.10.10:6333 ADMIN_PASSWORD=dev KEYS_DB=./keys.db \
 ```
 
 `app/sop_tools.py` and `app/bible_tools.py` also run as stdio MCP servers
-(`python app/sop_tools.py`). The sdarm workspace keeps identical copies in
-`translator/*_tools_mcp.py`; change both. `app/versification.py` is a copy of
-sdarm's `generator/src/sdarm/core/bible/versification.py`.
+(`python app/sop_tools.py`). `app/versification.py` is a copy of sdarm's
+`generator/src/sdarm/core/bible/versification.py`. (The old sdarm stdio copies
+`translator/*_tools_mcp.py` are retired and archived.)
 
-When the SoP corpus gains books, regenerate the title table:
-`python scripts/export_book_titles.py <sdarm>/generator/data/sop`.
+Books reach the corpus only as `.sopack` files through the admin UI's import service,
+which also updates the title table (`/data/sop_books.json`). The old title scripts
+(`export_book_titles.py`, `merge_corpus_titles.py`, `split_corpus.py`) are archived.

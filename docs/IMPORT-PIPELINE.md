@@ -1,6 +1,6 @@
 # Corpus import pipeline — requirements
 
-**Status: agreed requirement, not yet built. 2026-09-21.**
+**Status: agreed requirement 2026-09-21; implemented** by the admin import service (`app/import_service.py`, [IMPORT-API.md](IMPORT-API.md)) and the `sopack` CLI (`sopack-rs/`, [SOPACK-1.0-PLAN.md](SOPACK-1.0-PLAN.md)).
 
 > "I NEVER AGAIN NEED SOME SKETCHY SCRIPTS. What I need is an actual import
 > pipeline via a server with fail-safes and backup-restore procedures. Every

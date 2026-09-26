@@ -1,5 +1,12 @@
 # Acquisition brief — 24 pioneer works for SoP+
 
+> **2026-09-26:** the book files and old scripts referenced below moved out of
+> `qdrant/pd-books/` into `/workspaces/sdarm/local-archive/` (paths rewritten; full map in
+> `local-archive/MANIFEST.tsv`). Imports no longer use `build_pioneers_corpus.py` /
+> `export_book_titles.py`: build a `.sopack` with the `sopack` CLI (skill `corpus-prep`) and
+> import it in the bible-sop admin UI, which also updates the title table.
+
+
 Everything needed to send an agent after the missing books and hand you a
 folder that is ready to import. **No agent imports anything.** The build and
 the Qdrant write stay with you.
@@ -168,7 +175,7 @@ Substitute the bracketed parts per agent.
 Task: acquisition research and download for the SDARM SoP+ corpus. Read-only
 research, plus downloads into one directory. You are NOT importing anything.
 
-Working directory: /workspaces/sdarm/qdrant/pd-books
+Working directory: /workspaces/sdarm/local-archive (was qdrant/pd-books)
 Your download directory: downloads/pioneers/[GROUP-DIR]
 Your manifest:          downloads/pioneers/[GROUP-DIR]/ACQUIRED-[N].json
 
@@ -256,8 +263,8 @@ Task: mechanical verification of two acquisition manifests. No judgement
 calls, no downloads, no searching. Report, do not fix.
 
 Read:
-  /workspaces/sdarm/qdrant/pd-books/downloads/pioneers/jh-waggoner-haskell/ACQUIRED-1.json
-  /workspaces/sdarm/qdrant/pd-books/downloads/pioneers/millerite-later/ACQUIRED-2.json
+  /workspaces/sdarm/local-archive/imported/pioneers/downloads/jh-waggoner-haskell/ACQUIRED-1.json
+  /workspaces/sdarm/local-archive/imported/pioneers/downloads/millerite-later/ACQUIRED-2.json
 
 For every entry, check and report:
 1. the file exists at "file" and its size on disk matches "bytes"
@@ -285,24 +292,24 @@ Nothing below is run by an agent.
    the step the whole provenance discipline exists for.
 
 2. **OCR what needs it.** `needs_ocr: true` entries, plus `CGRJ`. The Fraktur
-   pipeline in `pd-books/pipeline/` is German-specific; English image PDFs
+   pipeline in `local-archive/scripts/pd-books-ocr-pipeline/` is German-specific; English image PDFs
    want plain `tesseract -l eng`. Toolchain setup notes are in
-   `pd-books/STATE.md`.
+   `local-archive/wip/german-pd-ocr/STATE.md`.
 
-3. **Add the works to the catalog.** `pd-books/catalog/works.mjs`, then
+3. **Add the works to the catalog.** `local-archive/imported/pioneers/catalog/works.mjs`, then
    rebuild with `node catalog/build_catalog.mjs`. The manifest fields map
    onto the catalog entry directly: `slug`, `title`, `author`,
    `year` (use `year_work`), `language`, `sourceFile`, `sourceEdition` (use
    `year_printing`), `sourceRepo`.
 
 4. **Reserve the codes.** Add each `book_code` to the `CODES` table in
-   `pd-books/qdrant/build_pioneers_corpus.py`. Works whose text carries inline
+   `local-archive/scripts/pd-books-pioneer-import/build_pioneers_corpus.py`. Works whose text carries inline
    `ABBR page.para` references get their code from the file and need no entry;
    everything else needs one.
 
 5. **Build and inspect.**
    ```bash
-   cd /workspaces/sdarm/qdrant/pd-books/qdrant
+   cd /workspaces/sdarm/local-archive/scripts/pd-books-pioneer-import
    python3 build_pioneers_corpus.py
    ```
    Read `pioneers_report.md` before going further. Anything over about 1 %
@@ -321,9 +328,9 @@ Nothing below is run by an agent.
    missed last time and made the whole 2026-08-23 import invisible:
    ```bash
    cd /workspaces/sdarm/qdrant
-   python3 scripts/export_book_titles.py /workspaces/sdarm/generator/data/sop \
+   python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
        --qdrant-url "$QDRANT_URL" --dry-run
-   python3 scripts/export_book_titles.py /workspaces/sdarm/generator/data/sop \
+   python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
        --qdrant-url "$QDRANT_URL"
    ```
    It warns if any code still has no title.

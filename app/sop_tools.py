@@ -275,7 +275,7 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
 
 
 def _book_titles() -> dict:
-    """Code → titles tables (``data/sop_books.json``, see scripts/export_book_titles.py)."""
+    """Code → titles tables (``data/sop_books.json``, maintained by the import service)."""
     global _titles
     if _titles is None:
         here = Path(__file__).resolve().parent

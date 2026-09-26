@@ -1,5 +1,12 @@
 # SoP+ acquisition list — pre-1915 Adventist pioneers
 
+> **2026-09-26:** the book files and old scripts referenced below moved out of
+> `qdrant/pd-books/` into `/workspaces/sdarm/local-archive/` (paths rewritten; full map in
+> `local-archive/MANIFEST.tsv`). Imports no longer use `build_pioneers_corpus.py` /
+> `export_book_titles.py`: build a `.sopack` with the `sopack` CLI (skill `corpus-prep`) and
+> import it in the bible-sop admin UI, which also updates the title table.
+
+
 Target: extend the `sop` Qdrant collection from "Ellen G. White plus an
 unlabelled pioneer shelf" to a deliberate **SoP+** corpus: Ellen G. White, the
 pre-1915 Adventist pioneers, and a small tagged appendix of the sources the
@@ -8,15 +15,15 @@ pioneers themselves used.
 **Originals first.** English-language originals only. Translations are a
 separate exercise and are not planned here.
 
-**Revised 2026-09-20** against `pd-books/qdrant/pioneers_report.md` and
-`pd-books/catalog/catalog-manifest.json`. An earlier draft of this file listed
+**Revised 2026-09-20** against `local-archive/scripts/pd-books-pioneer-import/pioneers_report.md` and
+`local-archive/imported/pioneers/catalog/catalog-manifest.json`. An earlier draft of this file listed
 several works as missing that are in fact already indexed; the pioneer import
 of 2026-08-23 was more complete than the corpus appeared, because none of it
 had titles. See [the title fix](#the-title-defect-fixed-2026-09-20).
 
 ## Already indexed — 49 pioneer works, 11 authors
 
-Imported 2026-08-23 by `pd-books/qdrant/index_pioneers_qdrant.py`,
+Imported 2026-08-23 by `local-archive/scripts/pd-books-pioneer-import/index_pioneers_qdrant.py`,
 ~60,000 points, 4.69 M words, all carrying `corpus: "pioneers"`.
 
 | Author | Work | Year | Code |
@@ -187,22 +194,22 @@ invisible to every agent and looked like it had never been imported.
 
 **Cause.** `sop_list_books` does not read titles from Qdrant. It reads the
 static table `qdrant/app/data/sop_books.json`, and
-`scripts/export_book_titles.py` built that table **only** from the generator's
+`local-archive/scripts/qdrant/export_book_titles.py` built that table **only** from the generator's
 local mirror (`generator/data/sop/book_map.json` plus `en/<CODE>.json`). The
 pioneers were indexed straight into Qdrant and have no files in that mirror,
 so they got no entry. The import itself was fine: every point already carries
 `title`, `author`, `year` and `corpus` in its payload.
 
-**Fix.** `scripts/export_book_titles.py` now takes two further sources and
+**Fix.** `local-archive/scripts/qdrant/export_book_titles.py` now takes two further sources and
 merges them over the mirror:
 
 ```bash
 # offline, from the build artifact
-python3 scripts/export_book_titles.py /workspaces/sdarm/generator/data/sop \
-    --merge pd-books/qdrant/pioneers_corpus.jsonl
+python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
+    --merge local-archive/scripts/pd-books-pioneer-import/pioneers_corpus.jsonl
 
 # or source-agnostic, from whatever is actually indexed
-python3 scripts/export_book_titles.py /workspaces/sdarm/generator/data/sop \
+python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
     --qdrant-url "$QDRANT_URL"
 ```
 
@@ -212,7 +219,7 @@ python3 scripts/export_book_titles.py /workspaces/sdarm/generator/data/sop \
 `app/data/sop_books.json` has been regenerated: **618 English codes, zero
 untitled**, with `author`, `year` and `corpus` recorded for the 49 pioneer
 works. `sop_list_books` now returns those three fields (patched in both
-`qdrant/app/sop_tools.py` and `translator/sop_tools_mcp.py`, which are kept
+`qdrant/app/sop_tools.py` and `local-archive/scripts/translator-stdio-mcp/sop_tools_mcp.py`, which are kept
 identical) and matches on author, so `search="haskell"` resolves to `SDP` and
 `SSP`. **No re-import is needed. The service has to be redeployed for it to
 take effect.**
@@ -222,7 +229,7 @@ take effect.**
 1. ~~**`page_kind` is not surfaced.**~~ **Fixed 2026-09-20.** `sop_lookup`,
    `sop_book_paragraphs`, `sop_context` and `sop_by_bible_ref` now return
    `corpus`, `author` and `page_kind` on every non-EGW hit (helper `_prov` in
-   `qdrant/app/sop_tools.py`, mirrored in `translator/sop_tools_mcp.py`).
+   `qdrant/app/sop_tools.py`, mirrored in `local-archive/scripts/translator-stdio-mcp/sop_tools_mcp.py`).
    Ellen White hits carry none of those keys and their output is unchanged.
    `page_kind: "print"` means `page.paragraph` is the printed reference and is
    citable; `page_kind: "chapter"` means `page` is a positional sequence

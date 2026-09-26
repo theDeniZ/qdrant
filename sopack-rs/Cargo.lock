@@ -1134,7 +1134,7 @@ checksum = "ba467056f1b547ed52077911161fc86985becbc60e8e1857c8a144dab0def891"
 
 [[package]]
 name = "sopack-book"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "hex",
  "serde",
@@ -1148,7 +1148,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-cli"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "clap",
  "serde",
@@ -1165,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-contract"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "hex",
  "serde",
@@ -1179,7 +1179,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-embed"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "hex",
  "libloading",
@@ -1198,7 +1198,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-extract"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "fancy-regex",
  "hex",
@@ -1215,7 +1215,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-format"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "flate2",
  "hex",
@@ -1231,7 +1231,7 @@ dependencies = [
 
 [[package]]
 name = "sopack-progress"
-version = "0.9.1"
+version = "1.0.0"
 dependencies = [
  "indicatif",
  "serde_json",

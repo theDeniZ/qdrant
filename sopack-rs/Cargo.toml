@@ -9,7 +9,7 @@ members = ["crates/*"]
 exclude = ["spike"]
 
 [workspace.package]
-version = "0.9.1"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.85"
 license = "UNLICENSED"

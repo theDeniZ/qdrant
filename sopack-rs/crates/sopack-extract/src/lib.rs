@@ -26,22 +26,16 @@ mod markdown;
 pub mod meta;
 mod options;
 mod progress;
-pub mod propose;
-pub mod registry;
 mod sop_json;
 mod text;
 
 pub use error::{ErrorCode, ExtractError};
 pub use meta::{
     check_complete, discover_sidecars, load as load_meta, merge as merge_options, required_fields,
-    write_template, MetaFile,
+    MetaFile,
 };
 pub use options::{check_options, ExtractOptions, Kind};
 pub use progress::{NoopProgress, ProgressSink, Stage};
-pub use propose::{
-    propose, propose_quiet, Candidate, FieldProposal, Fields, Proposal, SourceInfo, FIELD_NAMES,
-};
-pub use registry::{Registry, RegistryEntry};
 
 // Re-exported so a caller that wants epub-specific regexes for its own
 // pre-checks (e.g. a CLI `inspect --epub`) does not have to duplicate them.

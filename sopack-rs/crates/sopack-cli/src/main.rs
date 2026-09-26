@@ -10,7 +10,6 @@ mod output;
 mod progress_build;
 mod progress_opt;
 mod provenance;
-mod registry_load;
 mod schemas;
 
 use clap::Parser;
@@ -22,7 +21,6 @@ fn dispatch(cli: &Cli) -> Result<i32, CliError> {
     match &cli.command {
         Command::Extract(a) => commands::extract::run(cli, a),
         Command::Inspect(a) => commands::inspect::run(cli, a),
-        Command::Propose(a) => commands::propose::run(cli, a),
         Command::Pack(a) => commands::pack::run(cli, a),
         Command::Calibrate(a) => commands::calibrate::run(cli, a),
         Command::Verify(a) => commands::verify::run(cli, a),

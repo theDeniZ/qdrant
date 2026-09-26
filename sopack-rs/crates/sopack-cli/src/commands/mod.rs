@@ -14,6 +14,5 @@ pub mod extract;
 pub mod inspect;
 pub mod model;
 pub mod pack;
-pub mod propose;
 pub mod schema_cmd;
 pub mod verify;

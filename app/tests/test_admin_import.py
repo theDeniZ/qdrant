@@ -54,7 +54,7 @@ class _Busy(Exception):
     pass
 
 
-def _fake_start_job(pack_id, mode, allow_overwrite, operator):
+def _fake_start_job(pack_id, mode, allow_overwrite, operator, allow_same_title=False):
     job_id = f"job-{len(_fake_jobs) + 1}"
     _fake_jobs[job_id] = {
         "job_id": job_id, "pack_id": pack_id, "mode": mode, "status": "queued",

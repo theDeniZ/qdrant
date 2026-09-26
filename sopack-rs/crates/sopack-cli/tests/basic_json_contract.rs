@@ -59,7 +59,7 @@ fn schema_list_json_matches_schema_and_every_name_resolves() {
         .collect();
     assert!(names.contains(&"book".to_string()));
     assert!(names.contains(&"error".to_string()));
-    assert!(names.contains(&"propose".to_string()));
+    assert!(!names.contains(&"propose".to_string()));
     for name in &names {
         let r = run(&["schema", name]);
         assert_eq!(r.status, 0, "sopack schema {name} failed");
@@ -99,7 +99,6 @@ fn commands_json_covers_every_documented_subcommand() {
     for expected in [
         "extract",
         "inspect",
-        "propose",
         "pack",
         "calibrate",
         "verify",

@@ -91,13 +91,17 @@ Add books to the SoP or Bible collections using the **sopack** CLI
 build or verify a pack). The workflow is:
 
 1. Extract a book (EPUB, Markdown, text, sop_json) into a reviewable
-   intermediate `book.json`, with metadata resolved via `sopack propose`
+   intermediate `book.json`, with the metadata you supply (flags or a
+   `<source>.meta.toml`)
 2. Pack it with embeddings into a `.sopack` file, then verify it offline
-3. Upload and import it via the admin UI with a dry-run proof and rollback safety
+3. Upload and import it via the admin UI with a dry-run proof and rollback
+   safety. The importer — not the CLI — decides book identity from the
+   store: a taken code, or a title already live under another code, is
+   refused at `preflight` (see [docs/IMPORT-API.md](docs/IMPORT-API.md) §3)
 
 Steps 1–2 (metadata research through a verified pack) are the
-**`corpus-prep`** plugin skill — it drives `sopack propose/extract/inspect/
-pack/verify` end to end and hands the finished pack to you; it never uploads
+**`corpus-prep`** plugin skill — it drives `sopack extract/inspect/pack/
+verify` end to end and hands the finished pack to you; it never uploads
 or imports (step 3 is always a manual, confirmed action).
 
 **References:**

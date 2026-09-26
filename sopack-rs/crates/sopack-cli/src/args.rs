@@ -65,8 +65,6 @@ pub enum Command {
     Extract(ExtractArgs),
     /// Counts, damage, codes for a book.json.
     Inspect(InspectArgs),
-    /// Draft metadata candidates for a source, for an agent/human to resolve.
-    Propose(ProposeArgs),
     /// book.json(s) -> .sopack (embeds; the slow step).
     Pack(PackArgs),
     /// Embed the calibration fixture and report per-entry cosines.
@@ -152,9 +150,9 @@ pub struct ExtractArgs {
     #[arg(short = 'o', long)]
     pub out: PathBuf,
 
-    /// A `<source>.meta.toml`-shaped sidecar to read metadata from (see
-    /// `sopack propose --write-meta`). Without this flag, `<source>.meta.toml`
-    /// is picked up automatically if it exists next to `source`.
+    /// A `<source>.meta.toml` sidecar to read metadata from (the same field
+    /// names as the flags below). Without this flag, `<source>.meta.toml` is
+    /// picked up automatically if it exists next to `source`.
     #[arg(long)]
     pub meta: Option<PathBuf>,
 
@@ -176,35 +174,11 @@ pub struct ExtractArgs {
     /// default; `sopack_book::validate` still checks it against the profile).
     #[arg(long = "id-rule")]
     pub id_rule: Option<String>,
-
-    /// Offline book-code registry to warn on collisions against (default:
-    /// `book_codes.json` next to the resolved contract, if found).
-    #[arg(long)]
-    pub registry: Option<PathBuf>,
 }
 
 #[derive(Args, Debug)]
 pub struct InspectArgs {
     pub book_json: PathBuf,
-}
-
-#[derive(Args, Debug)]
-pub struct ProposeArgs {
-    pub source: PathBuf,
-
-    #[arg(long, value_enum)]
-    pub kind: Option<KindOpt>,
-
-    /// Write `<source>.meta.toml` (pre-filled with every resolved field,
-    /// unresolved ones left commented with their candidates) instead of
-    /// printing the proposal.
-    #[arg(long = "write-meta")]
-    pub write_meta: bool,
-
-    /// Offline book-code registry to check collisions against (default:
-    /// `book_codes.json` next to the resolved contract, if found).
-    #[arg(long)]
-    pub registry: Option<PathBuf>,
 }
 
 #[derive(Args, Debug, Clone)]

@@ -1,5 +1,11 @@
 # sopack — the Mac side of the corpus import pipeline
 
+> **Retired as a CLI (2026-09-26, sopack 1.0.0).** The `sopack` you install —
+> Homebrew, `install.sh` or a release tarball — is the Rust binary in
+> [`../sopack-rs/`](../sopack-rs/). This package stays only for the server:
+> `format.py` (the pack reader the importer uses) and `contract.py`. The
+> install notes below describe the old Python CLI and are kept for history.
+
 Turns a book into a `.sopack` that the server can import into Qdrant without ever
 loading an embedding model. Design: [../docs/IMPORT-PIPELINE-PLAN.md](../docs/IMPORT-PIPELINE-PLAN.md).
 Requirements it satisfies: [../docs/IMPORT-PIPELINE.md](../docs/IMPORT-PIPELINE.md).

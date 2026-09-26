@@ -4,6 +4,43 @@ All notable changes to the `sopack` Rust CLI. Versions before `1.0.0` are
 pre-release milestones on the way to the cut-over described in
 [`../docs/SOPACK-1.0-PLAN.md`](../docs/SOPACK-1.0-PLAN.md).
 
+## 1.0.0 — 2026-09-26
+
+The cut-over release (M8 of the plan): the Rust binary is the one `sopack`.
+The Python CLI in `../sopack/` is off the release path — the server keeps only
+its `format.py` reader and contract loader. No change to `book.json`
+(`sopack.book/1`), the pack format (`sopack/2`) or the vector space: a 0.9.0
+pack and a 1.0.0 pack of the same book are interchangeable.
+
+Proven before the tag: `BP3.sopack` (Bates, 116 points), packed with 0.9.0,
+passed the server's `open`/`contract`/`probe` stages (pack↔fixture and
+fixture↔store worst cosine 1.00000) and matched every live point id, payload
+and vector (min cosine 0.99999999993).
+
+### Removed — the client no longer reasons about what is imported
+
+`sopack` packs the metadata it is given and nothing else. Whether a book code
+is taken, or a work is already imported under another code, is decided by the
+importer from the store's state (`app/import_service.py` preflight), never by
+the CLI.
+
+- **`sopack propose`** and its `propose` result schema — metadata is resolved
+  by the user or an agent (the `corpus-prep` skill), not drafted by the CLI.
+  `<source>.meta.toml` sidecars stay (`extract --meta`, auto-pickup,
+  `--meta-from-sidecars`); they are simply written by hand.
+- **The offline book-code registry**: `contracts/<id>/book_codes.json`, the
+  `--registry` flag, `extract`'s collision warning and the
+  `book_code_collision` field of the `extract` result. The file was a
+  snapshot of the server's title table, stale after every import.
+
+### Server (ships with the app, not the binary)
+
+- `preflight` refuses a **new** book whose title (and author, when both are
+  known) is already live under another code — the same work re-packed under
+  a stale code — unless the job sets `allow_same_title` (a separate volume or
+  edition). Admin UI: the *Allow same title* checkbox. The `sop` profile gains
+  a `title` keyword index so the lookup does not scan the collection.
+
 ## 0.9.0 — 2026-09-24
 
 First feature-complete build of the `sopack` binary (M2–M5 of the plan): a
@@ -31,6 +68,7 @@ bundles with no Python and no live store dependency.
   evidence, never silent guessing) → `<source>.meta.toml` sidecars
   (`sopack propose --write-meta`, `sopack extract --meta`/auto-pickup) →
   offline book-code collision warnings against `contracts/<id>/book_codes.json`.
+  *(All but the sidecars removed again in 1.0.0.)*
 - **Device self-verification**: `--device auto|cpu|coreml|cuda`, every
   non-CPU candidate calibrated against the contract's fixture before use;
   `auto` falls back to CPU on a low score, an explicit device refuses.

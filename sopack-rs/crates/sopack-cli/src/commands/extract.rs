@@ -11,7 +11,6 @@ use crate::exit::{CliError, EXIT_OK};
 use crate::extract_progress::ExtractProgressAdapter;
 use crate::output::{print_json, print_text};
 use crate::progress_build::build_progress;
-use crate::registry_load::load_registry;
 
 #[derive(Serialize)]
 struct ExtractResult {
@@ -21,7 +20,6 @@ struct ExtractResult {
     id_rule: String,
     stats: serde_json::Map<String, serde_json::Value>,
     year_from_source_note: Option<String>,
-    book_code_collision: Option<bool>,
 }
 
 /// Every required-metadata problem `sopack_book::validate` can report:
@@ -106,25 +104,6 @@ fn resolve_options(
     Ok(meta::merge(&explicit, &sidecar)?)
 }
 
-/// Checks the resolved `book_code` (if any) against *registry* and reports
-/// the collision as a warning (SOPACK-1.0-PLAN.md §3.2: "propose and
-/// extract warn on a collision, and the importer still has the final say").
-fn warn_on_collision(
-    opts: &ExtractOptions,
-    registry: &sopack_extract::Registry,
-    progress: &dyn sopack_progress::ProgressSink,
-) -> Option<bool> {
-    let code = opts.book_code.as_deref()?;
-    let collides = registry.contains(code);
-    if collides {
-        progress.warn(&format!(
-            "book_code {code:?} already exists in the offline registry — check this isn't a \
-             re-import under a new code before packing"
-        ));
-    }
-    Some(collides)
-}
-
 fn extract_one(
     source: &Path,
     kind: Kind,
@@ -182,18 +161,8 @@ pub fn run(cli: &Cli, args: &ExtractArgs) -> Result<i32, CliError> {
         vec![sopack_progress::StageWeight::new("extract", 1.0)],
     );
 
-    let contract_dir = {
-        let p = Path::new(&cli.contract);
-        if p.is_dir() {
-            Some(p)
-        } else {
-            None
-        }
-    };
-    let registry = load_registry(&cli.contract, contract_dir, args.registry.as_deref())?;
-
     if args.meta_from_sidecars {
-        return run_batch(cli, args, &registry, progress.as_ref());
+        return run_batch(cli, args, progress.as_ref());
     }
 
     let kind = args
@@ -201,7 +170,6 @@ pub fn run(cli: &Cli, args: &ExtractArgs) -> Result<i32, CliError> {
         .map(|k| k.to_extract_kind())
         .unwrap_or_else(|| infer_kind(&args.source));
     let opts = resolve_options(&args.source, args.meta.as_deref(), &args.meta_flags)?;
-    let collision = warn_on_collision(&opts, &registry, progress.as_ref());
 
     let book = extract_one(
         &args.source,
@@ -239,7 +207,6 @@ pub fn run(cli: &Cli, args: &ExtractArgs) -> Result<i32, CliError> {
         id_rule: book.id_rule.clone(),
         stats,
         year_from_source_note: year_note.clone(),
-        book_code_collision: collision,
     };
 
     if cli.json {
@@ -260,7 +227,6 @@ pub fn run(cli: &Cli, args: &ExtractArgs) -> Result<i32, CliError> {
 fn run_batch(
     cli: &Cli,
     args: &ExtractArgs,
-    registry: &sopack_extract::Registry,
     progress: &dyn sopack_progress::ProgressSink,
 ) -> Result<i32, CliError> {
     if !args.source.is_dir() {
@@ -289,7 +255,6 @@ fn run_batch(
                 continue;
             }
         };
-        warn_on_collision(&opts, registry, progress);
 
         let stem = source_path
             .file_stem()

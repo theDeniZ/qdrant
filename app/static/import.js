@@ -222,6 +222,7 @@
     const dryRunBtn = document.getElementById("dry-run-btn");
     const importBtn = document.getElementById("import-btn");
     const overwriteBox = document.getElementById("allow-overwrite");
+    const sameTitleBox = document.getElementById("allow-same-title");
     const jobStatus = document.getElementById("job-status");
     const jobBar = document.getElementById("job-bar");
     const logView = document.getElementById("log-view");
@@ -318,6 +319,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             pack_id: currentPackId, mode, allow_overwrite: !!overwriteBox.checked,
+            allow_same_title: !!(sameTitleBox && sameTitleBox.checked),
           }),
         });
         currentJobId = created.job_id;

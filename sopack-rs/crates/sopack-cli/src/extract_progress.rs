@@ -2,7 +2,7 @@
 //! trait local to that crate — see its module docs on why it doesn't depend
 //! on `sopack-progress`) onto the shared `sopack_progress::ProgressSink`
 //! (a `&self`, `u64`-total trait) every other command reports through, so
-//! `extract`/`propose` render with the exact same bar/NDJSON/plain-line
+//! `extract` renders with the exact same bar/NDJSON/plain-line
 //! machinery as `pack`/`verify`/`doctor`.
 
 use std::cell::Cell;

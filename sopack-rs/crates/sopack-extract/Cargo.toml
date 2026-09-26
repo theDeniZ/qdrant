@@ -10,11 +10,9 @@ publish = false
 sopack-book = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-# `meta.toml` sidecars (propose::Proposal writes a template, `meta::load`
-# reads it back) — TOML is the plan's chosen sidecar format (§3.5), kept
-# distinct from the JSON `book.json`/`propose --json` surface on purpose: a
-# sidecar is hand-edited by an agent/human, and TOML's comments are how
-# `write_template` documents unresolved candidates inline (§ meta.rs).
+# `meta.toml` sidecars (`meta::load`) — TOML is the plan's chosen sidecar
+# format (§3.5): a sidecar is hand-edited by an agent/human, and TOML allows
+# comments next to each value.
 toml = { workspace = true }
 sha2 = { workspace = true }
 hex = { workspace = true }
@@ -32,11 +30,6 @@ fancy-regex = "0.14"
 # `html.unescape` closely enough for extracted book text (named entities
 # like &mdash;/&nbsp;/&hellip; are common in archive.org/Gutenberg EPUBs).
 html-escape = "0.2"
-# NFD decomposition for `propose::normalize_title` — strips diacritics so a
-# registry title and a freshly-scanned title-page candidate compare equal
-# regardless of which of two independent transcriptions carries the accent
-# marks.
-unicode-normalization = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

@@ -1,6 +1,6 @@
 # `sopack` CLI contract
 
-Generated from the actual binary (`sopack 0.9.0`, `sopack commands --json`,
+Generated from the actual binary (`sopack 1.0.0`, `sopack commands --json`,
 `sopack schema <name>`) — not paraphrased. Re-derive this if `sopack
 --version` reports a different version than what you last checked here;
 `sopack commands --json` is always the live source of truth.
@@ -38,30 +38,6 @@ schema `error`.
 
 ## Commands
 
-### `sopack propose <source> [--kind K] [--write-meta] [--registry FILE]`
-
-Reads *source*, drafts metadata candidates, never fills a field's `value`
-unless every candidate agrees **and** at least one is authoritative
-(`from` ∈ `title_page`, `sop_json_meta`, `sop_json_dir`). Result schema
-`propose`:
-
-```jsonc
-{"source": {"path","kind","sha256","bytes"},
- "fields": {"<name>": {"value": <or null>, "candidates": [
-    {"value","from","evidence?","warning?","collision?"}]}, …},
- // 10 fields, fixed order: book_code, lang, title, author, year, corpus,
- // slug, book_pair, acquired_from, rights
- "unresolved": ["<field>", …],
- "warnings": ["<string>", …]}
-```
-
-`collision` on a `book_code` candidate is `true`/`false` only when
-`--registry` resolved to a file (default: `book_codes.json` next to the
-resolved contract, i.e. `contracts/<contract>/book_codes.json`); **absent**
-(not `false`) means "not checked" — never read a missing key as "no
-collision". `--write-meta` writes `<source>.meta.toml` instead of printing
-the proposal (see `references/metadata-rules.md`).
-
 ### `sopack extract <source> --out <book.json> [--meta FILE] [--meta-from-sidecars] [flags…]`
 
 Deterministic, no model. Reads metadata from (in priority order, conflict =
@@ -88,14 +64,13 @@ rejects: an `id_rule` not valid for the book's `profile`, duplicate
 (i.e. **not** an EGW work).
 
 Metadata flags: `--book-code --lang --title --author --year --corpus --slug
---book-pair --acquired-from --rights --page-kind --id-rule --registry`.
+--book-pair --acquired-from --rights --page-kind --id-rule`.
 `sop_json` refuses all of these as redundant (exit 2) — its metadata comes
 from the file's own `meta` block.
 
 Result schema `extract` (single-file):
 `{"out","book_code","lang","id_rule","stats":{"blocks_in","blocks_out",
-"dropped","damage","words","dropped_detail"},"year_from_source_note",
-"book_code_collision"}`. Batch (`--meta-from-sidecars`, `source` a
+"dropped","damage","words","dropped_detail"},"year_from_source_note"}`. Batch (`--meta-from-sidecars`, `source` a
 directory, `--out` a directory):
 `{"written":[<path>,…],"errors":[<string>,…]}` — writes `<stem>.book.json`
 per source; the run only fails outright if **every** file failed.
@@ -181,7 +156,7 @@ schema `model`: `{"action","model_dir","files","bytes"}`.
 
 ### `sopack schema [<name>|--list]` / `sopack commands --json` / `sopack contract show|list`
 
-`schema --list` enumerates: `error`, `progress-event`, `propose`, `extract`,
+`schema --list` enumerates: `error`, `progress-event`, `extract`,
 `inspect`, `pack`, `calibrate`, `verify`, `doctor`, `model`, `model-path`,
 `commands`, `contract-show`, `contract-list`, `schema-list`, `book` (the
 `book.json` shape written by `extract` / read by `pack`). `commands --json`
@@ -204,3 +179,13 @@ of the `.sopack` file — the "1. Upload a .sopack" panel — followed by
 creating an import job (`dry-run` first, then `apply`). Report the pack path
 and its sha256 so the user (or the admin UI, which computes it itself on
 upload) can cross-check.
+
+**Book identity is the importer's decision, never the CLI's.** `sopack` packs
+the `book_code` it is given, unchanged, and knows nothing about what is
+already imported. The importer's `preflight` stage decides from the store's
+own state: an existing `book_code`+`lang` with a different `slug` is a hard
+refusal (a different work claiming a taken code); the same slug is a
+re-index, which needs `allow_overwrite`; a **new** code whose title (and
+author) is already live under another code is refused unless the job sets
+`allow_same_title` (a separate volume or edition). A dry-run shows all
+three.

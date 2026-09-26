@@ -410,6 +410,53 @@ class TestPreflightCollisionVsReindex(ImportServiceTestCase):
         self.assertEqual(job2["counts"]["overwritten"], 1)
 
 
+class TestPreflightSameTitle(ImportServiceTestCase):
+    """A known work arriving under a NEW book_code (the manifest's TATS for the
+    live BP3) — decided from the store's own payloads, never by the client."""
+
+    def _seed_live(self, code, title, author="Tester"):
+        self.qdrant.put_point("sop", f"live-{code}",
+                              {"lang": "en", "book_code": code, "slug": code.lower(),
+                               "title": title, "author": author, "para_key": "1.1",
+                               "raw_text": "..."}, _vec(700))
+
+    def test_same_title_under_a_new_code_is_refused(self):
+        self._seed_live("BP3", "NEWC Title")  # the pack's book NEWC carries "NEWC Title"
+        cid, vec = self._seed_canary()
+        _build_pack(self._pack_path(), book_code="NEWC", slug="newc",
+                    canary_ids=[cid], canary_vectors=[vec])
+
+        job = self._wait_terminal(import_service.start_job("test-pack", "apply", True, "tester"))
+
+        self.assertEqual(job["status"], "failed")
+        entry = jobs.stage_entry(job, "preflight")
+        self.assertIn("allow_same_title", entry["detail"])
+        self.assertIn("BP3", entry["detail"])
+        self.assertEqual(jobs.stage_entry(job, "snapshot")["status"], "pending")
+
+    def test_allow_same_title_imports_it(self):
+        self._seed_live("VOL1", "NEWC Title")  # e.g. a separate volume with an identical title
+        cid, vec = self._seed_canary()
+        _build_pack(self._pack_path(), book_code="NEWC", slug="newc",
+                    canary_ids=[cid], canary_vectors=[vec])
+
+        job = self._wait_terminal(import_service.start_job("test-pack", "apply", False, "tester",
+                                                           allow_same_title=True))
+
+        self.assertEqual(job["status"], "ok", job.get("error"))
+        self.assertIn("allowed same title", jobs.stage_entry(job, "preflight")["detail"])
+
+    def test_same_title_by_another_author_is_a_different_work(self):
+        self._seed_live("SANC", "NEWC Title", author="Someone Else")
+        cid, vec = self._seed_canary()
+        _build_pack(self._pack_path(), book_code="NEWC", slug="newc",
+                    canary_ids=[cid], canary_vectors=[vec])
+
+        job = self._wait_terminal(import_service.start_job("test-pack", "apply", False, "tester"))
+
+        self.assertEqual(job["status"], "ok", job.get("error"))
+
+
 class TestRollbackRestoresExactly(ImportServiceTestCase):
     def test_rollback_restores_prior_state_byte_for_byte(self):
         # One point that will be overwritten, recorded before the import.

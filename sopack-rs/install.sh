@@ -9,7 +9,7 @@
 #   curl -s https://github.com/theDeniZ/qdrant/raw/main/sopack-rs/install.sh | sh
 #
 # Environment:
-#   SOPACK_VERSION=0.9.0    # Specific version (default: latest)
+#   SOPACK_VERSION=1.0.0    # Specific version (default: latest)
 #   PREFIX=$HOME/.local     # Install base dir (default: $HOME/.local)
 
 set -eu

@@ -8,7 +8,7 @@ Stages, exactly in this order::
 Each stage asserts its own output and refuses to hand a half-result to the
 next (R8). Public entry points for the admin UI::
 
-    start_job(pack_id, mode, allow_overwrite, operator) -> job_id
+    start_job(pack_id, mode, allow_overwrite, operator, allow_same_title=False) -> job_id
     get_job(job_id) -> dict
     list_jobs() -> list[dict]
     read_log(job_id, after) -> {"events": [...], "next": int}
@@ -107,6 +107,7 @@ class _Ctx:
         self.mode = job["mode"]
         self.collection = job["collection"]
         self.allow_overwrite = bool(job["allow_overwrite"])
+        self.allow_same_title = bool(job.get("allow_same_title", False))
         self.profile = contract.get_profile(job["profile"])
         self.pack_path = _packs_dir() / f"{self.pack_id}.sopack"
         self.target_collection = (self.collection if self.mode == "apply"
@@ -343,6 +344,36 @@ def _identity_probe(adapter: store_adapter.StoreAdapter, collection: str, profil
     return True, slug
 
 
+_SAME_TITLE_SAMPLE = 64
+
+
+def _same_title_holders(adapter: store_adapter.StoreAdapter, collection: str, code, lang,
+                        title, author) -> list[str]:
+    """Other book_codes that already hold *title* in *lang* — the same work
+    arriving under a new code (e.g. a manifest's provisional ``TATS`` for the
+    live ``BP3``), which the code/slug probe above cannot see. Answered from
+    the store's own payloads, nothing else: the store is the authority on
+    what is imported. A holder whose author is known and differs is a
+    different work that happens to share a title, and is not reported.
+    EGW points carry no ``title`` payload, so this never fires for them."""
+    if not title:
+        return []
+    must = [{"key": "title", "match": {"value": title}}]
+    if lang:
+        must.append({"key": "lang", "match": {"value": lang}})
+    flt = {"must": must, "must_not": [{"key": "book_code", "match": {"value": code}}]}
+    holders: list[str] = []
+    for row in adapter.scroll(collection, flt, _SAME_TITLE_SAMPLE, with_payload=True):
+        payload = row.get("payload", {})
+        other = payload.get("book_code")
+        if not other or other in holders:
+            continue
+        if author and payload.get("author") and payload["author"] != author:
+            continue
+        holders.append(other)
+    return holders
+
+
 def _retrieve_existing_ids(adapter: store_adapter.StoreAdapter, collection: str,
                            ids: list[str]) -> set[str]:
     rows = adapter.retrieve(collection, ids, with_payload=False, with_vector=False)
@@ -352,7 +383,7 @@ def _retrieve_existing_ids(adapter: store_adapter.StoreAdapter, collection: str,
 def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
     profile = ctx.profile
     books = ctx.reader.manifest.get("books") or []
-    collisions, reindexed, new_books = [], [], []
+    collisions, reindexed, new_books, same_title = [], [], [], []
 
     for b in books:
         code = b.get(profile.identity)
@@ -360,6 +391,12 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
         exists, existing_slug = _identity_probe(ctx.adapter, ctx.collection, profile, code, lang)
         if not exists:
             new_books.append(f"{lang + ':' if lang else ''}{code}")
+            if profile.name == "sop":
+                holders = _same_title_holders(ctx.adapter, ctx.collection, code, lang,
+                                              b.get("title"), b.get("author"))
+                if holders:
+                    same_title.append(f"{lang}:{code} — {b.get('title')!r} is already imported "
+                                      f"as {', '.join(holders)}")
             continue
         if profile.name == "sop":
             incoming_slug = b.get("slug")
@@ -376,6 +413,14 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
         # regardless of allow_overwrite (failure #10).
         raise StageFailure("preflight", f"{len(collisions)} book_code collision(s), refusing: "
                                         + "; ".join(collisions))
+
+    if same_title and not ctx.allow_same_title:
+        # Most likely a re-import under a new code, which would duplicate the
+        # work. A genuinely separate edition or volume with the identical
+        # title and author is the exception the operator opts into.
+        raise StageFailure("preflight", f"{len(same_title)} new book(s) duplicate a live title, "
+                                        "refusing without allow_same_title (re-pack under the "
+                                        "live code to re-import): " + "; ".join(same_title))
 
     overwrite_ids: list[str] = []
     new_count = 0
@@ -399,8 +444,11 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
 
     jobs.update(job_id, counts={**jobs.load(job_id)["counts"], "books": len(books),
                                 "overwritten": len(overwrite_ids)})
-    return {"detail": f"{len(new_books)} new book(s), {len(reindexed)} re-index book(s), "
-                      f"{new_count} new point(s), {len(overwrite_ids)} overwrite point(s)"}
+    detail = (f"{len(new_books)} new book(s), {len(reindexed)} re-index book(s), "
+              f"{new_count} new point(s), {len(overwrite_ids)} overwrite point(s)")
+    if same_title:
+        detail += "; allowed same title: " + "; ".join(same_title)
+    return {"detail": detail}
 
 
 def _overwrite_ids(job_id: str) -> list[str]:
@@ -653,6 +701,7 @@ def _stage_report(ctx: _Ctx, job_id: str) -> dict:
         f"- mode: {job['mode']}",
         f"- operator: {job['operator']}",
         f"- allow_overwrite: {job['allow_overwrite']}",
+        f"- allow_same_title: {job.get('allow_same_title', False)}",
         f"- started: {job.get('started_at')}",
         f"- counts: {json.dumps(job.get('counts', {}))}",
         f"- progress: {json.dumps(job.get('progress', {}))}",
@@ -761,7 +810,8 @@ def _run(job_id: str) -> None:
 
 # ── public API ───────────────────────────────────────────────────────────────
 
-def start_job(pack_id: str, mode: str, allow_overwrite: bool, operator: str) -> str:
+def start_job(pack_id: str, mode: str, allow_overwrite: bool, operator: str,
+              allow_same_title: bool = False) -> str:
     if mode not in ("dry-run", "apply"):
         raise ValueError(f"mode must be 'dry-run' or 'apply', got {mode!r}")
     pack_path = _packs_dir() / f"{pack_id}.sopack"
@@ -780,7 +830,7 @@ def start_job(pack_id: str, mode: str, allow_overwrite: bool, operator: str) -> 
     try:
         jobs.create(job_id, pack_id=pack_id, mode=mode, profile=profile.name,
                    collection=store_adapter.collection_for(profile.name), operator=operator,
-                   allow_overwrite=allow_overwrite)
+                   allow_overwrite=allow_overwrite, allow_same_title=allow_same_title)
     except Exception:
         jobs.release_import_lock()
         raise

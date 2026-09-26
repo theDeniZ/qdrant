@@ -1,6 +1,12 @@
 # sopack 1.0.0 — plan
 
-**Status (2026-09-25): M0–M7 implemented; M8 (cut-over) waits on the user — see
+> **Superseded in part (2026-09-26):** `sopack propose` (P5, §3.5) and the offline
+> book-code registry (§3.2, M3) were removed before the 1.0.0 tag, by user decision —
+> the client never decides book identity; the importer does, from store state. The
+> sections below still describe them as planned; the status table at the end is current.
+
+**Status (2026-09-26): M0–M7 implemented; 1.0.0 prepared (version bumped, changelog
+written) — the tag and the first real `/2` import are the user's, see
 "Implementation status" at the end.** M0 results: [../sopack-rs/spike/README.md](../sopack-rs/spike/README.md). Plan written 2026-09-24. Supersedes the "proposal" status of
 [SOPACK-RUST-MIGRATION.md](SOPACK-RUST-MIGRATION.md) (its analysis stays valid and is
 referenced below). The store-independence design is taken as-is from
@@ -357,7 +363,7 @@ server-side reader keeps running them.
 | M5 | **done** | `--json` everywhere, stable exit codes 0–7, 15 committed schemas, `sopack commands --json`; skill [corpus-prep](../plugin/skills/corpus-prep/SKILL.md). **Blind test** (fresh agent, only the skill + the Atonement EPUB): it detected the re-import (`registry:title_match` → AERS), reused the live code, packed 993 points; **993/993 ids equal the live store, min cosine 0.9999999999** |
 | M6 | **code done, hardware untested** | `--device auto|cpu|coreml|cuda`, features `coreml`/`cuda` compile; non-CPU devices self-verify on the fixture or fall back. CoreML needs the Mac, CUDA a GPU (§7) |
 | M7 | **files done, not yet run on CI** | [release-sopack.yml](../.github/workflows/release-sopack.yml) (3 targets, bundles ORT 1.30.0, tests the staged tarball incl. a real model run), [ci-sopack.yml](../.github/workflows/ci-sopack.yml), binary [Formula](../Formula/sopack.rb) (ORT kept in libexec), [install.sh](../sopack-rs/install.sh) |
-| M8 | **waits on the user** | see below |
+| M8 | **1.0.0 prepared, tag pending** | 0.9.0 released (the Formula carries its sha256) and run on the Mac. `BP3.sopack` (0.9.0, re-import) passed the server dry-run through `open`/`contract`/`probe` (worst cosine 1.00000), refused only at `preflight` (points exist — correct). **User decisions 2026-09-26: release 1.0.0 without a real import; `propose` and the offline registry (`book_codes.json`, `--registry`) removed — book identity is the importer's call from store state (preflight same-title check, `allow_same_title`)**; `BSM.sopack` (Miller, *Bible Student's Manual*, 178 points, new code) stays ready for the first one. see CHANGELOG 1.0.0 |
 
 Totals: Rust workspace 318 tests green (7 model-gated tests run by hand, all green), clippy `-D warnings` and fmt clean, no HTTP client in the binary's dependency tree.
 
@@ -370,7 +376,7 @@ carries author and year. The server needs a redeploy to serve the new table. (3)
 CPU finding holds: batch 1 / a 512-token budget is fastest on CPU. Python 0.2.0 now
 defaults to batch 1.
 
-**M8: what is left for the user.**
+**M8: what is left for the user** (updated 2026-09-26 — steps 1–2 done for 0.9.0; for 1.0.0: commit + tag `sopack-v1.0.0`; the BSM import is deferred).
 1. Cut the first Rust release: set `[workspace.package] version` in `sopack-rs/Cargo.toml`
    (0.9.0 now; `1.0.0` for the cut-over), commit, then tag `sopack-v<version>` and push the tag.
    The first run of release-sopack.yml is the real test of M7. Its brew job is the

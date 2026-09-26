@@ -86,7 +86,7 @@ def _atomic_write(path: Path, text: str) -> None:
 # ── job CRUD ─────────────────────────────────────────────────────────────────
 
 def create(job_id: str, *, pack_id: str, mode: str, profile: str, collection: str,
-           operator: str, allow_overwrite: bool) -> dict:
+           operator: str, allow_overwrite: bool, allow_same_title: bool = False) -> dict:
     """Create a new job directory + job.json in status 'queued'."""
     job = {
         "job_id": job_id,
@@ -101,6 +101,7 @@ def create(job_id: str, *, pack_id: str, mode: str, profile: str, collection: st
         "finished_at": None,
         "operator": operator,
         "allow_overwrite": bool(allow_overwrite),
+        "allow_same_title": bool(allow_same_title),
         "stages": [{"name": n, "status": "pending", "started_at": None,
                     "finished_at": None, "detail": None} for n in STAGES],
         "progress": {},

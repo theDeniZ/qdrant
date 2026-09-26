@@ -152,12 +152,7 @@ fn normpath_posix(p: &str) -> String {
 }
 
 /// Content documents in reading order, resolved through the OPF spine.
-///
-/// `pub(crate)`: reused by `crate::propose`, which needs the same reading
-/// order and the raw OPF XML to gather metadata *candidates* (dc:language,
-/// dc:source, dc:publisher, …) beyond the four fields [`opf_metadata`]
-/// resolves for the deterministic extractor.
-pub(crate) fn spine_docs(
+fn spine_docs(
     archive: &mut zip::ZipArchive<File>,
 ) -> Result<(Vec<String>, String, String), ExtractError> {
     let container = read_zip_text(archive, "META-INF/container.xml")?;
@@ -293,16 +288,7 @@ fn opf_metadata(opf_xml: &str) -> OpfMeta {
 
 /// The paragraph-like text blocks (`p`/`h1..h6`/`li`/`blockquote`) of one
 /// spine document, in document order.
-///
-/// `pub(crate)`: `crate::propose` scans the first spine document(s) this
-/// way for title-page evidence (a "BY <author>" byline, an imprint year) —
-/// the same HTML→text pass the extractor uses, so a paragraph a human would
-/// read as `blocks[0]` here is not a scrambled duplicate of what `extract`
-/// would have produced for it.
-pub(crate) fn blocks_of(
-    archive: &mut zip::ZipArchive<File>,
-    path: &str,
-) -> Result<Vec<String>, ExtractError> {
+fn blocks_of(archive: &mut zip::ZipArchive<File>, path: &str) -> Result<Vec<String>, ExtractError> {
     let raw = read_zip_text(archive, path)?;
     let raw = regex_replace_all(&SCRIPT_STYLE_RE, &raw, " ");
     let body = match BODY_RE.captures(&raw).ok().flatten() {

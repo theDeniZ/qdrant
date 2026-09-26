@@ -2,7 +2,7 @@
 //! (`SOPACK-1.0-PLAN.md` §3.5: "`--json` on every command… validated
 //! against a committed JSON Schema (`sopack schema <name>` prints any of
 //! them)"). `qdrant/sopack-rs/schemas/<name>.v1.json`, one per command
-//! result, plus `error`, `progress-event`, `propose`, and `book`
+//! result, plus `error`, `progress-event`, and `book`
 //! (`sopack_book::SCHEMA_JSON`, which lives at
 //! `qdrant/sopack/schemas/book.schema.json` — the one schema not under this
 //! crate's own `schemas/` dir, since `sopack-book` already embeds and owns
@@ -25,7 +25,6 @@ macro_rules! schema {
 pub const SCHEMAS: &[SchemaEntry] = &[
     schema!("error", "error.v1.json"),
     schema!("progress-event", "progress-event.v1.json"),
-    schema!("propose", "propose.v1.json"),
     schema!("extract", "extract.v1.json"),
     schema!("inspect", "inspect.v1.json"),
     schema!("pack", "pack.v1.json"),

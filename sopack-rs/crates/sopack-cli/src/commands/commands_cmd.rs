@@ -84,7 +84,6 @@ fn result_schema_for(dotted_name: &str) -> Option<&'static str> {
     Some(match dotted_name {
         "extract" => "extract",
         "inspect" => "inspect",
-        "propose" => "propose",
         "pack" => "pack",
         "calibrate" => "calibrate",
         "verify" => "verify",

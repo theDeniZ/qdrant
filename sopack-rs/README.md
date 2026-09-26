@@ -98,16 +98,18 @@ derives most of its own metadata from the file's `meta` block and refuses
 --acquired-from --rights --page-kind --id-rule
 ```
 
-Metadata can also come from a **`<source>.meta.toml` sidecar** — written by
-`sopack propose --write-meta` (see below), or by hand. Pass `--meta
+Metadata can also come from a **`<source>.meta.toml` sidecar** (the same
+field names as the flags, written by hand or by an agent). Pass `--meta
 <file.toml>` to use a specific one; otherwise `<source>.meta.toml` is picked
 up automatically if it exists. A value given on the command line always
 wins over the sidecar's; a value given in *both* an explicit flag and a
 sidecar must agree (a silent pick between two different values is refused,
-exit 2). If a book code is given and an offline registry is found
-(`--registry`, or `contracts/<id>/book_codes.json` next to the resolved
-contract), a collision is reported as a warning, never a hard failure — the
-importer has the final say.
+exit 2).
+
+The book code you give is the code the points get. `sopack` knows nothing
+about what is already imported: whether a code is taken, or the work is
+already live under another code, is decided by the importer from the
+store's state (its `preflight` stage, shown by a dry-run).
 
 `extract` always runs `sopack_book::validate` on the result before writing:
 if that validation's *only* problems are required fields with no value at
@@ -130,25 +132,6 @@ outright if *every* file failed.
 ### `sopack inspect <book.json>`
 
 Counts, damage stats, and codes for a `book.json` — no model needed.
-
-### `sopack propose <source> [--write-meta]`
-
-Reads *source* the same way `extract` eventually will and drafts metadata
-**candidates**, each tagged with where it came from (a title page, OPF
-metadata, a filename convention, a heuristic, …). A field's `value` is only
-ever filled when every candidate for it agrees *and* at least one comes
-from an authoritative source (a printed title page; a `sop_json` file's own
-reviewed `meta` block) — everything else is left for a human or agent to
-resolve, never guessed silently.
-
-```bash
-sopack propose waggoner.epub --write-meta   # writes waggoner.epub.meta.toml
-```
-
-The written sidecar has every resolved field live and every unresolved one
-commented out with its candidates listed underneath — pick one, write your
-own, or leave it commented to make `extract --meta` refuse (exit 4) until a
-human decides.
 
 ### `sopack pack <book.json...> -o <out.sopack>`
 
@@ -232,7 +215,7 @@ network call (`pack` itself never downloads anything).
 ### `sopack schema [<name>|--list]`
 
 Prints a committed JSON Schema — one per command's `--json` result, plus
-`error`, `progress-event`, `propose`, and `book` (the `book.json` schema).
+`error`, `progress-event`, and `book` (the `book.json` schema).
 `--list` enumerates every name.
 
 ### `sopack commands --json`

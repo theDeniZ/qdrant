@@ -54,7 +54,7 @@ formula to a small `theDeniZ/homebrew-tap` repo after all.
 
 1. Bump `[workspace.package] version` in `sopack-rs/Cargo.toml` — the only place the version lives.
 2. Commit **first**, then tag that commit and push both:
-   `git tag sopack-v0.9.0 && git push origin HEAD sopack-v0.9.0`.
+   `git tag sopack-v1.0.0 && git push origin HEAD sopack-v1.0.0`.
    A tag that doesn't match `Cargo.toml` fails the `build` job and publishes nothing.
 
 `.github/workflows/release-sopack.yml` then:

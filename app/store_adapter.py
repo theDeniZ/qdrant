@@ -51,7 +51,11 @@ QDRANT_DISTANCE = "Cosine"
 QDRANT_PROFILE_CONFIG = {
     "sop": {
         "collection": "sop",
-        "indexes": {"lang": "keyword", "book_code": "keyword", "page": "integer"},
+        # `title` serves preflight's same-title check (a known work arriving
+        # under a new book_code); without the index that lookup scans the
+        # whole collection.
+        "indexes": {"lang": "keyword", "book_code": "keyword", "page": "integer",
+                    "title": "keyword"},
     },
     "bible": {
         "collection": "bibles",
@@ -329,6 +333,11 @@ class InMemoryAdapter:
                     return False
                 if "any" in m and val not in m["any"]:
                     return False
+        for cond in flt.get("must_not", []):
+            m = cond.get("match") or {}
+            val = payload.get(cond["key"])
+            if ("value" in m and val == m["value"]) or ("any" in m and val in m["any"]):
+                return False
         return True
 
     def ensure_collection(self, profile_name: str, dim: int) -> None:

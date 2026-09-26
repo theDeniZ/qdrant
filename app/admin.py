@@ -234,6 +234,7 @@ def _import_html() -> HTMLResponse:
 
 <div class="row">
   <label><input type="checkbox" id="allow-overwrite"> Allow overwrite</label>
+  <label title="Import a new book code even though a live book has the same title and author (a separate volume or edition)"><input type="checkbox" id="allow-same-title"> Allow same title</label>
   <span class="warn">Off by default. Turning this on lets the import replace points that
   already exist in the collection — only enable it if that is exactly what you intend.</span>
 </div>
@@ -408,10 +409,12 @@ async def jobs_create(request: Request) -> Response:
     pack_id = body.get("pack_id")
     mode = body.get("mode")
     allow_overwrite = bool(body.get("allow_overwrite", False))
+    allow_same_title = bool(body.get("allow_same_title", False))
     if not pack_id or mode not in ("dry-run", "apply"):
         return _err("bad_request", "pack_id and mode ('dry-run'|'apply') are required")
     try:
-        job_id = import_service.start_job(pack_id, mode, allow_overwrite, _operator(request))
+        job_id = import_service.start_job(pack_id, mode, allow_overwrite, _operator(request),
+                                          allow_same_title=allow_same_title)
     except Exception as exc:
         code, detail, status = _map_exc(exc)
         return _err(code, detail, status)

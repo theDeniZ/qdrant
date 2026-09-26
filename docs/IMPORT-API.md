@@ -47,7 +47,7 @@ long. Parts must arrive in order; a gap is rejected.
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| `POST` | `/import/jobs` | `{"pack_id": str, "mode": "dry-run"\|"apply", "allow_overwrite": bool}` | `{"job_id": str}` (202) |
+| `POST` | `/import/jobs` | `{"pack_id": str, "mode": "dry-run"\|"apply", "allow_overwrite": bool, "allow_same_title": bool}` (both flags optional, default `false`) | `{"job_id": str}` (202) |
 | `GET` | `/import/jobs` | — | `{"jobs": [<job summary>, …]}` newest first |
 | `GET` | `/import/jobs/{job_id}` | — | `<job>` (full) |
 | `GET` | `/import/jobs/{job_id}/log?after={seq}` | — | `{"events": [<event>, …], "next": int}` |
@@ -59,6 +59,19 @@ long. Parts must arrive in order; a gap is rejected.
 
 `POST /import/jobs` returns `409 {"error": "busy"}` if another job is running — there
 is one global import lock and never two concurrent imports.
+
+**Book identity is decided here, from the store** — the client (`sopack`) knows
+nothing about what is imported. `preflight` checks every book in the pack:
+
+| Store state | Verdict | Override |
+|---|---|---|
+| `book_code`+`lang` held by a different `slug` | refused: a different work claims the code | none |
+| `book_code`+`lang` held by the same `slug` | re-index; its existing point ids need overwriting | `allow_overwrite` |
+| new `book_code`, but its `title` (and `author`, when both known) is live under another code | refused: most likely the same work under a stale code | `allow_same_title` (a separate volume or edition) |
+| new `book_code`, title not live | new book | — |
+
+EGW points carry no `title` payload, so the same-title check applies to pioneer
+(`corpus`) books only.
 
 Destructive routes require the `confirm` field to equal the value named above; a
 mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirmation.
@@ -78,6 +91,7 @@ mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirma
   "started_at": "…", "finished_at": null,
   "operator": "admin",
   "allow_overwrite": false,
+  "allow_same_title": false,
 
   "stages": [
     {"name": "open",      "status": "ok",      "started_at": "…", "finished_at": "…", "detail": "300 points, profile sop"},

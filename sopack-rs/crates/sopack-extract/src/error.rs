@@ -21,8 +21,7 @@ pub enum ErrorCode {
     InputInvalid,
     /// Exit 4 — the source was read fine, but a field required downstream
     /// (by `sopack_book::validate`) could not be resolved and needs a
-    /// human/agent to supply it (a `--meta`/sidecar field, in the plan's
-    /// `propose` design).
+    /// human/agent to supply it (a flag or a `--meta` sidecar field).
     NeedsMetadata,
 }
 

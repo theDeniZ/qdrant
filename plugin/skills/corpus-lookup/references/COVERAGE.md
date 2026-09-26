@@ -28,10 +28,8 @@ every translation that has the verse.
 
 ## Spirit of Prophecy — Ellen G. White, plus a pioneer shelf
 
-The `sop` corpus is mostly **Ellen G. White**, but it is *not* EGW only.
-(Corrected September 2026; this section previously said the opposite and was
-wrong.) It also holds **49 pre-1915 Adventist pioneer works** by 11 authors,
-imported August 2026, about 60,000 points and 4.69 M words:
+The `sop` corpus is mostly **Ellen G. White**, but it is *not* EGW only. It also
+holds **49 pre-1915 Adventist pioneer works** by 11 authors (English only):
 
 | Author | Works | Codes |
 |---|---:|---|
@@ -47,10 +45,11 @@ imported August 2026, about 60,000 points and 4.69 M words:
 | D. M. Canright | 1 | `MAS` |
 | G. I. Butler | 1 | `COS` |
 
-Every pioneer point carries `corpus: "pioneers"`, `author`, `title` and
-`year`; EGW points carry no `corpus` key at all, so `must_not corpus=pioneers`
-is the EGW-only filter. `sop_list_books` returns `author`, `year` and
-`corpus`, and matches on author, so `search="haskell"` works.
+Every pioneer hit carries `corpus: "pioneers"` and `author`. EGW hits carry no
+`corpus` key at all. `sop_list_books` returns `author`, `year` and `corpus`, and
+matches on author, so `search="haskell"` works. `sop_lookup` cannot exclude
+pioneers, so in English, drop pioneer hits yourself when the user asked for Ellen White,
+or restrict `codes` to EGW works.
 
 **Quoting a pioneer is not quoting the Spirit of Prophecy.** Check `corpus`
 before attributing a hit, and say whose words they are.
@@ -74,8 +73,6 @@ page, so a pioneer quotation has no canonical wording in de/ru/uk.
 
 An empty result for an *Ellen White* sentence still means "not in this
 corpus", and still does **not** mean "no published translation exists".
-
-Planned additions and repairs: [CORPUS-ACQUISITION.md](CORPUS-ACQUISITION.md).
 
 | lang | paragraphs | books | notes |
 |---|---:|---:|---|
@@ -109,26 +106,10 @@ published counterpart instead of translating one. No other language pair is
 aligned — in particular **ja and ko carry no alignment data at all**, so
 `sop_parallel` returns an explicit error for them rather than a guess.
 
-**`sop_by_bible_ref` is live.** The `bible_refs` backfill has run: 69,527 SoP
-paragraphs carry the payload field and are searchable by verse. 120
-paragraphs are still invisible to it because they have no vector-index point
-at all (9 never-indexed books: `4aSG, 4bSG, PH045, PH083, PH088, PH141,
-PH153, Te-SG, TithPG`) — that gap needs a `build_sop_vector_index` run for
-those books, not another backfill.
-
-**`bible_refs` are numbered in the edition that was parsed, not in KJV.**
-The extractor read each paragraph's own citation, so a German paragraph
-quoting a KJV-numbered verse is indexed under the **Luther/Masoretic**
-number for that verse (KJV Ps.51.1-2 → indexed as `Ps.51.3`, `Ps.51.4`).
-Querying `sop_by_bible_ref(osis=…, lang="de")` with the KJV-numbered `sOsis`
-straight from an SBL lesson will miss or mis-hit for the ~63 offset Psalms
-and ~40 OT chapter-boundary shifts — remap the ref to the target edition's
-numbering first (see [VERSIFICATION.md](VERSIFICATION.md)), or query
-`lang="en"` where KJV numbering holds throughout. Extraction is also
-text-pattern based, so an occasional spurious ref slips in (a stray trailing
-digit after a citation can register as its own verse) — treat `bible_refs`
-as a high-recall discovery index and confirm every hit by reading the
-paragraph, not as a curated citation list.
+**`sop_by_bible_ref` covers most of the corpus.** Verse keys follow each
+language edition's own numbering (Luther/Masoretic in German, KJV in English), and
+the index is pattern-extracted, so read every hit. A handful of small
+EGW items are not searchable by any tool.
 
 ## Pagination is per language
 

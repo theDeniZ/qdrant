@@ -248,7 +248,7 @@ Machine-friendly contract for all commands:
   check what the installed version supports.
 - No interactive prompts, ever.
 
-**Skill:** `qdrant/plugin/skills/corpus-prep/SKILL.md` (bible-sop plugin, next to
+**Skill:** `qdrant/.claude/skills/corpus-prep/SKILL.md` (project skill — moved out of the public bible-sop plugin 2026-09-26; formerly next to
 corpus-lookup). Its loop: `propose` → resolve fields with evidence (year trap,
 author name forms, archive provenance) → write `meta.toml` → `extract` → `inspect`
 review (damage, drops) → `pack` (progress relayed) → `verify`. It **stops before
@@ -360,7 +360,7 @@ server-side reader keeps running them.
 | M2 | **done** | `sopack-contract`, `sopack-format`: ids 13/13 golden, Rust reads real `/1` (`packs/wdys.sopack`), Python reads Rust `/2`, resume byte-identical; second (e5-small) contract loads with no code change |
 | M3 | **done** | `sopack-book`, `sopack-extract` (+ `propose`, `meta.toml`, offline registry `book_codes.json`): 8/8 extract goldens byte-identical to Python (3 real EPUBs) |
 | M4 | **done** | `sopack pack` = one model copy, token-budget batching, memory guard, calibration before any book, checkpoint/resume. Exit gate: WDYS 23/23, TTL 225/225, MAS 290/290 point ids = live store, cosine 1.0 ([../sopack-rs/bench/README.md](../sopack-rs/bench/README.md)). Thread/batch sweep and the Python-baseline speedup were **not** completed (run interrupted); `bench/run_bench.sh` reproduces them |
-| M5 | **done** | `--json` everywhere, stable exit codes 0–7, 15 committed schemas, `sopack commands --json`; skill [corpus-prep](../plugin/skills/corpus-prep/SKILL.md). **Blind test** (fresh agent, only the skill + the Atonement EPUB): it detected the re-import (`registry:title_match` → AERS), reused the live code, packed 993 points; **993/993 ids equal the live store, min cosine 0.9999999999** |
+| M5 | **done** | `--json` everywhere, stable exit codes 0–7, 15 committed schemas, `sopack commands --json`; skill [corpus-prep](../.claude/skills/corpus-prep/SKILL.md). **Blind test** (fresh agent, only the skill + the Atonement EPUB): it detected the re-import (`registry:title_match` → AERS), reused the live code, packed 993 points; **993/993 ids equal the live store, min cosine 0.9999999999** |
 | M6 | **code done, hardware untested** | `--device auto|cpu|coreml|cuda`, features `coreml`/`cuda` compile; non-CPU devices self-verify on the fixture or fall back. CoreML needs the Mac, CUDA a GPU (§7) |
 | M7 | **files done, not yet run on CI** | [release-sopack.yml](../.github/workflows/release-sopack.yml) (3 targets, bundles ORT 1.30.0, tests the staged tarball incl. a real model run), [ci-sopack.yml](../.github/workflows/ci-sopack.yml), binary [Formula](../Formula/sopack.rb) (ORT kept in libexec), [install.sh](../sopack-rs/install.sh) |
 | M8 | **1.0.0 prepared, tag pending** | 0.9.0 released (the Formula carries its sha256) and run on the Mac. `BP3.sopack` (0.9.0, re-import) passed the server dry-run through `open`/`contract`/`probe` (worst cosine 1.00000), refused only at `preflight` (points exist — correct). **User decisions 2026-09-26: release 1.0.0 without a real import; `propose` and the offline registry (`book_codes.json`, `--registry`) removed — book identity is the importer's call from store state (preflight same-title check, `allow_same_title`)**; `BSM.sopack` (Miller, *Bible Student's Manual*, 178 points, new code) stays ready for the first one. see CHANGELOG 1.0.0 |

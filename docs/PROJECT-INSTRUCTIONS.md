@@ -18,9 +18,9 @@ Prophecy): writing, checking, translating and citing them. Two resources are
 available, and you use them for all quotation work:
 
 - **The `bible-sop` connector** (read-only tools): `bible_lookup`,
-  `bible_search`, `bible_list_translations`, `sop_lookup`,
-  `sop_book_paragraphs`, `sop_list_books`. This is your only source for quotation
-  wording and references.
+  `bible_search`, `bible_list_translations`, `sop_lookup`, `sop_context`,
+  `sop_parallel`, `sop_by_bible_ref`, `sop_book_paragraphs`, `sop_list_books`.
+  This is your only source for quotation wording and references.
 - **The `bible-sop` skills.** They define how to use those tools.
 
 ### Choose the skill first
@@ -30,6 +30,7 @@ available, and you use them for all quotation work:
 | quote, look up or cite a verse or an Ellen White passage; ask what exists | `corpus-lookup` |
 | check the quotations in a draft; find where a quote comes from | `quote-verify` |
 | translate a text containing quotations, or get a quotation in another language | `quote-translate` |
+| research what the Bible / Ellen White say on a theme or about a verse | `corpus-research` |
 
 State the choice in one line ("Scope: verification → `quote-verify`"). Read the
 skill's reference files before the first lookup. Their rules are binding.
@@ -47,8 +48,8 @@ skill's reference files before the first lookup. Their rules are binding.
    edition whose words you quote.
 4. **Judge a hit by its text.** Similarity scores are compressed. Unrelated text
    still scores about 0.80.
-5. **Absence is not proof.** The corpus holds Ellen White only, and coverage
-   differs by language and book. "Not found in the corpus" is the strongest claim
+5. **Absence is not proof.** The corpus holds Ellen White (plus a few English
+   pioneer authors, whose hits say so), and coverage differs by language and book. "Not found in the corpus" is the strongest claim
    you may make.
 6. **Tool errors are reported, not worked around.** Name the tool and the error,
    and continue with references only.
@@ -66,13 +67,13 @@ project already names its lookup tools differently.
 ### Bible & Ellen G. White quotations (bible-sop)
 
 All Scripture and Ellen G. White wording comes from the **bible-sop** connector
-(`bible_lookup`, `bible_search`, `bible_list_translations`, `sop_lookup`,
-`sop_book_paragraphs`, `sop_list_books`), never from memory. Where this
+(`bible_*` and `sop_*` tools), never from memory. Where this
 project's own skills or manuals refer to "the Bible tools", "the SoP tools",
 `sop-tools` or `bible-tools`, they mean these tools.
 
 - Before quoting, looking up or citing: follow the **`corpus-lookup`** skill.
 - To check quotations in a text: **`quote-verify`**.
+- To research a theme, or what Ellen White writes on a verse: **`corpus-research`**.
 - To put quotations into another language: **`quote-translate`**, unless a
   project skill defines its own translation workflow. In that case the project
   skill wins, and `quote-translate` only supplies the lookup method.

@@ -625,7 +625,7 @@ and `run_import.sh`, and replace `pd-books/qdrant/README.md` with a pointer here
 ## 12. Related
 
 - [IMPORT-PIPELINE.md](IMPORT-PIPELINE.md) — the requirement this implements (R1–R12)
-- [../references/ACQUISITION-BRIEF.md](../references/ACQUISITION-BRIEF.md) — where books come from
+- [ACQUISITION-BRIEF.md](ACQUISITION-BRIEF.md) — where books come from
 - [../scripts/merge_corpus_titles.py](../scripts/merge_corpus_titles.py) — the additive merge to port into stage 9
 - [../scripts/export_book_titles.py](../scripts/export_book_titles.py) — bootstrap only; note its rebuild-from-scratch semantics (#11)
 - `../../generator/src/sdarm/tools/build_sop_vector_index.py`, `build_bible_vector_index.py` — the id rules and payload schemas both profiles must match

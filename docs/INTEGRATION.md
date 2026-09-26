@@ -4,7 +4,7 @@ Three pieces, each optional on its own:
 
 | Piece | What it gives | Where |
 |---|---|---|
-| **Connector** (MCP server) | The six read-only tools | `https://<host>/mcp` + API key |
+| **Connector** (MCP server) | The nine read-only tools | `https://<host>/mcp` + API key |
 | **Skills** (plugin) | How to use the tools correctly | `plugin/` (or `dist/*.zip`) |
 | **Instructions** | When to use which skill; the rules | [PROJECT-INSTRUCTIONS.md](PROJECT-INSTRUCTIONS.md) |
 
@@ -24,20 +24,34 @@ Endpoints on the same host and key:
 
 | Path | Tools | Use for |
 |---|---|---|
-| `/mcp` | all six | new setups, claude.ai |
-| `/sop/mcp` | `sop_lookup`, `sop_book_paragraphs`, `sop_list_books` | drop-in for an existing `sop-tools` server |
+| `/mcp` | all nine | new setups, claude.ai |
+| `/sop/mcp` | the six `sop_*` tools | drop-in for an existing `sop-tools` server |
 | `/bible/mcp` | `bible_search`, `bible_lookup`, `bible_list_translations` | drop-in for an existing `bible-tools` server |
 
 ## 1. Claude.ai
 
 ### Connector
 
+claude.ai custom connectors sign in with OAuth. Request headers are a beta that
+only some organisations have. The server runs a small OAuth endpoint whose only
+credential is the API key, so any plan can connect.
+
 Settings → **Connectors** → **Add custom connector**:
 
 - Name: `bible-sop`
 - URL: `https://qdrant.thedeniz.dev/mcp`
-- Authentication: none (no OAuth)
-- Custom header: `Authorization` = `Bearer qd_…`
+- **Advanced settings** (optional):
+  - OAuth Client ID: anything, e.g. `bible-sop` (it is not checked)
+  - OAuth Client Secret: your key `qd_…`
+
+  Then **Connect**. The sign-in completes without a page, because the key is
+  checked when Claude exchanges the code.
+- **Or** leave Advanced settings empty and click **Connect**. A small bible-sop
+  page opens where you paste the key once.
+
+Either way, Claude stores a token tied to that key, and revoking the key in the
+admin UI disconnects it. Organisations that do have **Request headers** can
+still use `Authorization` = `Bearer qd_…` instead.
 
 Enable it in the chat or project where you want the tools. Every tool is marked
 read-only, so claude.ai does not ask for approval per call.
@@ -50,7 +64,8 @@ Build first: `python3 scripts/build_plugin.py`. Then either:
   `.claude-plugin/marketplace.json`) or upload `dist/bible-sop.zip`, depending on
   what your plan offers; or
 - **Individual skills:** Settings → Capabilities → Skills → upload
-  `dist/skills/corpus-lookup.zip`, `quote-verify.zip`, `quote-translate.zip`.
+  `dist/skills/corpus-lookup.zip`, `corpus-research.zip`, `quote-verify.zip`,
+  `quote-translate.zip`.
 
 The plugin's `.mcp.json` is for Claude Code. On claude.ai the connector above is
 what supplies the tools.
@@ -99,7 +114,9 @@ Project `.mcp.json`. The key comes from the environment, so do not commit it:
 }
 ```
 
-Tool names become `mcp__bible-sop__bible_lookup`, and so on.
+Tool names become `mcp__bible-sop__bible_lookup`, and so on. Without the
+`headers` block, Claude Code signs in through the OAuth page instead (`/mcp` →
+Authenticate), where you paste the key once.
 
 **Keeping existing tool names** (the sdarm workspace, whose manuals and
 `allowed-tools` say `mcp__sop-tools__*` / `mcp__bible-tools__*`): register the
@@ -144,6 +161,8 @@ and the rules from Block A.
 |---|---|
 | No response / Traefik 404 or 502, and the container log shows **no** requests except `/healthz` | Container is not on Traefik's Docker network. Set `TRAEFIK_NETWORK` (see `docker-compose.yml`) and `docker compose up -d` |
 | `401 unauthorized` | Key missing, mistyped, or revoked. Check "Last used" in the admin UI |
+| claude.ai: "Authorization with the MCP server failed" | The client secret is not a valid, unrevoked key. Or `PUBLIC_URL` is not the exact public origin, so discovery points elsewhere |
+| Sign-in page says "Redirect URI not allowed" | A client other than claude.ai / Claude Code. Add its callback to `OAUTH_REDIRECT_URIS` |
 | `421 Invalid Host header` | `MCP_ALLOWED_HOSTS` is set but does not include the public host |
 | First `sop_lookup` / `bible_search` slow | Embedding model still loading after a restart (`WARM_EMBEDDER=1` preloads it) |
 | Tools listed but lookups time out | Container cannot reach `QDRANT_URL` |

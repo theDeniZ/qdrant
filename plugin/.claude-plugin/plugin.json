@@ -1,7 +1,7 @@
 {
   "name": "bible-sop",
-  "version": "0.1.0",
-  "description": "Bible verses (11 translations) and Ellen G. White writings (12 languages) as a read-only corpus: look quotations up, verify their wording and source, and render them in another language from the canonical edition instead of machine translation.",
+  "version": "0.2.0",
+  "description": "Bible verses (11 translations) and Ellen G. White writings (12 languages) as a read-only corpus: look quotations up, research a theme or a verse, verify wording and source, and render quotations in another language from the canonical edition instead of machine translation.",
   "author": { "name": "theDeniZ" },
   "keywords": ["bible", "ellen-white", "spirit-of-prophecy", "quotations", "translation", "qdrant"]
 }

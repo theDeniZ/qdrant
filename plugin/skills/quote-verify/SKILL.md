@@ -12,7 +12,8 @@ list of the lookup discipline below. Consult
 
 Lookup discipline: retrieve, never recall. Judge hits by their text, not their
 score. An empty result means "not in this corpus", never "does not exist". The
-corpus holds Ellen White only.
+corpus holds Ellen White plus a small English shelf of pioneer authors (Smith,
+Jones, Waggoner, …), and no other writers.
 
 **You verify; you do not rewrite.** Change the user's text only when asked, and
 then only the quotations and references you verified.
@@ -27,7 +28,12 @@ for existence only). Show the count before checking.
 
 ## 2. Check
 
-Batch lookups: `bible_lookup` takes a `;`-list, `sop_lookup` takes `queries`.
+Check in **batches, not one quotation at a time**. That means one `bible_lookup` for every
+Bible reference in the document (a `;`-list, with a list for `bible`), one
+`sop_list_books(search=…)` per cited work, and one `sop_lookup(queries=[…],
+lang=…)` per language for every Ellen White sentence. Then follow up only on
+the items that failed. A 20-quotation document should take about five calls,
+not forty.
 
 **Bible quotations**
 - With a reference: fetch it in the translation the text appears to use (and
@@ -48,7 +54,12 @@ Batch lookups: `bible_lookup` takes a `;`-list, `sop_lookup` takes `queries`.
   pull a few paragraphs of surrounding text with `sop_context(book_code,
   para_key, lang, before, after)` rather than a whole page range — it is the
   cheap way to see what precedes/follows a hit.
-- Attributed to someone else → say the corpus cannot check it (Ellen White only).
+- Attributed to a pioneer (Uriah Smith, A. T. Jones, E. J. Waggoner, J. N.
+  Andrews, James White, …) → check it like an EGW quotation, in English only.
+  Look up codes with `sop_list_books(search="<author>")`.
+- A hit carries `corpus: "pioneers"` but the text credits Ellen White → verdict
+  **Wrong reference** (misattributed author). Name the real author.
+- Attributed to anyone else → **Out of scope**. The corpus cannot check it.
 
 ## 3. Classify each quotation
 

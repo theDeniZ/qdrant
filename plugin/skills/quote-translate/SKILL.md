@@ -26,6 +26,18 @@ Use the user's or project's rule if one is given. Otherwise:
   has two editions of one work; prefer the one the user names, otherwise report
   both codes and use the closer match.
 
+## Work in batches
+
+First inventory every quotation in the text. Then fetch them together:
+
+- **one `bible_lookup`** holding every reference (`;`-list), for the target
+  translation plus `kjv` for comparison, with `numbering="kjv"` for English refs;
+- **one `sop_list_books(search=…)`** per cited work, to get the target-language codes;
+- **one `sop_lookup(queries=[…], lang=<target>)`** for every EGW sentence that
+  `sop_parallel` could not supply.
+
+Then handle the misses one at a time. **Always pass `lang`** to the `sop_*` tools.
+
 ## Procedure per quotation
 
 1. **Identify the source** in the source language (see the `quote-verify`
@@ -60,6 +72,8 @@ Use the user's or project's rule if one is given. Otherwise:
    - Bible: say which translations were checked. For Romanian (no Bible index),
      try `sop_lookup(lang="ro")` on the verse; EGW's Romanian books quote
      Cornilescu.
+   - Pioneer authors (`corpus: "pioneers"`) exist in English only, so every
+     other language needs a marked own translation.
    - Ellen White: translate faithfully and **mark it**, e.g. a note "(own
      translation; no published <language> edition in the corpus)", or follow the
      project's marker convention. Or drop the quotation marks and render it as

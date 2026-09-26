@@ -3,11 +3,12 @@
 A read-only corpus of **Bible verses** (11 translations) and **Ellen G. White**
 writings (12 languages), offered in three parts:
 
-1. **MCP server** (`app/`, Docker): six lookup tools over Streamable HTTP, backed
+1. **MCP server** (`app/`, Docker): nine lookup tools over Streamable HTTP, backed
    by an existing Qdrant instance, with per-client API keys you create and revoke
-   in a small admin UI.
-2. **Plugin** (`plugin/`): the connector plus four skills: `corpus-lookup`,
-   `quote-verify`, `quote-translate`, `corpus-prep`.
+   in a small admin UI. The keys work as a bearer header or through OAuth
+   (claude.ai custom connectors).
+2. **Plugin** (`plugin/`): the connector plus four skills for users of the
+   corpus: `corpus-lookup`, `corpus-research`, `quote-verify`, `quote-translate`.
 3. **Project setup** (`docs/`): instructions for new projects and for adding this
    to existing ones (claude.ai and Claude Code).
 
@@ -21,6 +22,7 @@ writings (12 languages), offered in three parts:
 ├── .github/workflows/      release-sopack.yml (GitHub Actions)
 ├── .claude-plugin/         marketplace.json → ./plugin
 ├── plugin/                 the bible-sop plugin (.mcp.json + skills/)
+├── .claude/skills/         corpus-prep — maintainer-only sopack skill (not in the plugin)
 ├── references/             CANONICAL skill references; copied into each skill by the build
 ├── scripts/                build_plugin.py, export_book_titles.py, merge_corpus_titles.py
 └── docs/                   INTEGRATION.md, PROJECT-INSTRUCTIONS.md, IMPORT-PIPELINE.md, IMPORT-API.md
@@ -36,11 +38,14 @@ writings (12 languages), offered in three parts:
 | `sop_lookup(query \| queries, codes?, lang?)` | Semantic paragraph search, single or batched |
 | `sop_book_paragraphs(book_code, page_from, page_to?, lang?)` | Exact page ranges (paged) |
 | `sop_list_books(lang?, search?)` | Languages, or books with codes and titles |
+| `sop_context(book_code, para_key, lang?, before?, after?)` | Paragraphs around a known paragraph |
+| `sop_parallel(book_code, para_key, lang?, target_lang?)` | Published de↔en counterpart of a paragraph |
+| `sop_by_bible_ref(osis, lang?, limit?)` | Paragraphs citing a Bible verse |
 
 | Endpoint | Tools |
 |---|---|
-| `/mcp` | all six |
-| `/sop/mcp` | the three `sop_*` tools (drop-in for a `sop-tools` server) |
+| `/mcp` | all nine |
+| `/sop/mcp` | the six `sop_*` tools (drop-in for a `sop-tools` server) |
 | `/bible/mcp` | the three `bible_*` tools (drop-in for a `bible-tools` server) |
 | `/healthz` | liveness, no auth |
 
@@ -68,6 +73,17 @@ In the admin UI you can create a named key (shown **once**), revoke it (takes
 effect on the next request), or delete a revoked key. Keys are stored as SHA-256
 hashes in `/data/keys.db`, and "Last used" shows which consumers are active.
 Clients send `Authorization: Bearer qd_…`.
+
+**OAuth** (`app/auth.py`), for claude.ai, whose custom connectors only speak
+OAuth: the server is its own authorization server (`/.well-known/oauth-*`,
+`/oauth/{authorize,token,register}`, authorization code + PKCE). The key is the
+only credential. Either enter it as the connector's **OAuth Client Secret** (any
+Client ID), or leave the credentials empty and paste the key on the sign-in page.
+Issued tokens (`qda_…`, 1 h; refresh `qdr_…`, 180 days, rotated) stay bound to
+the key, so revoking the key ends them. The admin UI counts live OAuth sessions
+per key. `PUBLIC_URL` must be the exact public origin, because discovery
+metadata is built from it. Optional: `OAUTH_REDIRECT_URIS` (extra allowed
+callbacks), `OAUTH_ACCESS_TTL`, `OAUTH_REFRESH_TTL` (seconds).
 
 ## Plugin and project setup
 
@@ -100,7 +116,8 @@ build or verify a pack). The workflow is:
    refused at `preflight` (see [docs/IMPORT-API.md](docs/IMPORT-API.md) §3)
 
 Steps 1–2 (metadata research through a verified pack) are the
-**`corpus-prep`** plugin skill — it drives `sopack extract/inspect/pack/
+**`corpus-prep`** project skill (`.claude/skills/corpus-prep/`, maintainers only,
+not part of the public plugin) — it drives `sopack extract/inspect/pack/
 verify` end to end and hands the finished pack to you; it never uploads
 or imports (step 3 is always a manual, confirmed action).
 

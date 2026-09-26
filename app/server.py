@@ -2,14 +2,16 @@
 
 Endpoints (Streamable HTTP, stateless, JSON responses)::
 
-    /mcp        all six tools  — for the claude.ai custom connector
-    /sop/mcp    sop_lookup, sop_book_paragraphs, sop_list_books   (local "sop-tools")
-    /bible/mcp  bible_search, bible_lookup, bible_list_translations (local "bible-tools")
+    /mcp        all nine tools — for the claude.ai custom connector
+    /sop/mcp    the six sop_* tools   (drop-in for a local "sop-tools")
+    /bible/mcp  the three bible_* tools (drop-in for a local "bible-tools")
     /healthz    unauthenticated liveness probe
+    /.well-known/oauth-*, /oauth/*   OAuth sign-in (``auth.py``)
 
 Every MCP request needs a valid, unrevoked API key as
-``Authorization: Bearer <key>``. Keys are managed in the admin UI
-(``admin.py``) on a separate, non-public port.
+``Authorization: Bearer <key>``, or an OAuth access token obtained with one
+(``auth.py``: the key as client secret, or pasted on the sign-in page). Keys
+are managed in the admin UI (``admin.py``) on a separate, non-public port.
 
 Only the read tools of ``sop_tools`` / ``bible_tools`` are registered; the
 server talks to Qdrant with search/scroll/GET calls only, and every tool is
@@ -34,11 +36,12 @@ from starlette.applications import Starlette
 from starlette.responses import PlainTextResponse
 from starlette.routing import Route
 
-from . import admin, bible_tools, keystore, seed, sop_tools
+from . import admin, auth, bible_tools, keystore, seed, sop_tools
 
 log = logging.getLogger("qdrant-mcp")
 
-SOP_TOOLS = [sop_tools.sop_lookup, sop_tools.sop_book_paragraphs, sop_tools.sop_list_books]
+SOP_TOOLS = [sop_tools.sop_lookup, sop_tools.sop_book_paragraphs, sop_tools.sop_list_books,
+             sop_tools.sop_context, sop_tools.sop_parallel, sop_tools.sop_by_bible_ref]
 BIBLE_TOOLS = [bible_tools.bible_search, bible_tools.bible_lookup,
                bible_tools.bible_list_translations]
 
@@ -91,11 +94,12 @@ _INSTR_SOP = ("Read-only Spirit of Prophecy (Ellen G. White) paragraph lookup ag
 _INSTR_BIBLE = ("Read-only Bible verse lookup and semantic search across the indexed "
                 "translations. OSIS keys are KJV-numbered; mind versification differences.")
 
-SERVERS = [
-    _build_mcp("qdrant-tools", "/mcp", SOP_TOOLS + BIBLE_TOOLS, _INSTR_SOP + " " + _INSTR_BIBLE),
-    _build_mcp("sop-tools", "/sop/mcp", SOP_TOOLS, _INSTR_SOP),
-    _build_mcp("bible-tools", "/bible/mcp", BIBLE_TOOLS, _INSTR_BIBLE),
+MCP_PATHS = [
+    ("/mcp", ("qdrant-tools", SOP_TOOLS + BIBLE_TOOLS, _INSTR_SOP + " " + _INSTR_BIBLE)),
+    ("/sop/mcp", ("sop-tools", SOP_TOOLS, _INSTR_SOP)),
+    ("/bible/mcp", ("bible-tools", BIBLE_TOOLS, _INSTR_BIBLE)),
 ]
+SERVERS = [_build_mcp(name, path, tools, instr) for path, (name, tools, instr) in MCP_PATHS]
 
 
 @contextlib.asynccontextmanager
@@ -120,44 +124,13 @@ async def _healthz(request):
 
 
 def _build_mcp_app() -> Starlette:
-    routes = [Route("/healthz", _healthz)]
+    routes = [Route("/healthz", _healthz)] + auth.routes([p for p, _ in MCP_PATHS])
     for s in SERVERS:
         routes.extend(s.streamable_http_app().routes)
     return Starlette(routes=routes, lifespan=_lifespan)
 
 
-class ApiKeyMiddleware:
-    """Pure-ASGI auth: ``Authorization: Bearer <key>`` checked against the key store."""
-
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or scope["path"] == "/healthz":
-            return await self.app(scope, receive, send)
-
-        key = ""
-        for name, value in scope.get("headers", []):
-            if name == b"authorization":
-                raw = value.decode("latin-1")
-                if raw[:7].lower() == "bearer ":
-                    key = raw[7:].strip()
-                break
-
-        client = await anyio.to_thread.run_sync(keystore.verify, key)
-        if client is None:
-            body = b'{"error":"unauthorized","detail":"Missing, invalid or revoked API key"}'
-            await send({"type": "http.response.start", "status": 401, "headers": [
-                (b"content-type", b"application/json"),
-                (b"www-authenticate", b'Bearer realm="qdrant-mcp"'),
-                (b"content-length", str(len(body)).encode())]})
-            await send({"type": "http.response.body", "body": body})
-            return
-        scope.setdefault("state", {})["api_key_name"] = client
-        await self.app(scope, receive, send)
-
-
-app = ApiKeyMiddleware(_build_mcp_app())
+app = auth.ApiKeyMiddleware(_build_mcp_app())
 
 
 async def _serve() -> None:

@@ -143,6 +143,7 @@ small.muted{color:#888}
 
 def _page(new_key: tuple[str, str] | None = None, error: str = "") -> HTMLResponse:
     rows = []
+    sessions = keystore.oauth_sessions()
     for k in keystore.list_keys():
         revoked = k["revoked_at"] is not None
         action = (
@@ -154,7 +155,8 @@ def _page(new_key: tuple[str, str] | None = None, error: str = "") -> HTMLRespon
         rows.append(
             f'<tr class="{"revoked" if revoked else ""}"><td>{html.escape(k["name"])}</td>'
             f'<td><code>{html.escape(k["prefix"])}…</code></td><td>{_fmt(k["created_at"])}</td>'
-            f'<td>{_fmt(k["last_used_at"])}</td><td>{_fmt(k["revoked_at"])}</td><td>{action}</td></tr>'
+            f'<td>{_fmt(k["last_used_at"])}</td><td>{sessions.get(k["id"], 0) or ""}</td>'
+            f'<td>{_fmt(k["revoked_at"])}</td><td>{action}</td></tr>'
         )
     banner = ""
     if new_key:
@@ -163,7 +165,10 @@ def _page(new_key: tuple[str, str] | None = None, error: str = "") -> HTMLRespon
             f'<div class="new"><b>Key "{name}" created — copy it now, it is not shown again.</b>'
             f'<p>Key: <code>{key}</code></p>'
             f'<p>Connector URL: <code>{_PUBLIC_URL}/mcp</code> (or <code>/sop/mcp</code>, <code>/bible/mcp</code>)</p>'
-            f'<p>Header: <code>Authorization: Bearer {key}</code></p></div>'
+            f'<p>Header clients (Claude Code, …): <code>Authorization: Bearer {key}</code></p>'
+            f'<p>claude.ai custom connector (OAuth): Advanced settings → OAuth Client ID '
+            f'<code>bible-sop</code> (any value), OAuth Client Secret <code>{key}</code>. '
+            f'Or leave both empty and paste the key on the sign-in page.</p></div>'
         )
     err = f'<p style="color:#b00">{html.escape(error)}</p>' if error else ""
     body = f"""<!doctype html><meta charset="utf-8"><title>Qdrant MCP keys</title><style>{_CSS}</style>
@@ -172,7 +177,7 @@ def _page(new_key: tuple[str, str] | None = None, error: str = "") -> HTMLRespon
 {banner}{err}
 <form method="post" action="/keys"><input name="name" placeholder="Key name" required maxlength="80">
 <button>Create key</button></form>
-<table><tr><th>Name</th><th>Prefix</th><th>Created</th><th>Last used</th><th>Revoked</th><th></th></tr>
+<table><tr><th>Name</th><th>Prefix</th><th>Created</th><th>Last used</th><th>OAuth sessions</th><th>Revoked</th><th></th></tr>
 {''.join(rows) or '<tr><td colspan=6>No keys yet.</td></tr>'}</table>"""
     return HTMLResponse(body)
 

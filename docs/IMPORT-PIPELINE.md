@@ -170,7 +170,7 @@ Adding a book set means writing that file. Nothing else.
 
 ## 5. Related
 
-- `references/ACQUISITION-BRIEF.md` — where the 2026-09 acquisition started
+- `docs/ACQUISITION-BRIEF.md` — where the 2026-09 acquisition started
 - `pd-books/downloads/pioneers/ACQUISITION-REVIEW.md` — what it produced
 - `scripts/merge_corpus_titles.py` — the additive title merge (R6)
 - `scripts/export_book_titles.py` — the full rebuild; note its rebuild-from-scratch semantics (#11)

@@ -5,7 +5,7 @@
     {
       "name": "bible-sop",
       "source": "./plugin",
-      "description": "Retrieve, verify and translate Bible and Ellen G. White quotations from the bible-sop corpus (skills + connector)."
+      "description": "Retrieve, research, verify and translate Bible and Ellen G. White quotations from the bible-sop corpus (skills + connector)."
     }
   ]
 }

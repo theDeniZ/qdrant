@@ -90,7 +90,10 @@ def main() -> int:
         for f in sorted(PLUGIN.rglob("*")):
             if f.is_file():
                 zf.write(f, f.relative_to(PLUGIN))
-    # One zip per skill (folder at the zip root) for per-skill upload.
+    # One zip per skill (folder at the zip root) for per-skill upload; drop zips
+    # of skills that no longer exist.
+    for old in (DIST.parent / "skills").glob("*.zip"):
+        old.unlink()
     for skill in skills():
         target = DIST.parent / "skills" / f"{skill.name}.zip"
         target.parent.mkdir(parents=True, exist_ok=True)

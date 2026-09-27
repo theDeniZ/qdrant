@@ -23,10 +23,7 @@ name.sopack                 ← upload in the admin UI
 ## Install
 
 ```bash
-# Apple Silicon, macOS 14+ — this repo is the tap (see ../Formula/README.md):
-brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant
-brew install theDeniZ/qdrant/sopack
-# or, from a checkout:
+# from a checkout (Homebrew now installs the Rust binary, see ../Formula/README.md):
 python3.14 -m venv .venv && .venv/bin/pip install -r requirements.lock
 .venv/bin/pip install --no-deps .
 ```

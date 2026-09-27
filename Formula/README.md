@@ -69,20 +69,6 @@ Never edit `url`/`sha256` by hand. If the default branch is protected against pu
 `github-actions[bot]`, the last step fails after the release exists — allow the bot, or apply the
 printed url/sha256 yourself.
 
-## Upgrading from the old Python formula
-
-If you have the old Python sopack installed:
-
-```bash
-brew uninstall sopack
-rm -rf $(brew --prefix)/var/sopack         # Old venv, if any
-brew install theDeniZ/qdrant/sopack        # Binary formula
-sopack doctor
-```
-
-The old Python formula (`var/sopack/venv/` + `FASTEMBED_CACHE_PATH`) is gone. The binary is much
-faster and self-contained; just keep `~/Library/Caches/sopack/` (the model cache).
-
 ## Testing the formula locally (without a release)
 
 ```bash

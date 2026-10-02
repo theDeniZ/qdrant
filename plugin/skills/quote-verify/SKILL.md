@@ -54,6 +54,13 @@ not forty.
   pull a few paragraphs of surrounding text with `sop_context(book_code,
   para_key, lang, before, after)` rather than a whole page range — it is the
   cheap way to see what precedes/follows a hit.
+- The quotation renders a source-language original (a German EGW note in a lesson
+  translated from English, say) → also check **completeness** against that original:
+  split the original into sentences; each needs its counterpart, the excerpt starts and
+  ends where the original does, and nothing is added. A quote can be verbatim in its
+  edition and still stop early — that is not "Verified".
+- The citation must name every page the excerpt touches (text starting at the foot of
+  p. 95 and cited "S. 96" is a **Wrong reference**).
 - Attributed to a pioneer (Uriah Smith, A. T. Jones, E. J. Waggoner, J. N.
   Andrews, James White, …) → check it like an EGW quotation, in English only.
   Look up codes with `sop_list_books(search="<author>")`.
@@ -67,6 +74,7 @@ not forty.
 |---|---|
 | **Verified** | Words match the retrieved text (ignoring typography); reference correct |
 | **Wording differs** | Source found; words changed, shortened without ellipsis, or merged from two places |
+| **Incomplete** | Words verbatim, but sentences of the source-language original are missing (or added), or it starts/ends elsewhere |
 | **Wrong reference** | Words found, but under a different verse, book, page or edition |
 | **Other translation** | Words match a different Bible translation or EGW edition than stated or implied |
 | **Paraphrase** | The idea is in the source, but not in these words; should not be in quotation marks |

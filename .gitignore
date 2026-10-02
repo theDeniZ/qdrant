@@ -5,3 +5,7 @@ __pycache__/
 .env
 build/
 *.egg-info/
+
+# macOS metadata (AppleDouble files appear when a Mac copies onto the NAS)
+._*
+.DS_Store

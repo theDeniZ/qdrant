@@ -4,6 +4,19 @@ All notable changes to the `sopack` Rust CLI. Versions before `1.0.0` are
 pre-release milestones on the way to the cut-over described in
 [`../docs/SOPACK-1.0-PLAN.md`](../docs/SOPACK-1.0-PLAN.md).
 
+## 1.0.1 — 2026-10-03
+
+No change to `book.json`, the pack format or the vector space.
+
+- **macOS release built with the `coreml` feature**, so `--device coreml|auto`
+  work in the Homebrew binary (1.0.0 exited 6: "requires the coreml cargo
+  feature"). CPU stays the default. The release job now also runs
+  `sopack calibrate --device coreml` as a measurement (no gate) and posts the
+  cosines to the job summary. Below `pack_min_cosine`, `--device coreml`
+  refuses (exit 5) and `--device auto` falls back to CPU.
+- **`install.sh` on Linux x86_64**: asked for `…-x64-…` assets while releases
+  are named `…-x86_64-…`, so every x86_64 install failed.
+
 ## 1.0.0 — 2026-09-26
 
 The cut-over release (M8 of the plan): the Rust binary is the one `sopack`.

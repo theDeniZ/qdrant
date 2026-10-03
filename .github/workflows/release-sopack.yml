@@ -59,6 +59,8 @@ jobs:
             ort_plat: osx-arm64
             ort_sha256: 6ebb5062a934537c352937821f9fe9718e7de1a2db1122a93dd363ffd53a7012
             model_run: true
+            # `--device coreml|auto`; the CoreML calibration step below shows whether it works.
+            features: sopack-cli/coreml
     runs-on: ${{ matrix.runner }}
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -97,11 +99,11 @@ jobs:
 
       - name: Clippy
         working-directory: sopack-rs
-        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+        run: cargo clippy --workspace --all-targets --locked --features "${{ matrix.features }}" -- -D warnings
 
       - name: Tests (model tests are #[ignore]d here; the real run is below)
         working-directory: sopack-rs
-        run: cargo test --workspace --locked
+        run: cargo test --workspace --locked --features "${{ matrix.features }}"
 
       - name: No HTTP client in the binary (plan §3.2)
         working-directory: sopack-rs
@@ -115,7 +117,7 @@ jobs:
 
       - name: Release build
         working-directory: sopack-rs
-        run: cargo build --release --locked -p sopack-cli
+        run: cargo build --release --locked -p sopack-cli --features "${{ matrix.features }}"
 
       - name: Fetch ONNX Runtime ${{ env.ORT_VERSION }} (${{ matrix.ort_plat }})
         run: |
@@ -187,6 +189,18 @@ jobs:
           "$B" calibrate --json --progress none
           "$B" pack packs/wdys.book.json -o "$RUNNER_TEMP/wdys.sopack" --json --progress plain
           "$B" verify "$RUNNER_TEMP/wdys.sopack" --json --progress none
+
+      # Measure only, no gate (SOPACK-1.0-PLAN.md §7.1): CoreML may run fp16 and
+      # drift below pack_min_cosine. `--device coreml` then refuses (exit 5) and
+      # `--device auto` falls back to CPU, so the release stays usable either way.
+      - name: CoreML calibration (measure only)
+        if: matrix.model_run && matrix.features == 'sopack-cli/coreml'
+        continue-on-error: true
+        run: |
+          unset ORT_DYLIB_PATH
+          B="${{ steps.stage.outputs.dir }}/bin/sopack"
+          "$B" calibrate --device coreml --json --progress none | tee "$RUNNER_TEMP/coreml.json"
+          { echo '### CoreML calibration'; echo '```json'; cat "$RUNNER_TEMP/coreml.json"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Tarball
         run: |

@@ -287,8 +287,8 @@ entirely. `sopack doctor` reports the path actually in use.
 
 ## Devices / execution providers
 
-`--device cpu` (default) | `coreml` (macOS, needs the `coreml` cargo
-feature) | `cuda` (Linux, needs the `cuda` feature) | `auto`. Every non-CPU
+`--device cpu` (default) | `coreml` (macOS; the `coreml` cargo feature,
+which the macOS release/Homebrew binary is built with) | `cuda` (Linux, needs the `cuda` feature) | `auto`. Every non-CPU
 run — and `auto`'s own candidate search — self-verifies against the
 contract's calibration fixture *before* touching real data: below the
 contract's threshold, `auto` falls back to the next candidate (CPU last,

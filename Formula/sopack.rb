@@ -12,8 +12,8 @@ class Sopack < Formula
   desc "Prepare and verify corpus import packs for the bible-sop Qdrant collections"
   homepage "https://github.com/theDeniZ/qdrant"
   # url and sha256 are rewritten by .github/workflows/release-sopack.yml on every release tag
-  url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v1.0.0/sopack-1.0.0-aarch64-apple-darwin.tar.gz"
-  sha256 "7441e76ac510c53163263a621b0b246456c165b7392104b6c12c8019b33ce2b3"
+  url "https://github.com/theDeniZ/qdrant/releases/download/sopack-v1.0.1/sopack-1.0.1-aarch64-apple-darwin.tar.gz"
+  sha256 "455f5bff3b382e60dafee6036b1be7c30c58bdf22b78274c3dae87be8a5f97ff"
 
   # Prebuilt Rust binary + Microsoft ONNX Runtime 1.30.0 (bundled, the version
   # the calibration gate was measured with). No Python, no venv, no post_install.

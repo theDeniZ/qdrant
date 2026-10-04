@@ -42,7 +42,7 @@ _JOBS_DIR = os.environ.get("JOBS_DIR", "/data/jobs")
 _STATIC_DIR = Path(__file__).parent / "static"
 
 _STAGES = ["open", "contract", "probe", "preflight", "snapshot", "undo",
-           "upsert", "indexes", "titles", "verify", "report"]
+           "upsert", "indexes", "verify", "report"]
 
 
 def _authorized(request: Request) -> bool:

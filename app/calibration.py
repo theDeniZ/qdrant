@@ -3,8 +3,7 @@ replacement for the live-canary scroll (formerly ``sopack canaries``).
 
 This is an **importer-side, read-only admin command**, not a sopack command
 and not a one-off script (docs/IMPORT-PIPELINE-PLAN.md's no-ad-hoc-scripts
-rule). ``sopack/`` must never touch a store at all
-(``sopack/tests/test_neutrality.py``); building the fixture necessarily
+rule). The packer must never touch a store at all; building the fixture necessarily
 reads the live store, so that work moved here, where it can be a maintained,
 tested command instead of a throwaway script.
 
@@ -124,10 +123,10 @@ def build_fixture(qdrant_url: str, *, model_dir: str | Path, vector_name: str,
             entries.append(e)
             seen_ids.add(e["id"])
 
-    # 1. EGW en + de (no `corpus` key — the EGW convention).
+    # 1. EGW en + de (`corpus: "egw"`).
     for lang in ("en", "de"):
         flt = {"must": [{"key": "lang", "match": {"value": lang}},
-                        {"is_empty": {"key": "corpus"}}]}
+                        {"key": "corpus", "match": {"value": "egw"}}]}
         for p in _scroll(qdrant_url, "sop", flt, _EGW_PER_LANG):
             _add(p, profile="sop", text_field="raw_text", note=f"EGW {lang}")
 
@@ -136,13 +135,13 @@ def build_fixture(qdrant_url: str, *, model_dir: str | Path, vector_name: str,
     other_langs = [lang for lang in all_langs if lang not in ("en", "de")][:_OTHER_LANGS_WANTED]
     for lang in other_langs:
         flt = {"must": [{"key": "lang", "match": {"value": lang}},
-                        {"is_empty": {"key": "corpus"}}]}
+                        {"key": "corpus", "match": {"value": "egw"}}]}
         for p in _scroll(qdrant_url, "sop", flt, 1):
             _add(p, profile="sop", text_field="raw_text", note=f"EGW {lang}")
 
-    # 3. >=1 pioneer point (has `corpus`).
-    flt = {"must": [{"key": "lang", "match": {"value": "en"}}],
-          "must_not": [{"is_empty": {"key": "corpus"}}]}
+    # 3. >=1 pioneer point.
+    flt = {"must": [{"key": "lang", "match": {"value": "en"}},
+                    {"key": "corpus", "match": {"value": "pioneers"}}]}
     for p in _scroll(qdrant_url, "sop", flt, _PIONEER_WANTED):
         _add(p, profile="sop", text_field="raw_text", note="pioneer (corpus)")
 
@@ -163,8 +162,8 @@ def build_fixture(qdrant_url: str, *, model_dir: str | Path, vector_name: str,
         return len(tok.encode(passage_prefix + text).ids)
 
     long_entry = None
-    flt = {"must": [{"key": "lang", "match": {"value": "en"}}],
-          "must_not": [{"is_empty": {"key": "corpus"}}]}
+    flt = {"must": [{"key": "lang", "match": {"value": "en"}},
+                    {"key": "corpus", "match": {"value": "pioneers"}}]}
     for p in _scroll(qdrant_url, "sop", flt, 6000):
         payload = p.get("payload") or {}
         text = payload.get("raw_text")

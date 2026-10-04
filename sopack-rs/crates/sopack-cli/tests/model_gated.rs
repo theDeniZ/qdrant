@@ -183,21 +183,13 @@ fn pack_wdys_is_verifiable_and_matches_the_python_built_reference() {
     assert_eq!(v["clean"], true, "rust verify reported: {v}");
     assert_eq!(r.status, 0);
 
-    // ---- (b) Python accepts (check_pack_py.py) -----------------------------
+    // ---- (b) the server importer's probe accepts (in-memory adapter) ------
     let (ok, output) = run_python_check(
-        "sopack-rs/conformance/packs/check_pack_py.py",
+        "sopack-rs/conformance/packs/check_import_probe.py",
         &[out_a.to_str().unwrap()],
     );
-    println!("check_pack_py.py:\n{output}");
-    assert!(ok, "check_pack_py.py failed:\n{output}");
-
-    // ---- (c) the Python importer's probe accepts (in-memory adapter) ------
-    let (ok, output) = run_python_check(
-        "sopack-rs/conformance/packs/check_import_probe_py.py",
-        &[out_a.to_str().unwrap()],
-    );
-    println!("check_import_probe_py.py:\n{output}");
-    assert!(ok, "check_import_probe_py.py failed:\n{output}");
+    println!("check_import_probe.py:\n{output}");
+    assert!(ok, "check_import_probe.py failed:\n{output}");
 
     // ---- (d) vectors match the Python-built reference at cosine >= 0.9999 -
     let contract = Contract::embedded("e5-large-v1").unwrap();

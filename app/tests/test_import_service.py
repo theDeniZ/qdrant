@@ -2,7 +2,7 @@
 (app/tests/fake_qdrant.py) — no network, no fastembed/numpy/qdrant_client.
 
 Focus, per the brief: probe rejection below threshold, snapshot failure
-aborting before any write, the titles shrink guard refusing, preflight
+aborting before any write, book metadata gating, preflight
 distinguishing collision from re-index, and rollback restoring exactly.
 Plus a couple of end-to-end happy-path checks (apply + dry-run) tying the
 whole stage machine together.
@@ -36,7 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from sopack import contract  # noqa: E402
+from app.pack import contract  # noqa: E402
 
 from app import import_service, jobs, store_adapter  # noqa: E402
 from app.tests.fake_qdrant import FakeQdrant  # noqa: E402
@@ -55,25 +55,20 @@ def _f32(vector: list[float]) -> bytes:
 
 def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST", lang="en",
                    slug="test-book", n_points=3, canary_ids=None, canary_vectors=None,
-                   titles="auto", point_seed_offset=0):
+                   titles=None, point_seed_offset=0, corpus="pioneers", book_pair=None,
+                   author="Tester"):
     """A minimal, ``sopack/1``-shaped ``.sopack`` — the legacy live-canary
-    manifest shape ``sopack.format.PackWriter`` produced before M1, assembled
-    directly (not through ``PackWriter``, which now only writes ``sopack/2``)
-    so the /1 import path (probe, preflight, snapshot, upsert, …) keeps
-    being exercised exactly as before.
+    manifest shape packs had before M1, assembled directly (the test writer
+    in ``app/tests/packs.py`` only writes ``sopack/2``) so the /1 import path
+    (probe, preflight, snapshot, upsert, …) keeps being exercised exactly as
+    before.
 
-    ``titles="auto"`` (default) attaches a titles.json fragment matching the
-    book being built, so tests that aren't specifically about the titles
-    stage still pass `verify`'s "every book has a title entry" check. Pass
-    ``titles=None`` or ``titles={}`` for "pack carries no titles fragment",
-    or an explicit dict to control it precisely.
+    Book metadata travels on every point and in the manifest's book entry;
+    ``corpus=None`` builds a pack that lacks it. ``titles`` attaches a legacy
+    titles.json fragment, which the importer ignores.
     """
     prof = contract.get_profile(profile)
     collection = store_adapter.collection_for(profile)
-    if titles == "auto":
-        titles = ({lang: {book_code: {"titles": [f"{book_code} Title"], "author": "Tester",
-                                      "year": 2020, "slug": slug}}}
-                  if profile == "sop" else {})
 
     id_rule = prof.default_id_rule
     points_lines = []
@@ -85,12 +80,14 @@ def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST",
         para_key = f"{page}.{para}"
         if profile == "sop":
             payload = {
-                "lang": lang, "book_code": book_code, "book_pair": None,
+                "lang": lang, "book_code": book_code, "book_pair": book_pair,
                 "page": page, "para": para, "para_key": para_key,
                 "raw_text": f"paragraph {i} of {book_code}", "aligned": None,
-                "slug": slug, "title": f"{book_code} Title", "author": "Tester",
+                "slug": slug, "title": f"{book_code} Title", "author": author,
                 "year": 2020,
             }
+            if corpus:
+                payload["corpus"] = corpus
             fields = {"lang": lang, "book_code": book_code, "para_key": para_key, "seq": 0}
         else:
             payload = {"bible": book_code, "osis": f"Gen.1.{i + 1}", "text": f"verse {i}"}
@@ -105,11 +102,13 @@ def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST",
         vectors_bytes += _f32(_vec(point_seed_offset + i))
 
     book = {prof.identity: book_code, "points": n_points, "first_id": first_id,
-           "title": f"{book_code} Title", "author": "Tester", "year": 2020,
+           "title": f"{book_code} Title", "author": author, "year": 2020,
            "id_rule": id_rule}
     if profile == "sop":
         book["lang"] = lang
         book["slug"] = slug
+        book["corpus"] = corpus
+        book["book_pair"] = book_pair
 
     probe = None
     probe_bytes = b""
@@ -141,7 +140,7 @@ def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST",
         "target": {"collection": collection, "vector_name": store_adapter.QDRANT_VECTOR_NAME,
                    "vector_size": DIM, "distance": store_adapter.QDRANT_DISTANCE},
         "embedding": {"model": contract.EMBEDDING["model"], "library": "fastembed",
-                     "library_version": contract.PYTHON_FASTEMBED_VERSION,
+                     "library_version": "0.8.0",
                      "pooling": contract.EMBEDDING["pooling"],
                      "normalized": contract.EMBEDDING["normalized"],
                      "passage_prefix": contract.EMBEDDING["passage_prefix"]},
@@ -179,7 +178,6 @@ class ImportServiceTestCase(unittest.TestCase):
         self._tmp = tempfile.mkdtemp(prefix="import-svc-test-")
         os.environ["JOBS_DIR"] = str(Path(self._tmp) / "jobs")
         os.environ["PACKS_DIR"] = str(Path(self._tmp) / "packs")
-        os.environ["SOP_BOOKS_JSON"] = str(Path(self._tmp) / "sop_books.json")
         Path(os.environ["PACKS_DIR"]).mkdir(parents=True, exist_ok=True)
         self.qdrant = FakeQdrant()
         os.environ["QDRANT_URL"] = self.qdrant.url
@@ -194,7 +192,7 @@ class ImportServiceTestCase(unittest.TestCase):
         jobs.release_import_lock()
         self.qdrant.stop()
         shutil.rmtree(self._tmp, ignore_errors=True)
-        for k in ("JOBS_DIR", "PACKS_DIR", "SOP_BOOKS_JSON", "QDRANT_URL"):
+        for k in ("JOBS_DIR", "PACKS_DIR", "QDRANT_URL"):
             os.environ.pop(k, None)
 
     def _pack_path(self, pack_id="test-pack"):
@@ -285,64 +283,83 @@ class TestSnapshotFailureAborts(ImportServiceTestCase):
         self.assertIsNone(job["snapshot"])
 
 
-class TestTitlesShrinkGuard(ImportServiceTestCase):
-    def test_guard_refuses_a_shrinking_merge(self):
-        existing = {"en": {"A": {"titles": ["A"]}, "B": {"titles": ["B"]}},
-                    "de": {"C": {"titles": ["C"]}}}
-        # A merged table that lost "de:C" — must never happen, but the guard
-        # is the independent fail-safe against the bug that would cause it.
-        merged = {"en": {"A": {"titles": ["A"]}, "B": {"titles": ["B"]}}, "de": {}}
-        with self.assertRaises(import_service.StageFailure) as ctx:
-            import_service._assert_no_shrink(existing, merged)
-        self.assertIn("de", str(ctx.exception))
-        self.assertIn("shrink", str(ctx.exception))
+class TestBookMetadata(ImportServiceTestCase):
+    """Book metadata lives on the points — no title table anywhere."""
 
-    def test_guard_passes_a_pure_addition(self):
-        existing = {"en": {"A": {"titles": ["A"]}}}
-        merged = {"en": {"A": {"titles": ["A"]}, "B": {"titles": ["B"]}}}
-        import_service._assert_no_shrink(existing, merged)  # must not raise
+    def _run(self, **pack_kw):
+        cid, vec = self._seed_canary()
+        _build_pack(self._pack_path(), canary_ids=[cid], canary_vectors=[vec], **pack_kw)
+        job_id = import_service.start_job("test-pack", "apply", False, "tester")
+        return self._wait_terminal(job_id)
 
-    def test_merge_titles_is_additive_and_leaves_existing_entries_untouched(self):
-        existing = {"en": {"A": {"titles": ["Old Title"], "author": "Someone"}}}
-        fragment = {"en": {"A": {"titles": ["New Title Would Overwrite"]},
-                           "B": {"titles": ["Book B"], "author": "Tester"}}}
-        merged, added = import_service._merge_titles(existing, fragment)
-        self.assertEqual(added, ["en:B"])
-        self.assertEqual(merged["en"]["A"], {"titles": ["Old Title"], "author": "Someone"})
-        self.assertEqual(merged["en"]["B"]["titles"], ["Book B"])
+    def test_preflight_refuses_a_book_without_title(self):
+        cid, vec = self._seed_canary()
+        ids = _build_pack(self._pack_path(), canary_ids=[cid], canary_vectors=[vec])
+        # Re-write the manifest's book entry without a title.
+        import zipfile
+        path = self._pack_path()
+        with zipfile.ZipFile(path) as zf:
+            files = {n: zf.read(n) for n in zf.namelist()}
+        manifest = json.loads(files["manifest.json"])
+        manifest["books"][0]["title"] = None
+        files["manifest.json"] = json.dumps(manifest).encode("utf-8")
+        with zipfile.ZipFile(path, "w") as zf:
+            for n, data in files.items():
+                zf.writestr(n, data)
+        job_id = import_service.start_job("test-pack", "apply", False, "tester")
+        job = self._wait_terminal(job_id)
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("title", jobs.stage_entry(job, "preflight")["detail"])
+        self.assertEqual(jobs.stage_entry(job, "snapshot")["status"], "pending")
+        self.assertTrue(ids)
 
-    def test_titles_stage_writes_additively_and_clears_the_cache(self):
-        dest = Path(os.environ["SOP_BOOKS_JSON"])
-        dest.write_text(json.dumps({"en": {"OLD": {"titles": ["Old Book"]}}}), encoding="utf-8")
+    def test_a_legacy_pack_without_corpus_is_stamped_egw(self):
+        # Packs built before `corpus: "egw"` existed left Ellen White's books
+        # with no corpus (and often no author): the legacy rule makes them EGW,
+        # and preflight says so.
+        job = self._run(corpus=None, author=None)
+        self.assertEqual(job["status"], "ok", job.get("error"))
+        self.assertIn("imported as corpus egw", jobs.stage_entry(job, "preflight")["detail"])
+        imported = [pt["payload"] for pt in self.qdrant.points("sop").values()
+                    if pt["payload"].get("book_code") == "TST"]
+        self.assertTrue(imported)
+        for payload in imported:
+            self.assertEqual(payload["corpus"], "egw")
+            self.assertEqual(payload["author"], "Ellen G. White")
+            self.assertEqual(payload["book_pair"], "TST")  # English: its own code
 
-        # Stand in for app.sop_tools without importing the real module — it
-        # unconditionally imports the MCP server framework at module scope,
-        # which this test has no business depending on. import_service only
-        # reaches into sys.modules["app.sop_tools"]._titles if that module
-        # happens to already be loaded (as it is in the real server process).
+    def test_preflight_refuses_a_compound_book_pair(self):
+        job = self._run(book_pair="BW/SC")
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("book_pair", jobs.stage_entry(job, "preflight")["detail"])
+
+    def test_import_keeps_metadata_on_the_points_and_drops_the_book_cache(self):
+        # Stand in for app.sop_tools without importing the real module (it
+        # imports the MCP framework at module scope); import_service reaches
+        # into sys.modules["app.sop_tools"] only if it is already loaded.
         import types
         fake_sop_tools = types.ModuleType("app.sop_tools")
-        fake_sop_tools._titles = {"stale": "cache"}
+        fake_sop_tools.calls = 0
+
+        def _invalidate():
+            fake_sop_tools.calls += 1
+        fake_sop_tools.invalidate_books = _invalidate
         sys.modules["app.sop_tools"] = fake_sop_tools
         self.addCleanup(sys.modules.pop, "app.sop_tools", None)
 
-        cid, vec = self._seed_canary()
-        fragment = {"en": {"TST": {"titles": ["Test Book"], "author": "Tester", "year": 2020,
-                                   "slug": "test-book"}}}
-        _build_pack(self._pack_path(), canary_ids=[cid], canary_vectors=[vec], titles=fragment)
-
-        job_id = import_service.start_job("test-pack", "apply", False, "tester")
-        job = self._wait_terminal(job_id)
+        job = self._run(titles={"en": {"TST": {"titles": ["ignored"]}}})
 
         self.assertEqual(job["status"], "ok", job.get("error"))
-        table = json.loads(dest.read_text(encoding="utf-8"))
-        self.assertIn("OLD", table["en"])  # untouched
-        self.assertIn("TST", table["en"])  # newly added
-        self.assertIsNone(sys.modules["app.sop_tools"]._titles)  # cache cleared
-        before_path = jobs.job_dir(job_id) / "sop_books.before.json"
-        self.assertTrue(before_path.is_file())
-        self.assertEqual(json.loads(before_path.read_text(encoding="utf-8")),
-                         {"en": {"OLD": {"titles": ["Old Book"]}}})
+        self.assertIn("book metadata", jobs.stage_entry(job, "verify")["detail"])
+        imported = [pt["payload"] for pt in self.qdrant.points("sop").values()
+                    if pt["payload"].get("book_code") == "TST"]
+        self.assertEqual(len(imported), 3)
+        for payload in imported:
+            self.assertEqual(payload["corpus"], "pioneers")
+            self.assertEqual(payload["title"], "TST Title")
+            self.assertNotIn("titles", payload)  # the legacy fragment is ignored
+        self.assertEqual(fake_sop_tools.calls, 1)
+        self.assertFalse((jobs.job_dir(job["job_id"]) / "sop_books.before.json").exists())
 
 
 class TestPreflightCollisionVsReindex(ImportServiceTestCase):

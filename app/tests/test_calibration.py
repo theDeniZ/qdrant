@@ -50,17 +50,18 @@ class CalibrationExportTests(unittest.TestCase):
         self.qdrant.create_collection("sop", VECTOR_NAME, DIM)
         self.qdrant.create_collection("bibles", VECTOR_NAME, DIM)
 
-        # EGW points (no `corpus` key) in several languages.
+        # EGW points (`corpus: "egw"`) in several languages.
         n = 0
         for lang in ("en", "de", "es", "fr", "it", "ja", "pt"):
             for i in range(3):
                 n += 1
                 self.qdrant.put_point(
                     "sop", f"egw-{lang}-{i}",
-                    {"lang": lang, "book_code": "AG", "raw_text": f"EGW {lang} text {i}"},
+                    {"lang": lang, "book_code": "AG", "corpus": "egw",
+                     "raw_text": f"EGW {lang} text {i}"},
                     _vec(n))
 
-        # Pioneer points (carry `corpus`) — two short ones (what the "pioneer"
+        # Pioneer points (`corpus: "pioneers"`) — two short ones (what the "pioneer"
         # category itself picks, `_PIONEER_WANTED=2`) plus a third, longer one
         # that only the dedicated ">max_tokens" scan should reach (it must
         # NOT collide with the two already claimed by the pioneer category).

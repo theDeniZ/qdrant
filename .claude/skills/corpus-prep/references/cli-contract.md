@@ -49,7 +49,7 @@ without `--meta`.
 **Fields this crate's extractors never derive from the source** (so
 `extract --meta` needs them from flags/sidecar or fails exit 4):
 
-| Kind | Always required | Also required when `corpus` is set |
+| Kind | Always required | Also required when `corpus` is set (other than `egw`) |
 |---|---|---|
 | `epub` | `book_code` | `author`, `year` |
 | `markdown` / `text` | `book_code`, `lang`, `title` | `author`, `year` |
@@ -60,8 +60,9 @@ own `validate()` (run before every write) is authoritative and additionally
 rejects: an `id_rule` not valid for the book's `profile`, duplicate
 `(para_key, seq)` pairs, empty block text, non-dense `seq` per `para_key`.
 `validate()`'s own required-field rule: `book_code`/`lang`/`title` always;
-`author`/`year` only when `book.corpus` is a genuinely present, non-null key
-(i.e. **not** an EGW work).
+`author`/`year` only when `book.corpus` is set and is not `"egw"` (`corpus = "egw"`
+is exempt, like no corpus). Always pass `--corpus`, `--author`, `--title`, and for a
+translation `--book-pair <English code>`.
 
 Metadata flags: `--book-code --lang --title --author --year --corpus --slug
 --book-pair --acquired-from --rights --page-kind --id-rule`.

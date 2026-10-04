@@ -4,7 +4,8 @@ services:
     container_name: qdrant-mcp
     restart: unless-stopped
     environment:
-      # The existing Qdrant instance — only read calls (search/scroll/GET) are made.
+      # The Qdrant instance — the only store of corpus data and its metadata. The
+      # MCP tools only read; the admin import pipeline is the only writer.
       - QDRANT_URL=http://10.10.10.10:6333
       # Password for the key-management UI (any username). REQUIRED.
       - ADMIN_PASSWORD=change-me
@@ -14,12 +15,9 @@ services:
       # - MCP_ALLOWED_HOSTS=qdrant.thedeniz.dev
       # Load the ~2 GB embedding model at startup instead of on the first query.
       - WARM_EMBEDDER=1
-      # SoP book title table location. The Dockerfile seeds this from the packaged copy
-      # on first boot if /data/sop_books.json does not exist. All server-side mutations
-      # write to the volume copy, which survives container rebuilds.
-      - SOP_BOOKS_JSON=/data/sop_books.json
     volumes:
-      # Holds keys.db (API keys) and the fastembed model cache.
+      # Holds only what the server needs to run: keys.db (API keys), the fastembed
+      # model cache and the import pipeline's working dirs (packs/, jobs/, uploads/).
       - qdrant-mcp-data:/data
     networks:
       # Traefik can only reach containers on a network it is attached to. Without

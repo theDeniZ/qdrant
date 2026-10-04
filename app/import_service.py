@@ -3,7 +3,13 @@
 Stages, exactly in this order::
 
     open · contract · probe · preflight · snapshot · undo · upsert ·
-    indexes · titles · verify · report
+    indexes · verify · report
+
+Book metadata (``title``, ``author``, ``year``, ``corpus``, ``book_pair``,
+``page_kind``) travels on every point's payload — Qdrant is the only store of
+it. Preflight refuses a ``sop`` pack whose books lack a title (a missing
+corpus is the legacy "Ellen White" case and is stamped ``egw``), and verify
+reads them back from the stored points.
 
 Each stage asserts its own output and refuses to hand a half-result to the
 next (R8). Public entry points for the admin UI::
@@ -22,13 +28,13 @@ Jobs run in a worker thread under the one global import lock
 through ``ctx.adapter`` (``app/store_adapter.py``, M1: SOPACK-AUTONOMY.md
 §3.3) — this module itself makes no HTTP calls and no longer imports
 ``requests``. Stdlib only, and must never import fastembed, onnxruntime,
-numpy or qdrant_client (rule #5 of the brief); only ``sopack.pack`` on the
-Mac may.
+numpy or qdrant_client (rule #5 of the brief). Packs are read through
+``app.pack`` (stdlib-only reader); they are written by the Rust ``sopack``
+CLI, never by this server.
 """
 
 from __future__ import annotations
 
-import copy
 import json
 import os
 import sys
@@ -36,8 +42,8 @@ import threading
 import time
 from pathlib import Path
 
-from sopack import contract
-from sopack.format import PackError, PackReader
+from .pack import contract
+from .pack.format import PackError, PackReader
 
 from . import jobs, snapshots, store_adapter
 
@@ -62,6 +68,34 @@ _UNDO_BATCH = 128
 # writes look like a foreign overwrite and wrongly refuse a resume that
 # should just continue (R5: "re-running a completed job is a no-op").
 _ALWAYS_RERUN = {"open", "contract", "probe"}
+
+# Book-level payload keys of a ``sop`` point — ``title``, ``author``, ``year``,
+# ``corpus``, ``book_pair``, ``page_kind`` — each present whenever its value
+# is known (Qdrant stores no nulls, so an unknown value is simply absent).
+# ``book_pair`` is the book_code of the English original (the book's own code
+# for an English book); ``corpus`` is one of ``egw`` · ``pioneers`` ·
+# ``adventist`` · ``reference``. Every book must have a ``title``. Until
+# 2026-10-04 the rule everywhere was "Ellen White's books carry no corpus", and
+# packs built under it are still valid, so :func:`_normalized` reads a missing
+# corpus as ``egw`` (and a missing author as Ellen G. White) — preflight lists
+# every book it stamps that way. It also gives an English book its own code
+# as ``book_pair``.
+REQUIRED_BOOK_FIELDS = ("title", "corpus")
+EGW_AUTHOR = "Ellen G. White"
+
+
+def _normalized(meta: dict) -> dict:
+    """*meta* (a manifest book entry or a point payload) with the legacy
+    fills applied: no corpus means Ellen White (``corpus: "egw"``, and her name
+    as author when none is given); an English book with no ``book_pair`` is
+    paired with itself. Anything the pack does state is left exactly as is."""
+    out = dict(meta)
+    if not out.get("corpus"):
+        out["corpus"] = "egw"
+        out["author"] = out.get("author") or EGW_AUTHOR
+    if out.get("lang") == "en" and not out.get("book_pair") and out.get("book_code"):
+        out["book_pair"] = out["book_code"]
+    return out
 
 
 def _qdrant_url() -> str:
@@ -113,7 +147,6 @@ class _Ctx:
         self.target_collection = (self.collection if self.mode == "apply"
                                   else f"{self.collection}__dryrun")
         self.reader: PackReader | None = None
-        self.merged_titles: dict | None = None
         self.adapter = adapter or _make_adapter()
 
     def close(self) -> None:
@@ -374,6 +407,23 @@ def _same_title_holders(adapter: store_adapter.StoreAdapter, collection: str, co
     return holders
 
 
+def _missing_book_metadata(books: list[dict]) -> list[str]:
+    """What a ``sop`` pack's manifest lacks for a uniform collection: every
+    book must name a title and a corpus, and ``book_pair`` (when given) must be
+    a plain English book_code — the old ``BW/SC`` form is not accepted."""
+    problems = []
+    for b in map(_normalized, books):
+        label = f"{b.get('lang')}:{b.get('book_code')}"
+        absent = [f for f in REQUIRED_BOOK_FIELDS if not b.get(f)]
+        if absent:
+            problems.append(f"{label} has no {'/'.join(absent)}")
+        pair = b.get("book_pair")
+        if pair and "/" in str(pair):
+            problems.append(f"{label} book_pair {pair!r} must be the English original's "
+                            "book_code alone")
+    return problems
+
+
 def _retrieve_existing_ids(adapter: store_adapter.StoreAdapter, collection: str,
                            ids: list[str]) -> set[str]:
     rows = adapter.retrieve(collection, ids, with_payload=False, with_vector=False)
@@ -383,6 +433,14 @@ def _retrieve_existing_ids(adapter: store_adapter.StoreAdapter, collection: str,
 def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
     profile = ctx.profile
     books = ctx.reader.manifest.get("books") or []
+    stamped_egw = []
+    if profile.name == "sop":
+        missing = _missing_book_metadata(books)
+        if missing:
+            raise StageFailure("preflight", "book metadata incomplete, refusing (re-pack with "
+                                            "--title/--book-pair): " + "; ".join(missing))
+        stamped_egw = [f"{b.get('lang')}:{b.get('book_code')}" for b in books
+                       if not b.get("corpus")]
     collisions, reindexed, new_books, same_title = [], [], [], []
 
     for b in books:
@@ -448,6 +506,9 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
               f"{new_count} new point(s), {len(overwrite_ids)} overwrite point(s)")
     if same_title:
         detail += "; allowed same title: " + "; ".join(same_title)
+    if stamped_egw:
+        detail += (f"; {len(stamped_egw)} book(s) without corpus imported as corpus egw "
+                   f"(legacy rule): " + ", ".join(stamped_egw))
     return {"detail": detail}
 
 
@@ -532,7 +593,8 @@ def _stage_upsert(ctx: _Ctx, job_id: str) -> dict:
         for points, vectors in ctx.reader.batches(size=_UPSERT_BATCH):
             _check_cancel(job_id)
             body_points = [
-                {"id": p["id"], "vector": v, "payload": p["payload"]}
+                {"id": p["id"], "vector": v,
+                 "payload": _normalized(p["payload"]) if ctx.profile.name == "sop" else p["payload"]}
                 for p, v in zip(points, vectors)
             ]
             _upsert_with_retry(ctx.adapter, ctx.target_collection, body_points, job_id)
@@ -567,88 +629,16 @@ def _stage_indexes(ctx: _Ctx, job_id: str) -> dict:
     return {"detail": f"ensured payload index(es): {', '.join(created)}"}
 
 
-def _assert_no_shrink(existing: dict, merged: dict) -> None:
-    """The shrink guard (R6 / failures #11-#13): refuse if any language table
-    would come out of a merge smaller than it went in. Kept as its own
-    function — independent of how ``merged`` was produced — so it is a real
-    fail-safe against a future bug in the merge path, not just an assertion
-    that repeats what the additive walk already guarantees by construction."""
-    for lang, table in existing.items():
-        if len(merged.get(lang, {})) < len(table):
-            raise StageFailure("titles", f"merge would shrink {lang} from {len(table)} to "
-                                         f"{len(merged.get(lang, {}))} entries — refusing")
-
-
-def _merge_titles(existing: dict, fragment: dict) -> tuple[dict, list[str]]:
-    """Additive merge of a pack's titles.json fragment into the existing
-    table — the shape of scripts/merge_corpus_titles.py's default (non
-    --enrich) mode: a code already known is left completely untouched, only
-    new (lang, code) pairs are added. Never removes or shrinks anything (R6)."""
-    merged = copy.deepcopy(existing)
-    added = []
-    for lang, books in (fragment or {}).items():
-        table = merged.setdefault(lang, {})
-        for code, entry in (books or {}).items():
-            if code in table:
-                continue
-            table[code] = copy.deepcopy(entry)
-            added.append(f"{lang}:{code}")
-
-    _assert_no_shrink(existing, merged)
-    return merged, added
-
-
-def _sop_books_path() -> Path:
-    return Path(os.environ.get("SOP_BOOKS_JSON", "/data/sop_books.json"))
-
-
-def _load_titles_table() -> dict:
-    dest = _sop_books_path()
-    if dest.is_file():
-        return json.loads(dest.read_text(encoding="utf-8"))
-    return {}
-
-
-def _clear_titles_cache() -> None:
-    """Clear ``sop_tools``'s module-global title cache — but only if that
-    module is already loaded. ``sop_tools`` unconditionally imports the MCP
-    server framework at module scope; this service has no business dragging
-    that in (or being broken by a version mismatch in it) just to invalidate
-    a cache. In the real server process ``server.py`` has already imported
-    ``sop_tools`` by the time an import job ever runs, so this reaches it."""
+def invalidate_book_cache() -> None:
+    """Drop ``sop_tools``' in-memory book list so the next ``sop_list_books``
+    re-reads it from Qdrant — called after anything that adds, replaces or
+    removes points. Only if that module is already loaded: ``sop_tools``
+    imports the MCP framework at module scope, which this service has no
+    business dragging in. In the real server ``server.py`` has imported it
+    long before an import job runs."""
     mod = sys.modules.get("app.sop_tools") or sys.modules.get("sop_tools")
     if mod is not None:
-        mod._titles = None
-
-
-def _stage_titles(ctx: _Ctx, job_id: str) -> dict:
-    if ctx.profile.name != "sop":
-        return {"skipped": True, "detail": "the title table applies to the sop profile only"}
-    fragment = ctx.reader.titles()
-    if not fragment:
-        return {"skipped": True, "detail": "pack carries no titles.json fragment"}
-
-    existing = _load_titles_table()
-    merged, added = _merge_titles(existing, fragment)
-    ctx.merged_titles = merged
-    plural = "y" if len(added) == 1 else "ies"
-
-    if ctx.mode == "dry-run":
-        return {"detail": f"{len(added)} new title entr{plural} would be added (dry-run, "
-                          "not written)"}
-
-    d = jobs.job_dir(job_id)
-    d.mkdir(parents=True, exist_ok=True)
-    (d / "sop_books.before.json").write_text(
-        json.dumps(existing, ensure_ascii=False, indent=1, sort_keys=True), encoding="utf-8")
-    dest = _sop_books_path()
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dest.with_suffix(dest.suffix + ".tmp")
-    tmp.write_text(json.dumps(merged, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
-                   encoding="utf-8")
-    os.replace(tmp, dest)
-    _clear_titles_cache()
-    return {"detail": f"{len(added)} new title entr{plural} written to {dest}"}
+        mod.invalidate_books()
 
 
 def _filter_for(profile, code, lang) -> dict:
@@ -669,7 +659,6 @@ def _retrievable(adapter: store_adapter.StoreAdapter, collection: str, profile, 
 
 def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
     books = ctx.reader.manifest.get("books") or []
-    titles_table = ctx.merged_titles if ctx.merged_titles is not None else _load_titles_table()
     problems = []
     for b in books:
         code = b.get(ctx.profile.identity)
@@ -682,12 +671,18 @@ def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
         # filtered search cannot reach is a failed import, not a quiet success.
         if not _retrievable(ctx.adapter, ctx.target_collection, ctx.profile, code, lang):
             problems.append(f"{lang or ''}:{code}: not reachable by a filtered search")
-        if ctx.profile.name == "sop" and not titles_table.get(lang, {}).get(code):
-            problems.append(f"{lang}:{code}: no title-table entry")
+        if ctx.profile.name == "sop":
+            rows = ctx.adapter.scroll(ctx.target_collection, _filter_for(ctx.profile, code, lang), 1,
+                                      with_payload=True)
+            payload = rows[0].get("payload", {}) if rows else {}
+            empty = [f for f in REQUIRED_BOOK_FIELDS if not payload.get(f)]
+            if empty:
+                problems.append(f"{lang}:{code}: stored metadata incomplete "
+                                f"(missing {'/'.join(empty)})")
     if problems:
         raise StageFailure("verify", "; ".join(problems))
     return {"detail": f"{len(books)} book(s) verified: point count, retrievability"
-                      + (", title entry" if ctx.profile.name == "sop" else "") + " all ok"}
+                      + (", book metadata" if ctx.profile.name == "sop" else "") + " all ok"}
 
 
 def _stage_report(ctx: _Ctx, job_id: str) -> dict:
@@ -728,7 +723,6 @@ _PIPELINE = [
     ("undo", _stage_undo),
     ("upsert", _stage_upsert),
     ("indexes", _stage_indexes),
-    ("titles", _stage_titles),
     ("verify", _stage_verify),
     ("report", _stage_report),
 ]
@@ -802,6 +796,8 @@ def _run(job_id: str) -> None:
         job = jobs.load(job_id)
         job["rollback"]["available"] = (job["mode"] == "apply")
         jobs.save(job_id, job)
+        if job["mode"] == "apply":
+            invalidate_book_cache()
         _finish(job_id, ctx, status="ok")
     except Exception as exc:  # belt-and-braces: never leave the lock held
         jobs.append_log(job_id, None, "error", f"unhandled error: {exc}")
@@ -903,15 +899,7 @@ def _do_rollback(job_id: str) -> None:
                 restored += len(batch)
         jobs.append_log(job_id, "rollback", "info", f"restored {restored} overwritten point(s)")
 
-        before_path = d / "sop_books.before.json"
-        if before_path.is_file():
-            dest = _sop_books_path()
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            tmp = dest.with_suffix(dest.suffix + ".tmp")
-            tmp.write_text(before_path.read_text(encoding="utf-8"), encoding="utf-8")
-            os.replace(tmp, dest)
-            _clear_titles_cache()
-            jobs.append_log(job_id, "rollback", "info", "restored title table")
+        invalidate_book_cache()
 
         jobs.update(job_id, status="rolled_back", finished_at=jobs.now_iso(),
                    rollback={"available": False, "performed_at": jobs.now_iso()})
@@ -925,8 +913,9 @@ def _do_rollback(job_id: str) -> None:
 
 def rollback(job_id: str) -> None:
     """Fine rollback (docs/IMPORT-PIPELINE-PLAN.md §7): delete created_ids.txt's
-    ids, re-upsert undo.jsonl, restore sop_books.before.json, clear the title
-    cache. Exact, seconds, no collateral damage to anything written since."""
+    ids, re-upsert undo.jsonl (payloads included, so book metadata comes back
+    with the points), drop the cached book list. Exact, seconds, no collateral
+    damage to anything written since."""
     job = jobs.load(job_id)
     if not (job.get("rollback") or {}).get("available"):
         raise ValueError(f"job {job_id} has no rollback available")
@@ -944,6 +933,7 @@ def _do_restore_snapshot(job_id: str) -> None:
         name = job["snapshot"]["name"]
         jobs.append_log(job_id, "restore-snapshot", "info", f"restoring {name}")
         snapshots.restore(job["collection"], name)
+        invalidate_book_cache()
         jobs.append_log(job_id, "restore-snapshot", "info", "restore complete")
     except Exception as exc:
         jobs.append_log(job_id, "restore-snapshot", "error", str(exc))

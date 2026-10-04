@@ -1,8 +1,8 @@
 """Store adapters — everything backend-specific about the corpus import
 pipeline, behind one interface (SOPACK-AUTONOMY.md §3.2/§3.3).
 
-``sopack/`` (the packer) knows nothing about a vector store at all — see
-``sopack/tests/test_neutrality.py``. Everything a *pack* needs to become
+The packer (the Rust ``sopack`` CLI) knows nothing about a vector store at
+all. Everything a *pack* needs to become
 points in a live collection — the collection name, the Qdrant named-vector
 name, its payload index types, the "Cosine" spelling — is backend
 configuration that lives here, on the importer side, not in the neutral
@@ -31,15 +31,13 @@ a shape on an operation nothing else implements yet.
 
 from __future__ import annotations
 
-import os
-import threading
 from typing import Protocol
 
 import requests
 
 # ── Qdrant adapter config (SOPACK-AUTONOMY.md §3.2) ──────────────────────────
 #
-# Exactly what used to live in sopack/contract.py's Profile.collection /
+# Exactly what used to live in the contract's Profile.collection /
 # Profile.indexes and the module-level VECTOR_NAME/DISTANCE constants. This is
 # the ONE place in the whole server that says "sop" lives in a collection
 # called "sop" — everything else (sopack, the neutral contract) only knows
@@ -55,7 +53,7 @@ QDRANT_PROFILE_CONFIG = {
         # under a new book_code); without the index that lookup scans the
         # whole collection.
         "indexes": {"lang": "keyword", "book_code": "keyword", "page": "integer",
-                    "title": "keyword"},
+                    "title": "keyword", "corpus": "keyword"},
     },
     "bible": {
         "collection": "bibles",
@@ -130,13 +128,10 @@ class QdrantAdapter:
     methods."""
 
     def __init__(self, base_url: str, *, timeout_s: float = 60.0,
-                 upsert_timeout_s: float = 120.0,
-                 fingerprint_path: str | None = None):
+                 upsert_timeout_s: float = 120.0):
         self.base_url = base_url.rstrip("/")
         self.timeout_s = timeout_s
         self.upsert_timeout_s = upsert_timeout_s
-        self._fingerprint_path = fingerprint_path or os.environ.get(
-            "CONTRACT_FINGERPRINTS_JSON", "/data/contract_fingerprints.json")
 
     def _collection_url(self, collection: str, path: str = "") -> str:
         url = f"{self.base_url}/collections/{collection}"
@@ -264,34 +259,33 @@ class QdrantAdapter:
 
     # ── contract fingerprint (SOPACK-2-FORMAT.md §4 step 3) ─────────────────
     #
-    # "the importer's own job DB" (SOPACK-AUTONOMY.md §3.1's design table) — a
-    # small local JSON file, not a write to the vector store itself (Qdrant
-    # has no natural place for this that would not itself need a schema
-    # migration; a future Chroma adapter can do the same).
+    # Kept in Qdrant itself, as the collection's own metadata
+    # (``config.metadata.contract_fingerprint``, Qdrant >= 1.16) — the store
+    # is the only place that describes the store; the server keeps no file.
 
-    _fp_lock = threading.Lock()
-
-    def _read_fingerprints(self) -> dict:
-        import json
-        try:
-            with open(self._fingerprint_path, encoding="utf-8") as fh:
-                return json.load(fh)
-        except (FileNotFoundError, ValueError):
-            return {}
+    FINGERPRINT_KEY = "contract_fingerprint"
 
     def get_fingerprint(self, collection: str) -> str | None:
-        return self._read_fingerprints().get(collection)
+        try:
+            r = requests.get(self._collection_url(collection), timeout=self.timeout_s)
+        except requests.RequestException as exc:
+            raise AdapterError(f"GET {collection}: {exc}") from exc
+        if r.status_code == 404:
+            return None
+        if r.status_code >= 300:
+            raise AdapterError(f"GET {collection}: HTTP {r.status_code} {r.text[:400]}")
+        config = ((r.json() or {}).get("result") or {}).get("config") or {}
+        return (config.get("metadata") or {}).get(self.FINGERPRINT_KEY)
 
     def set_fingerprint(self, collection: str, sha256: str) -> None:
-        import json
-        with self._fp_lock:
-            data = self._read_fingerprints()
-            data[collection] = sha256
-            os.makedirs(os.path.dirname(self._fingerprint_path) or ".", exist_ok=True)
-            tmp = self._fingerprint_path + ".tmp"
-            with open(tmp, "w", encoding="utf-8") as fh:
-                json.dump(data, fh, indent=2, sort_keys=True)
-            os.replace(tmp, self._fingerprint_path)
+        try:
+            r = requests.patch(self._collection_url(collection),
+                               json={"metadata": {self.FINGERPRINT_KEY: sha256}},
+                               timeout=self.timeout_s)
+        except requests.RequestException as exc:
+            raise AdapterError(f"PATCH {collection}: {exc}") from exc
+        if r.status_code >= 300:
+            raise AdapterError(f"PATCH {collection}: HTTP {r.status_code} {r.text[:400]}")
 
 
 # ── in-memory adapter (tests only) ───────────────────────────────────────────

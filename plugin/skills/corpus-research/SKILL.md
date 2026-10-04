@@ -20,8 +20,9 @@ in this corpus".
 - **Language** of the answer. Research in **English** first, where the corpus is
   largest (≈390k EGW paragraphs). Move the results you keep into the user's language at
   the end (step 5).
-- **Scope**: Bible, Ellen White, or both. Include pioneer authors only if the user
-  asks for them. Otherwise drop `corpus: "pioneers"` hits.
+- **Scope**: Bible, Ellen White, or both. Include non-EGW works (`pioneers`, `adventist`,
+  `reference`) only if the user asks for them. Otherwise drop every hit whose
+  `corpus` is not `egw`.
 - **Four to eight search angles.** Semantic search matches *wording*, so one
   abstract query ("faith") finds little. Write each angle the way the sources
   would put it:

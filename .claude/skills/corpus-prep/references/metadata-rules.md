@@ -6,9 +6,10 @@ real examples from `local-archive/imported/pioneers/converted/MANIFEST.md` and
 every value comes from you, resolved by research against the source, never
 by picking the first plausible string.
 
-**Required**: `book_code`, `lang`, `title` always; `author` and `year` for
-every non-EGW work (`corpus` set). **Optional**: `corpus`, `slug`,
-`acquired_from`, `rights`, `book_pair`, `page_kind`.
+**Always pass**: `book_code`, `lang`, `title`, `corpus`, `author`; `year` for
+every non-EGW work; `book_pair` (plain English code) for a translation.
+**Optional**: `slug`, `acquired_from`, `rights`, `page_kind`. The metadata lives
+on the Qdrant points; there is no title table or post-import export step.
 
 ## The pd-books filename convention
 
@@ -113,18 +114,22 @@ by the dry-run. You do not look it up. What you do:
   as `SGOM`). Packed under such a code, a work is refused at dry-run as a
   duplicate title — which names the live code to re-pack under.
 
-`book_pair` defaults to mirroring `book_code` (same value) — leave it alone
-unless the book has a genuinely separate de/en pairing code.
+`book_pair` is the **book_code of the English original**. An English book uses
+its own code; a translation passes the English code (`de:BW` -> `SC`), as a
+plain code, never the compound `BW/SC`. Preflight rejects a `/`.
 
 ## `corpus`
 
-- Author is **Ellen G. White** → leave `corpus` **absent** (not `"none"`,
-  not `null` written explicitly — just omit the key/line).
-  `sopack_book::validate`'s EGW exemption depends on the key being
-  genuinely absent.
-- Any other author → `corpus = "pioneers"`. This is the only value seen in
-  the current acquisition (Miller, Bates, Canright, Haskell, Jones, Smith,
-  Waggoner (both), White (James), Andrews, Crosier, Fitch, Litch, …).
+- Always pass `corpus`:
+  - `egw`: Ellen G. White's own writings (compilations of her words included);
+    `author = "Ellen G. White"`. The only corpus quotable as Spirit of Prophecy.
+  - `pioneers`: pre-1915 Adventist pioneers (Miller, Bates, Canright, Haskell,
+    Jones, Smith, Waggoner (both), White (James), Andrews, Crosier, Fitch, Litch, …).
+  - `adventist`: later Adventist authors (biographies, White Estate papers,
+    study guides, apologetics).
+  - `reference`: non-Adventist works.
+  A book packed without `corpus` is imported as `egw` (legacy rule), so never omit it
+  for a non-EGW work.
 
 ## `slug`
 

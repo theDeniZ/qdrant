@@ -1,5 +1,7 @@
 # sopack M4 exit gate + benchmark
 
+> **2026-10-04:** the Python `sopack` package referenced below (reference reader, `check_pack_py.py`, Python-baseline comparison) was removed; this log is historical and the Python steps cannot be re-run. `bench/run_bench.sh` covers the Rust side.
+
 Evidence for `SOPACK-1.0-PLAN.md` §1 M4 row ("3 real books packed in Rust
 pass the server probe ≥ 0.9999") and §3.3 "Benchmark gate". Run 2026-09-24,
 **stopped early by the orchestrator** partway through the largest-book

@@ -11,8 +11,9 @@ use crate::model::Book;
 /// Semantic problems with *book*. Empty vec means it is valid.
 ///
 /// Rejects: missing required metadata (`book_code`, `lang`, `title` — plus
-/// `author`/`year` for non-EGW works, i.e. `book.corpus` is set; EGW works,
-/// which never carry a `corpus` key, are exempt), an `id_rule` not allowed
+/// `author`/`year` for non-EGW works, i.e. `book.corpus` is set to anything
+/// but `"egw"`; Ellen White's works — `corpus = "egw"`, or no corpus at all,
+/// the convention before 2026-10-04 — are exempt), an `id_rule` not allowed
 /// by the book's profile, duplicate `(para_key, seq)` pairs, empty block
 /// text, a `para_key` whose `seq` values are not dense from 0, and blocks
 /// that do not partition into whole paragraphs of `chunks` pieces.
@@ -53,7 +54,11 @@ pub fn validate(book: &Book) -> Vec<String> {
         }
     }
 
-    let is_egw = !matches!(book.book.get("corpus"), Some(v) if !v.is_null());
+    let is_egw = match book.book.get("corpus") {
+        None => true,
+        Some(v) if v.is_null() => true,
+        Some(v) => v.as_str() == Some("egw"),
+    };
     if !is_egw {
         for key in ["author", "year"] {
             if !meta_truthy(key) {

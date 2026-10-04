@@ -89,7 +89,7 @@ sys.modules["app.import_service"] = _fake_import_service
 from starlette.testclient import TestClient  # noqa: E402
 
 import app.admin as admin  # noqa: E402
-from sopack.format import PackWriter  # noqa: E402
+from app.tests.packs import PackWriter  # noqa: E402
 
 
 def _auth_header(password: str = "test-secret", user: str = "op") -> dict:

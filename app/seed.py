@@ -1,14 +1,13 @@
-"""Seed-on-boot for the SoP title table.
+"""Boot-time setup of the server's own working directories on ``/data``.
 
-The `sop_books.json` file is built into the Docker image at `app/data/sop_books.json`,
-but the authoritative copy must live on the persistent `/data` volume to survive
-container rebuilds. This module seeds the volume copy from the packaged version on
-first boot if it does not yet exist.
+The volume holds only what the server needs to run: ``keys.db`` (API keys,
+``app/keystore.py``), the fastembed model cache, and the import pipeline's
+working directories below. Corpus data and every piece of metadata about it
+live in Qdrant only — nothing about the corpus is kept here.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 from pathlib import Path
@@ -43,40 +42,23 @@ def ensure_data_dirs(root: Path | None = None) -> list[Path]:
     return made
 
 
-def seed_book_titles(volume_path: Path | None = None, packaged_path: Path | None = None) -> None:
-    """Seed `/data/sop_books.json` from the packaged copy if it does not exist.
+# Files earlier versions kept on the volume to describe the corpus. That
+# metadata now lives in Qdrant only (book metadata on every point, the
+# contract fingerprint in the collection's own metadata), so a leftover copy
+# is removed at boot rather than left to drift.
+LEGACY_FILES = ("sop_books.json", "contract_fingerprints.json")
 
-    This runs once at server startup. The packaged `app/data/sop_books.json` is
-    never written to directly; all server-side mutations write to the volume copy.
 
-    Args:
-        volume_path: Override the volume path (for testing). Defaults to /data/sop_books.json.
-        packaged_path: Override the packaged path (for testing). Defaults to app/data/sop_books.json.
-    """
-    if volume_path is None:
-        volume_path = Path("/data/sop_books.json")
-    if packaged_path is None:
-        here = Path(__file__).resolve().parent
-        packaged_path = here / "data" / "sop_books.json"
-
-    # Volume copy already exists — nothing to do.
-    if volume_path.is_file():
-        log.info("SoP title table already exists at %s", volume_path)
-        return
-
-    if not packaged_path.is_file():
-        log.warning("Packaged SoP title table not found at %s", packaged_path)
-        return
-
-    # Seed the volume from the packaged copy.
-    try:
-        content = packaged_path.read_text(encoding="utf-8")
-        # Validate that it's valid JSON before writing.
-        json.loads(content)
-        volume_path.parent.mkdir(parents=True, exist_ok=True)
-        volume_path.write_text(content, encoding="utf-8")
-        log.info("Seeded SoP title table from %s to %s", packaged_path, volume_path)
-    except json.JSONDecodeError as e:
-        log.error("Packaged SoP title table contains invalid JSON: %s", e)
-    except OSError as e:
-        log.error("Failed to seed SoP title table: %s", e)
+def remove_legacy_files(root: Path | None = None) -> list[Path]:
+    root = root or Path(os.environ.get("DATA_ROOT", "/data"))
+    removed = []
+    for name in LEGACY_FILES:
+        path = root / name
+        try:
+            if path.is_file():
+                path.unlink()
+                removed.append(path)
+                log.info("Removed obsolete %s (corpus metadata lives in Qdrant)", path)
+        except OSError as e:
+            log.error("Cannot remove %s: %s", path, e)
+    return removed

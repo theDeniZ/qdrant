@@ -105,17 +105,19 @@ SERVERS = [_build_mcp(name, path, tools, instr) for path, (name, tools, instr) i
 @contextlib.asynccontextmanager
 async def _lifespan(app):
     keystore.init()
-    # The persistent volume outlives the image, so the title table and the
-    # import pipeline's working directories are established here rather than in
-    # the Dockerfile — an existing named volume never receives a rebuilt image's
-    # new directories. See app/seed.py.
+    # The persistent volume outlives the image, so the import pipeline's
+    # working directories are established here rather than in the Dockerfile —
+    # an existing named volume never receives a rebuilt image's new
+    # directories. See app/seed.py. (Corpus data and metadata live in Qdrant
+    # only; nothing about the corpus is kept on the volume.)
     seed.ensure_data_dirs()
-    seed.seed_book_titles()
+    seed.remove_legacy_files()
     async with contextlib.AsyncExitStack() as stack:
         for s in SERVERS:
             await stack.enter_async_context(s.session_manager.run())
         if os.environ.get("WARM_EMBEDDER", "1") == "1":
             threading.Thread(target=_shared_embedder, daemon=True).start()
+        threading.Thread(target=sop_tools.warm_books, daemon=True).start()
         yield
 
 

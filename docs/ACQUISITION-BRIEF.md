@@ -4,7 +4,10 @@
 > `qdrant/pd-books/` into `/workspaces/sdarm/local-archive/` (paths rewritten; full map in
 > `local-archive/MANIFEST.tsv`). Imports no longer use `build_pioneers_corpus.py` /
 > `export_book_titles.py`: build a `.sopack` with the `sopack` CLI (skill `corpus-prep`) and
-> import it in the bible-sop admin UI, which also updates the title table.
+> import it in the bible-sop admin UI; book metadata is stored on the points, there is no title table.
+>
+> **2026-10-04:** these works are imported (verified 2026-10-03/04), except `EDSN`. The tables below show the
+> reserved code and the live code; many differ. Qdrant is the only data store (see [DECISIONS.md](../../DECISIONS.md), ADR-003).
 
 
 Everything needed to send an agent after the missing books and hand you a
@@ -98,56 +101,55 @@ HARD STOPS
 
 ## 3. The list, with reserved book codes
 
-Codes checked 2026-09-20 against all 618 English, 88 German, 8 Japanese and
-44 Korean codes in `app/data/sop_books.json`. **None collides.** Reserve them
-now so two acquisitions cannot pick the same one later.
+Codes were checked 2026-09-20 against all 618 English, 88 German, 8 Japanese and
+44 Korean codes then in the corpus. **None collided.** The tables give reserved → live code.
 
 ### Group 1 — Haskell and J.H. Waggoner (top priority)
 
-| Code | Work | Author | Year |
-|---|---|---|---|
-| `CIS` | The Cross and Its Shadow | S.N. Haskell | 1914 |
-| `ATNW` | The Atonement in the Light of Nature and Revelation | J.H. Waggoner | 1884 |
-| `SOGO` | The Spirit of God: Its Offices and Manifestations | J.H. Waggoner | 1877 |
-| `FETE` | From Eden to Eden | J.H. Waggoner | 1888 |
-| `NTMS` | The Nature and Tendency of Modern Spiritualism | J.H. Waggoner | 1857 |
+| Reserved | Live | Work | Author | Year |
+|---|---|---|---|---|
+| `CIS` | `CIS` | The Cross and Its Shadow | S.N. Haskell | 1914 |
+| `ATNW` | `AERS` | The Atonement in the Light of Nature and Revelation | J.H. Waggoner | 1884 |
+| `SOGO` | `SGOM` | The Spirit of God: Its Offices and Manifestations | J.H. Waggoner | 1877 |
+| `FETE` | `FEE` | From Eden to Eden | J.H. Waggoner | 1888 |
+| `NTMS` | `NTMS` | The Nature and Tendency of Modern Spiritualism | J.H. Waggoner | 1857 |
 
 ### Group 2 — the founding sanctuary documents (short, high value)
 
-| Code | Work | Author | Year |
-|---|---|---|---|
-| `DSE` | Day-Star Extra, 7 February 1846 | O.R.L. Crosier | 1846 |
-| `EDSN` | The Hiram Edson manuscript fragment | Hiram Edson | c.1850 |
-| `AS23` | The Sanctuary and Twenty-three Hundred Days | J.N. Andrews | 1853 |
-| `TMR14` | The Three Messages of Revelation XIV | J.N. Andrews | 1892 ed. |
+| Reserved | Live | Work | Author | Year |
+|---|---|---|---|---|
+| `DSE` | `DSE` | Day-Star Extra, 7 February 1846 | O.R.L. Crosier | 1846 |
+| `EDSN` | not imported | The Hiram Edson manuscript fragment | Hiram Edson | c.1850 |
+| `AS23` | `AS23` | The Sanctuary and Twenty-three Hundred Days | J.N. Andrews | 1853 |
+| `TMR14` | `TMR14` | The Three Messages of Revelation XIV | J.N. Andrews | 1892 ed. |
 
 ### Group 3 — Bates, the four missing tracts
 
-| Code | Work | Author | Year |
-|---|---|---|---|
-| `OPHV` | The Opening Heavens | Joseph Bates | 1846 |
-| `SAWM` | Second Advent Way Marks and High Heaps | Joseph Bates | 1847 |
-| `SLGD` | A Seal of the Living God | Joseph Bates | 1849 |
-| `TATS` | An Explanation of the Typical and Anti-typical Sanctuary | Joseph Bates | 1850 |
+| Reserved | Live | Work | Author | Year |
+|---|---|---|---|---|
+| `OPHV` | `BP1` | The Opening Heavens | Joseph Bates | 1846 |
+| `SAWM` | `BP2` | Second Advent Way Marks and High Heaps | Joseph Bates | 1847 |
+| `SLGD` | `SLG` | A Seal of the Living God | Joseph Bates | 1849 |
+| `TATS` | `BP3` | An Explanation of the Typical and Anti-typical Sanctuary | Joseph Bates | 1850 |
 
 ### Group 4 — Millerite
 
-| Code | Work | Author | Year |
-|---|---|---|---|
-| `PEX1` | Prophetic Expositions, vol. 1 | Josiah Litch | 1842 |
-| `PEX2` | Prophetic Expositions, vol. 2 | Josiah Litch | 1842 |
-| `PROB` | The Probability of the Second Coming of Christ about A.D. 1843 | Josiah Litch | 1838 |
-| `MWM` | Memoirs of William Miller | Sylvester Bliss | 1853 |
-| `COOH` | "Come Out of Her, My People" | Charles Fitch | 1843 |
+| Reserved | Live | Work | Author | Year |
+|---|---|---|---|---|
+| `PEX1` | `PREX1` | Prophetic Expositions, vol. 1 | Josiah Litch | 1842 |
+| `PEX2` | `PREX2` | Prophetic Expositions, vol. 2 | Josiah Litch | 1842 |
+| `PROB` | `PSC` | The Probability of the Second Coming of Christ about A.D. 1843 | Josiah Litch | 1838 |
+| `MWM` | `MWM` | Memoirs of William Miller | Sylvester Bliss | 1853 |
+| `COOH` | `CHMP` | "Come Out of Her, My People" | Charles Fitch | 1843 |
 
 ### Group 5 — later pioneers
 
-| Code | Work | Author | Year |
-|---|---|---|---|
-| `CHOD` | The Church: Its Organization, Order and Discipline | J.N. Loughborough | 1907 |
-| `SOTW` | The Saviour of the World | W.W. Prescott | 1929 |
-| `DOCP` | The Doctrine of Christ | W.W. Prescott | 1920 |
-| `QAWX` | Questions and Answers | M.C. Wilcox | 1911 |
+| Reserved | Live | Work | Author | Year |
+|---|---|---|---|---|
+| `CHOD` | `COOD` | The Church: Its Organization, Order and Discipline | J.N. Loughborough | 1907 |
+| `SOTW` | `SOTW` | The Saviour of the World | W.W. Prescott | 1929 |
+| `DOCP` | `TDOC` | The Doctrine of Christ | W.W. Prescott | 1920 |
+| `QAWX` | `QAWX` | Questions and Answers | M.C. Wilcox | 1911 |
 
 ### Group 6 — already downloaded here, never catalogued
 
@@ -155,10 +157,10 @@ These two are **already on disk**. No search needed: confirm the file, record
 it in the manifest, and for `CGRJ` note that it needs an OCR pass because it
 is the only image-only English PDF in the collection.
 
-| Code | Work | Author | Year | File |
-|---|---|---|---|---|
-| `CGRJ` | Civil Government and Religion | A.T. Jones | 1889 | `downloads/pioneers/jones-waggoner/jones__civil-government-and-religion__1889__archive.pdf` |
-| `TODS` | Thoughts on the Prophecies of Daniel | Uriah Smith | 1899 | `downloads/pioneers/smith-miller/smith__thoughts-on-prophecies-of-daniel__1899__archive.pdf` |
+| Reserved | Live | Work | Author | Year | File |
+|---|---|---|---|---|---|
+| `CGRJ` | `CGRJ` | Civil Government and Religion | A.T. Jones | 1889 | `downloads/pioneers/jones-waggoner/jones__civil-government-and-religion__1889__archive.pdf` |
+| `TODS` | `TODS` | Thoughts on the Prophecies of Daniel | Uriah Smith | 1899 | `downloads/pioneers/smith-miller/smith__thoughts-on-prophecies-of-daniel__1899__archive.pdf` |
 
 **Titles and years above come from general knowledge, not from a source in
 hand.** The agent confirms each against the title page it actually finds and
@@ -269,8 +271,7 @@ Read:
 For every entry, check and report:
 1. the file exists at "file" and its size on disk matches "bytes"
 2. no two entries share a "book_code" or a "slug"
-3. no "book_code" appears in /workspaces/sdarm/qdrant/app/data/sop_books.json
-   under any language
+3. no "book_code" is already taken in the live corpus (sop_list_books, any language)
 4. every required key is present and non-empty, except "notes"
 5. EPUBs: unzip -l opens without error and the archive contains an .opf
 6. PDFs: report page count, and whether a text layer exists
@@ -285,62 +286,24 @@ Output one table plus a list of failures. Change nothing. Do not run git.
 
 ## 6. Import runbook — yours, after the agents finish
 
-Nothing below is run by an agent.
+Nothing below is run by an agent. (Rewritten 2026-10-04; the old catalog, `build_pioneers_corpus.py`,
+`index_pioneers_qdrant.py`, `export_book_titles.py` and `split_corpus.py` steps are gone.)
 
 1. **Review the manifests.** Every `estate_risk` that is not `none`, every
    `confidence: low`, and every title or year the agents corrected. This is
    the step the whole provenance discipline exists for.
 
-2. **OCR what needs it.** `needs_ocr: true` entries, plus `CGRJ`. The Fraktur
-   pipeline in `local-archive/scripts/pd-books-ocr-pipeline/` is German-specific; English image PDFs
-   want plain `tesseract -l eng`. Toolchain setup notes are in
+2. **OCR what needs it.** `needs_ocr: true` entries, plus `CGRJ`. English image
+   PDFs want plain `tesseract -l eng`. Toolchain setup notes are in
    `local-archive/wip/german-pd-ocr/STATE.md`.
 
-3. **Add the works to the catalog.** `local-archive/imported/pioneers/catalog/works.mjs`, then
-   rebuild with `node catalog/build_catalog.mjs`. The manifest fields map
-   onto the catalog entry directly: `slug`, `title`, `author`,
-   `year` (use `year_work`), `language`, `sourceFile`, `sourceEdition` (use
-   `year_printing`), `sourceRepo`.
+3. **Pack each work** with the `sopack` CLI (skill `corpus-prep`): `extract`, `inspect`,
+   `pack`, `verify`. Always pass `--corpus pioneers`, `--author`, `--title` and the year
+   from the manifest (`year_work`). Check the page numbering and a sample page of OCR.
 
-4. **Reserve the codes.** Add each `book_code` to the `CODES` table in
-   `local-archive/scripts/pd-books-pioneer-import/build_pioneers_corpus.py`. Works whose text carries inline
-   `ABBR page.para` references get their code from the file and need no entry;
-   everything else needs one.
+4. **Import in the bible-sop admin UI**: dry run first, then apply. `preflight` refuses a
+   taken `book_code` or a title already live under another code; the importer decides
+   book identity from the store, not the CLI.
 
-5. **Build and inspect.**
-   ```bash
-   cd /workspaces/sdarm/local-archive/scripts/pd-books-pioneer-import
-   python3 build_pioneers_corpus.py
-   ```
-   Read `pioneers_report.md` before going further. Anything over about 1 %
-   damage wants a look at the scan. The build drops blocks over 25 % damage on
-   their own, so a low overall score can still hide a scrambled opening.
-
-6. **Dry run, then index.**
-   ```bash
-   QDRANT_URL=... python3 index_pioneers_qdrant.py --dry-run
-   QDRANT_URL=... python3 index_pioneers_qdrant.py --parallel 8
-   ```
-   The preflight refuses on a `book_code` collision, which is the safety net
-   under step 4. `--only <slug>` re-runs a single work.
-
-7. **Regenerate the titles. Do not skip this.** This is the step that was
-   missed last time and made the whole 2026-08-23 import invisible:
-   ```bash
-   cd /workspaces/sdarm/qdrant
-   python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
-       --qdrant-url "$QDRANT_URL" --dry-run
-   python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
-       --qdrant-url "$QDRANT_URL"
-   ```
-   It warns if any code still has no title.
-
-8. **Index `corpus` if you have not yet.**
-   `python3 scripts/split_corpus.py index-payload --execute`
-
-9. **Redeploy** the qdrant service, and run `plugin/build_plugin.py` plus a
-   plugin redeploy if any reference document changed.
-
-10. **Update the docs**: move the acquired works from "Not held at all" to
-    "Already indexed" in [CORPUS-ACQUISITION.md](CORPUS-ACQUISITION.md), and
-    refresh the author table in [COVERAGE.md](COVERAGE.md).
+5. **Check the result** with `sop_list_books` (title, `corpus`, `author`, `year` present) and a
+   quote lookup, then update the author table in [COVERAGE.md](COVERAGE.md).

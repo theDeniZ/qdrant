@@ -4,6 +4,15 @@ All notable changes to the `sopack` Rust CLI. Versions before `1.0.0` are
 pre-release milestones on the way to the cut-over described in
 [`../docs/SOPACK-1.0-PLAN.md`](../docs/SOPACK-1.0-PLAN.md).
 
+## Unreleased
+
+- **Corpus `egw` is exempt from the author/year validation**, like a book with no
+  corpus: Ellen G. White's own writings need no per-book author or year.
+- **`book.schema.json` moved** into `sopack-rs/schemas/` (embedded by `sopack-book`).
+- **Python conformance generators removed** (`make_id_goldens.py`,
+  `make_extract_goldens.py`, `check_pack_py.py`) along with the Python `sopack` package;
+  the goldens stay as frozen fixtures.
+
 ## 1.0.1 — 2026-10-03
 
 No change to `book.json`, the pack format or the vector space.
@@ -21,7 +30,7 @@ No change to `book.json`, the pack format or the vector space.
 
 The cut-over release (M8 of the plan): the Rust binary is the one `sopack`.
 The Python CLI in `../sopack/` is off the release path — the server keeps only
-its `format.py` reader and contract loader. No change to `book.json`
+its `format.py` reader and contract loader (since 2026-10-04 in `../app/pack/`; the Python package is gone). No change to `book.json`
 (`sopack.book/1`), the pack format (`sopack/2`) or the vector space: a 0.9.0
 pack and a 1.0.0 pack of the same book are interchangeable.
 

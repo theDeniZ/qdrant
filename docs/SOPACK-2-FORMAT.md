@@ -1,9 +1,11 @@
 # `.sopack` format `sopack/2` and calibration fixture `sopack.calibration/1`
 
+> **2026-10-04:** the Python `sopack` package and the title table were removed; see [DECISIONS.md](../../DECISIONS.md) (ADR-003). The server now reads packs with `app/pack/format.py`, the importer ignores `titles.json`, and the contract fingerprint is stored in the Qdrant collection metadata.
+
 **Status: normative spec, 2026-09-24.** Written for M1/M2 of
 [SOPACK-1.0-PLAN.md](SOPACK-1.0-PLAN.md). Implements the store-neutral design of
 [SOPACK-AUTONOMY.md](SOPACK-AUTONOMY.md) §3. Both the Python server
-(`sopack/format.py`, `app/import_service.py`) and the Rust crates
+(`app/pack/format.py`, `app/import_service.py`) and the Rust crates
 (`sopack-format`, `sopack-contract`) implement exactly this. Where this spec and
 code disagree, the code is wrong.
 
@@ -21,7 +23,7 @@ A ZIP file. Entries:
 | `points.jsonl` | deflate | one JSON object per line: `{"uid": str, "id": str, "payload": {…}}`, UTF-8, `ensure_ascii=False`, `\n`-terminated, in vector order |
 | `vectors.f32` | **stored** | `counts.points × counts.dim` little-endian float32, same order as `points.jsonl` |
 | `probe.f32` | **stored** | the pack's own embeddings of the calibration fixture entries, `len(probe.entries) × dim` LE float32, fixture order |
-| `titles.json` | deflate | optional, `sop` profile only: additive title-table fragment (unchanged from `/1`) |
+| `titles.json` | deflate | optional, legacy: still readable but **ignored** by the importer (book titles are stored on the points) |
 
 Unchanged from `sopack/1`: `points.jsonl` line shape, `vectors.f32`, `titles.json`,
 id rules, uids, payload schemas, atomic publish (write to a unique temp path in
@@ -136,7 +138,7 @@ For a `sopack/2` pack:
    the contract's space.
 3. **empty store / entries absent:** if the store holds none of the fixture's
    ids for that profile, step 2 has nothing to compare; the importer records the
-   contract fingerprint (`contract.sha256`) as the store's space at first import
+   contract fingerprint (`contract.sha256`) in the collection metadata (`config.metadata.contract_fingerprint`) at first import
    and refuses later imports under a different fingerprint.
 
 A `sopack/1` pack keeps the old live-canary probe (canary ids + stored vectors).

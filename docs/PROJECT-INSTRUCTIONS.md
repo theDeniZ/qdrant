@@ -48,8 +48,9 @@ skill's reference files before the first lookup. Their rules are binding.
    edition whose words you quote.
 4. **Judge a hit by its text.** Similarity scores are compressed. Unrelated text
    still scores about 0.80.
-5. **Absence is not proof.** The corpus holds Ellen White (plus a few English
-   pioneer authors, whose hits say so), and coverage differs by language and book. "Not found in the corpus" is the strongest claim
+5. **Absence is not proof.** The corpus holds Ellen White (`corpus: "egw"`, the only
+   corpus quotable as Spirit of Prophecy) plus pioneer, later Adventist and reference
+   authors (every hit carries `corpus` and `author`), and coverage differs by language and book. "Not found in the corpus" is the strongest claim
    you may make.
 6. **Tool errors are reported, not worked around.** Name the tool and the error,
    and continue with references only.

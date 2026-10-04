@@ -25,8 +25,10 @@ question touches them.
    tool that failed. Don't fall back to memory or web text without saying so.
 4. **The number must match the words.** Print the verse or page number of the
    edition whose words you print.
-5. **Say who wrote it.** A hit that carries `corpus: "pioneers"` was written by
-   the `author` it names (Uriah Smith, A. T. Jones, …), not by Ellen White.
+5. **Say who wrote it.** Every hit carries `corpus` and `author`. Quote as Spirit
+   of Prophecy only when `corpus == "egw"`; a `pioneers`, `adventist` or `reference`
+   hit was written by the `author` it names (Uriah Smith, A. T. Jones, …), not by
+   Ellen White.
 6. **Report what the corpus cannot prove.** An empty or weak result means "not
    found in this corpus". It never means "does not exist".
 
@@ -80,7 +82,7 @@ and batch what is left.
   language) plus the **page returned for that language**: *Steps to Christ*,
   p. 93 / SC 93.2; *Der Weg zu Christus*, S. 70. `para_key` `93.2` means page 93,
   paragraph 2.
-- Pioneer works: author and title. Cite a page only when `page_kind` is `print`.
+- Non-EGW works (`pioneers`, `adventist`, `reference`): author and title. Cite a page only when `page_kind` is `print`.
   A `chapter` value is a sequence number, not a page.
 - Never attach a page from one language's edition to another language's text.
 

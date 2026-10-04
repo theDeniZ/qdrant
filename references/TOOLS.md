@@ -60,11 +60,13 @@ know the reference. Query in the language of the `bible` you search. The top res
 `{"translations": [{bible, verses, kjv_remapped}]}`. Call it before claiming a
 translation is or is not available.
 
-## Spirit of Prophecy (Ellen G. White, plus a pioneer shelf)
+## Spirit of Prophecy (Ellen G. White, plus other shelves)
 
-Every SoP hit carries `book_code`, `page`, `para_key` (`page.paragraph`) and `text`.
-Hits from **non-EGW** works also carry `corpus: "pioneers"`, `author` and
-`page_kind`. Check these before attributing a hit (see [COVERAGE.md](COVERAGE.md)).
+Every SoP hit carries `book_code`, `page`, `para_key` (`page.paragraph`) and `text`,
+plus the book-level `corpus`, `author` and `page_kind` (a key is absent only when
+unknown). Ellen White hits are `corpus: "egw"`, `author: "Ellen G. White"`,
+`page_kind: "print"`. **Quote as Spirit of Prophecy only when `corpus == "egw"`.**
+Check `page_kind` before citing a page (see [COVERAGE.md](COVERAGE.md)).
 
 ### `sop_lookup(query | queries, codes?, lang="de", min_score=0.55, limit=1)`
 
@@ -133,11 +135,15 @@ fetch a **cited page**. For context around a hit, use `sop_context` instead. Ove
 ### `sop_list_books(lang?, search?)`
 
 - No arguments: the languages, with paragraph counts.
-- `lang`: that language's books with `titles`, and `en_code` / `en_titles` for
+- `lang`: that language's books as `{book_code, paragraphs, titles, corpus, author?, year?,
+  en_code?, en_titles?}`. `corpus` is always present; `en_code` / `en_titles` appear for
   translated editions. The list is long, so prefer `search`.
-- `search`: a case-insensitive match on code, title or author in any language
-  (`"Steps to Christ"`, `"Messias"`, `"waggoner"`). Without `lang` it searches every
-  language at once. That is the fastest way to find a work's codes everywhere.
+- `search`: a case-insensitive match on code, title, English title, author and corpus in any
+  language (`"Steps to Christ"`, `"Messias"`, `"waggoner"`, `"litch"`, `"adventist"`).
+  Without `lang` it searches every language at once. That is the fastest way to find a
+  work's codes everywhere.
+- Some translated editions have no own-language title: `titles: []`, with `en_code` /
+  `en_titles` to identify the work.
 
 ## Reading scores (`multilingual-e5-large`)
 

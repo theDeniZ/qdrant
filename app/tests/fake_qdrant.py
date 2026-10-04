@@ -2,7 +2,8 @@
 
 Implements exactly the calls ``app/import_service.py`` and ``app/snapshots.py``
 make — collection get/create/delete, points retrieve/upsert/delete/scroll/
-count, facet, payload index, snapshot create/list/delete/recover — as an
+count, facet, payload index, collection metadata (PATCH), snapshot
+create/list/delete/recover — as an
 in-memory approximation. It is not a real Qdrant; it exists to exercise our
 request shapes and stage logic without a network dependency or qdrant_client.
 
@@ -117,10 +118,18 @@ def _dispatch(store: FakeQdrant, method: str, segs: list[str], body: dict):
                 c = store.collections.get(coll)
                 if c is None:
                     raise _NotFound("collection not found")
-                return {"config": {"params": {"vectors": c["vectors"]}}}, 200
+                return {"config": {"params": {"vectors": c["vectors"]},
+                                   "metadata": dict(c.get("metadata") or {}) or None}}, 200
             if method == "PUT":
-                store.collections[coll] = {"vectors": dict(body.get("vectors") or {}), "points": {}}
+                store.collections[coll] = {"vectors": dict(body.get("vectors") or {}), "points": {},
+                                           "metadata": dict(body.get("metadata") or {})}
                 return {"acknowledged": True}, 200
+            if method == "PATCH":
+                c = store.collections.get(coll)
+                if c is None:
+                    raise _NotFound("collection not found")
+                c.setdefault("metadata", {}).update(body.get("metadata") or {})
+                return True, 200
             if method == "DELETE":
                 store.collections.pop(coll, None)
                 store.snapshots.pop(coll, None)
@@ -260,7 +269,7 @@ def _make_handler(store: FakeQdrant):
 
         def _route(self, method: str) -> None:
             segs = [s for s in urlsplit(self.path).path.split("/") if s]
-            body = self._body() if method in ("POST", "PUT") else {}
+            body = self._body() if method in ("POST", "PUT", "PATCH") else {}
             try:
                 result, status = _dispatch(store, method, segs, body)
             except _NotFound as exc:
@@ -282,5 +291,8 @@ def _make_handler(store: FakeQdrant):
 
         def do_DELETE(self):
             self._route("DELETE")
+
+        def do_PATCH(self):
+            self._route("PATCH")
 
     return Handler

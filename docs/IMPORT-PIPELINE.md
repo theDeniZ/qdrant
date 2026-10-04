@@ -2,6 +2,8 @@
 
 **Status: agreed requirement 2026-09-21; implemented** by the admin import service (`app/import_service.py`, [IMPORT-API.md](IMPORT-API.md)) and the `sopack` CLI (`sopack-rs/`, [SOPACK-1.0-PLAN.md](SOPACK-1.0-PLAN.md)).
 
+> **2026-10-04:** the title table (`sop_books.json`) and the importer's `titles` stage were removed: book metadata is stored on every Qdrant point and Qdrant is the only data store (see [DECISIONS.md](../../DECISIONS.md), ADR-003). Items 11–13 below are historical; R2, R6 and R8 are read accordingly.
+
 > "I NEVER AGAIN NEED SOME SKETCHY SCRIPTS. What I need is an actual import
 > pipeline via a server with fail-safes and backup-restore procedures. Every
 > time I tried to import something into Qdrant in past 6 months you gave me a
@@ -53,12 +55,11 @@ need to be structurally impossible, not remembered.
 ### R1 — Server-side, one durable path
 One ingestion service, versioned with the repo, not a script per import. It
 accepts a *job* (a corpus JSONL plus metadata) and owns everything from
-validation to the title table. A new book set is new **input**, never new code.
+validation to verified, metadata-carrying points. A new book set is new **input**, never new code.
 
 ### R2 — Backup before any mutation
 No write proceeds without a restorable snapshot:
 - Qdrant snapshot (`PUT /collections/<c>/snapshots`), id recorded in the run log
-- a copy of `app/data/sop_books.json`
 - retention and a pruning policy
 
 ### R3 — Documented, exercised restore
@@ -76,10 +77,9 @@ existing works must be distinguishable from a code collision (fixes #10) —
 compare on `(book_code, slug)` identity, not code presence alone.
 
 ### R6 — Additive by default, never destructive
-Derived tables are updated additively. A step that would remove or shrink any
-language table refuses and reports. Full rebuilds are an explicit opt-in flag,
+Nothing derived is rebuilt from a partial source (the title table that item 11 destroyed no longer exists; metadata lives on the points). A step that would remove or shrink existing data refuses and reports. Full rebuilds are an explicit opt-in flag,
 never the default and never implied by the presence of an optional input
-(fixes #11, #12). `scripts/merge_corpus_titles.py` is the shape to generalise.
+(fixes #11, #12).
 
 ### R7 — Dependencies pinned and verified up front
 A lockfile, and a preflight that imports exactly what the run will import —
@@ -88,7 +88,7 @@ seconds, not twenty minutes in (fixes #2, #3).
 
 ### R8 — No silent partial success
 Every stage asserts its own output: OCR produced a text layer, conversion kept
-≥95 % of source words, every book has a title-table entry after indexing.
+≥95 % of source words, every stored point carries its book `title` and `corpus` after indexing.
 A stage that produces nothing usable fails loudly (fixes #7, #12).
 
 ### R9 — Self-contained
@@ -135,7 +135,7 @@ R11's proof moves from live canaries to a committed calibration fixture. Design:
 ```
 qdrant/import/
   service.py        job API: submit, status, cancel
-  stages/           validate → snapshot → embedcheck → embed → upsert → titles → verify
+  stages/           validate → snapshot → embedcheck → embed → upsert → verify
   snapshots.py      R2 + R3
   jobs/<id>/        manifest, run log, snapshot id, per-book outcome
 ```
@@ -148,7 +148,6 @@ A job is data:
   "corpus": "pd-books/qdrant/pioneers_corpus.jsonl",
   "collection": "sop",
   "scope": ["the-cross-and-its-shadow", "..."],   // R5
-  "titles": {"mode": "additive"},                  // R6
   "on_failure": "restore"                          // R2/R3
 }
 ```
@@ -161,7 +160,7 @@ Adding a book set means writing that file. Nothing else.
 
 1. Keep `run_pioneer_import.sh` **only** until the pipeline lands; it is the
    reference for what the stages must do, not a thing to extend.
-2. Port the stage order, `merge_corpus_titles.py` (already R6-shaped) and the
+2. Port the stage order and the
    shrink guard first — they are the data-loss protections.
 3. Re-run the 2026-09 pioneer import through the pipeline against a scratch
    collection and diff the result against the live one. That is the
@@ -172,5 +171,4 @@ Adding a book set means writing that file. Nothing else.
 
 - `docs/ACQUISITION-BRIEF.md` — where the 2026-09 acquisition started
 - `pd-books/downloads/pioneers/ACQUISITION-REVIEW.md` — what it produced
-- `scripts/merge_corpus_titles.py` — the additive title merge (R6)
-- `scripts/export_book_titles.py` — the full rebuild; note its rebuild-from-scratch semantics (#11)
+- `scripts/export_book_titles.py` / `merge_corpus_titles.py` — the retired title-table scripts (archived; #11)

@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 STAGES = ["open", "contract", "probe", "preflight", "snapshot", "undo",
-          "upsert", "indexes", "titles", "verify", "report"]
+          "upsert", "indexes", "verify", "report"]
 
 STAGE_STATUSES = {"pending", "running", "ok", "failed", "skipped"}
 JOB_STATUSES = {"queued", "running", "ok", "failed", "cancelled", "cancelling",

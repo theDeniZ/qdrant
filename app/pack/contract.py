@@ -1,26 +1,21 @@
-"""Single source of truth for the corpus import pipeline — the **neutral**
-half (SOPACK-AUTONOMY.md §3.2): everything true for any backend. Imported by
-**both** the ``sopack`` CLI and the server's import service, so client and
-server cannot drift.
+"""The embedding contract, as the server's import service reads it — the
+**neutral** half (SOPACK-AUTONOMY.md §3.2): everything true for any backend.
 
 **Stdlib only.** The server must never pull fastembed, onnxruntime or numpy in
-through this module; only ``sopack.pack`` may import an embedding library.
+through this module.
 
-What is deliberately **not** here any more: collection names, Qdrant
-named-vector names, Qdrant payload-index types, and the Qdrant spelling of
-"Cosine". Those describe one backend's storage, not the vector space a pack
-was built in, and now live in the importer's adapter config
-(``app/store_adapter.py``). See ``docs/SOPACK-AUTONOMY.md`` §3.2 and
+What is deliberately **not** here: collection names, Qdrant named-vector
+names, Qdrant payload-index types, and the Qdrant spelling of "Cosine". Those
+describe one backend's storage, not the vector space a pack was built in, and
+live in the importer's adapter config (``app/store_adapter.py``). See
 ``docs/SOPACK-2-FORMAT.md`` (normative).
 
 **The contract is data**, not code: everything below is *derived* from
-``contracts/<id>/contract.toml`` (loaded with ``tomllib``), which is shared
-byte-for-byte with the Rust ``sopack`` binary (``docs/SOPACK-1.0-PLAN.md``
-§3.6). Module-level constants (``EMBEDDING``, ``PROFILES``, ``ID_RULES``, …)
-are the *default* contract (``e5-large-v1``), loaded once at import time so
-every existing call site (``pack.py``, ``format.py``, ``doctor.py``,
-``cli.py``, the server's ``import_service.py``) keeps working unchanged.
-Call :func:`load_contract` directly to load a different one.
+``qdrant/sopack-rs/contracts/<id>/contract.toml`` (loaded with ``tomllib``) —
+the same files the Rust ``sopack`` binary embeds, so packer and importer
+cannot drift. Module-level constants (``EMBEDDING``, ``PROFILES``,
+``ID_RULES``, …) are the *default* contract (``e5-large-v1``), loaded once at
+import time. Call :func:`load_contract` directly to load a different one.
 """
 
 from __future__ import annotations
@@ -33,7 +28,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from uuid import NAMESPACE_DNS, uuid5
 
-SCHEMA_PACK = "sopack/2"        # what THIS writer produces
+SCHEMA_PACK = "sopack/2"        # what the sopack CLI produces
 SCHEMA_PACK_V1 = "sopack/1"     # still accepted by the reader (transition)
 SUPPORTED_PACK_SCHEMAS = (SCHEMA_PACK_V1, SCHEMA_PACK)
 SCHEMA_BOOK = "sopack.book/1"   # unrelated to the embedding contract
@@ -41,17 +36,9 @@ SCHEMA_CALIBRATION = "sopack.calibration/1"
 
 DEFAULT_CONTRACT_ID = "e5-large-v1"
 
-# This Python reference implementation's own pinned embedding library. It is
-# NOT part of the neutral contract (a Rust build has no fastembed at all) —
-# acceptance of a pack's vectors is decided by the calibration probe, not by
-# which library produced them (SOPACK-2-FORMAT.md §2). Kept here, once, so
-# `sopack.pack` (the preflight assertion) and `sopack.doctor` (the
-# environment check) agree without either one hard-coding its own copy.
-PYTHON_FASTEMBED_VERSION = "0.8.0"
-
 __all__ = [
     "SCHEMA_PACK", "SCHEMA_PACK_V1", "SUPPORTED_PACK_SCHEMAS", "SCHEMA_BOOK", "SCHEMA_CALIBRATION",
-    "DEFAULT_CONTRACT_ID", "PYTHON_FASTEMBED_VERSION",
+    "DEFAULT_CONTRACT_ID",
     "Contract", "Profile", "ContractError",
     "load_contract", "contracts_dir", "contract_dir",
     "EMBEDDING", "QUERY_PREFIX", "VECTOR_SIZE",
@@ -77,18 +64,18 @@ class CalibrationError(Exception):
 # ── locating contracts/ ──────────────────────────────────────────────────────
 #
 # Single source of truth: qdrant/sopack-rs/contracts/. The Rust binary embeds
-# these files (include_str!) and the Python server reads them straight off
-# disk with tomllib — no packaged, possibly-stale copy inside `sopack/`
-# itself. `sopack/` and `sopack-rs/` are siblings under `qdrant/`, and the
-# Docker image (qdrant/Dockerfile) COPYs `sopack-rs/contracts` alongside
-# `sopack` and `app` so the container reproduces the same relative layout.
-# SOPACK_CONTRACTS_DIR overrides this for tests or an unusual deployment.
+# these files (include_str!) and the server reads them straight off disk with
+# tomllib — no packaged, possibly-stale copy. This module lives at
+# app/pack/contract.py, so the repo root is three parents up; the Docker image
+# (qdrant/Dockerfile) COPYs `sopack-rs/contracts` next to `app` to reproduce
+# the same layout. SOPACK_CONTRACTS_DIR overrides this for tests or an
+# unusual deployment.
 
 def contracts_dir() -> Path:
     override = os.environ.get("SOPACK_CONTRACTS_DIR")
     if override:
         return Path(override)
-    return Path(__file__).resolve().parent.parent / "sopack-rs" / "contracts"
+    return Path(__file__).resolve().parents[2] / "sopack-rs" / "contracts"
 
 
 def contract_dir(contract_id: str = DEFAULT_CONTRACT_ID) -> Path:
@@ -389,7 +376,7 @@ def calibration_fixture_sha256(fixture_doc: dict) -> str:
     (``CALIBRATION_SHA256``, verified by :func:`load_calibration`). A caller
     that overrides the fixture (tests; never production, where ``pack()``'s
     ``calibration`` parameter is left at its default) has no file to hash, so
-    both sides of a probe — the writer (``sopack.pack``) and a reader
+    both sides of a probe — the writer (the ``sopack`` CLI) and a reader
     checking against that SAME override (``run_calibration_probe``'s
     ``fixture=`` parameter) — hash the override's canonical JSON instead, so
     they still agree on what "this fixture" is."""

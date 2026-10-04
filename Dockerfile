@@ -3,24 +3,21 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     FASTEMBED_CACHE_PATH=/data/fastembed \
-    KEYS_DB=/data/keys.db \
-    SOP_BOOKS_JSON=/data/sop_books.json
+    KEYS_DB=/data/keys.db
 
 WORKDIR /srv
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY app ./app
-COPY sopack ./sopack
-# The embedding contract + calibration fixture (SOPACK-AUTONOMY.md §3.2,
-# SOPACK-1.0-PLAN.md §3.6) — single source of truth, shared byte-for-byte
-# with the Rust `sopack` binary. Copied to the SAME relative path
-# (sopack-rs/contracts, sibling of sopack/) the repo uses, so
-# sopack/contract.py's default path resolution (sibling-of-package, no env
-# override needed) works unchanged inside the image. No packaged copy under
-# sopack/ — one file, one place, never two to keep in sync.
+# The embedding contract + calibration fixture — single source of truth,
+# shared byte-for-byte with the Rust `sopack` binary that writes packs.
+# Copied to the SAME relative path the repo uses (sopack-rs/contracts, sibling
+# of app/), so app/pack/contract.py resolves it without an env override.
 COPY sopack-rs/contracts ./sopack-rs/contracts
 
-# Create persistent storage directories
+# The volume holds only what the server needs to run: keys.db, the fastembed
+# model cache and the import pipeline's working dirs. Corpus data and all of
+# its metadata live in Qdrant.
 RUN mkdir -p /data/packs /data/jobs /data/uploads
 
 EXPOSE 8765 8081

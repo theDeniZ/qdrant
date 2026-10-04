@@ -4,7 +4,11 @@
 > `qdrant/pd-books/` into `/workspaces/sdarm/local-archive/` (paths rewritten; full map in
 > `local-archive/MANIFEST.tsv`). Imports no longer use `build_pioneers_corpus.py` /
 > `export_book_titles.py`: build a `.sopack` with the `sopack` CLI (skill `corpus-prep`) and
-> import it in the bible-sop admin UI, which also updates the title table.
+> import it in the bible-sop admin UI; book metadata is stored on the points, there is no title table.
+>
+> **2026-10-04:** Qdrant is the only data store (see [DECISIONS.md](../../DECISIONS.md), ADR-003). Every point carries
+> `title`, `author`, `year`, `corpus`, `book_pair`, `page_kind`; `corpus` is `egw`, `pioneers`, `adventist` or
+> `reference`. The shopping list below is imported (verified 2026-10-03/04) except the Edson fragment.
 
 
 Target: extend the `sop` Qdrant collection from "Ellen G. White plus an
@@ -19,7 +23,7 @@ separate exercise and are not planned here.
 `local-archive/imported/pioneers/catalog/catalog-manifest.json`. An earlier draft of this file listed
 several works as missing that are in fact already indexed; the pioneer import
 of 2026-08-23 was more complete than the corpus appeared, because none of it
-had titles. See [the title fix](#the-title-defect-fixed-2026-09-20).
+had titles. See [the title defect](#the-title-defect-resolved-2026-10-04).
 
 ## Already indexed — 49 pioneer works, 11 authors
 
@@ -83,7 +87,7 @@ Haskell works (`SDP`, `SSP`) score 0.6-0.7 % overall but open on scrambled
 two-column pages; treat any Haskell hit as needing a look at the scan before
 it is quoted.
 
-## Held in pd-books, not indexed — 4
+## Held in pd-books, not indexed — 4 (2 since imported)
 
 | Work | Author | Why not | What it needs |
 |---|---|---|---|
@@ -92,43 +96,43 @@ it is quoted.
 | What is the Church?, 1913 | A.T. Jones | two-column scan interleaved, word spaces lost, body text duplicated, 14.8 % damage | a better scan |
 | Bible Student's Manual of Chronology and Prophecy, 1841 | William Miller | a glossary broken mid-entry every line, ~14 words per block | a better scan, or skip |
 
-The first two are the only free wins in the folder. Everything else in
-`downloads/pioneers/` is already in the collection.
+The first two (`CGRJ`, `TODS`) have since been imported (2026-10-03/04); the other two stay unindexed.
 
-## Not held at all — the actual shopping list
+## Not held at all — the shopping list (imported 2026-10-03/04)
 
-Priority order for a devotional and sanctuary-facing corpus.
+All rows below are now in Qdrant (verified 2026-10-03/04) under the live code shown,
+except the Hiram Edson fragment. Many live codes differ from the ones reserved in
+[ACQUISITION-BRIEF.md](ACQUISITION-BRIEF.md); that brief lists reserved → live.
 
-| Work | Author | Year | Why |
+| Work | Author | Year | Live code |
 |---|---|---:|---|
-| **The Cross and Its Shadow** | S.N. Haskell | 1914 | the single biggest hole: sanctuary typology, and the one Haskell title not held |
-| The Atonement in the Light of Nature and Revelation | J.H. Waggoner | 1884 | **J.H. Waggoner is absent entirely**, and this is his major work |
-| The Spirit of God: Its Offices and Manifestations | J.H. Waggoner | 1877 | |
-| From Eden to Eden | J.H. Waggoner | 1888 | |
-| Day-Star Extra, 7 February 1846 | O.R.L. Crosier | 1846 | short, and the origin of the Most Holy Place exposition |
-| The Hiram Edson manuscript fragment | Hiram Edson | c.1850 | short, historically central |
-| The Sanctuary and Twenty-three Hundred Days | J.N. Andrews | 1853 | Andrews' own, distinct from Smith's `S23D` |
-| The Three Messages of Revelation XIV | J.N. Andrews | 1892 ed. | |
-| The Opening Heavens | Joseph Bates | 1846 | four short Bates tracts, all foundational on the sanctuary and the sealing |
-| Second Advent Way Marks and High Heaps | Joseph Bates | 1847 | |
-| A Seal of the Living God | Joseph Bates | 1849 | |
-| An Explanation of the Typical and Anti-typical Sanctuary | Joseph Bates | 1850 | |
-| Prophetic Expositions, 2 vols | Josiah Litch | 1842 | Litch is absent entirely |
-| The Probability of the Second Coming of Christ about A.D. 1843 | Josiah Litch | 1838 | |
-| Memoirs of William Miller | Sylvester Bliss | 1853 | the source James White condensed into `SCLWM` |
-| "Come Out of Her, My People" | Charles Fitch | 1843 | short sermon, Fitch is absent |
-| The Church: Its Organization, Order and Discipline | J.N. Loughborough | 1907 | |
-| The Saviour of the World | W.W. Prescott | 1929 | Prescott is absent; 1929 so US-PD, EU-PD from 2015 (d. 1944), verify |
-| The Doctrine of Christ | W.W. Prescott | 1920 | verify |
-| Questions and Answers | M.C. Wilcox | 1911 | verify |
+| The Cross and Its Shadow | S.N. Haskell | 1914 | `CIS` |
+| The Atonement in the Light of Nature and Revelation | J.H. Waggoner | 1884 | `AERS` |
+| The Spirit of God: Its Offices and Manifestations | J.H. Waggoner | 1877 | `SGOM` |
+| From Eden to Eden | J.H. Waggoner | 1888 | `FEE` |
+| Day-Star Extra, 7 February 1846 | O.R.L. Crosier | 1846 | `DSE` |
+| The Hiram Edson manuscript fragment | Hiram Edson | c.1850 | **still missing**: its "large field" passage exists only quoted inside the EGW Estate compilations `EGWC`, `APAY`, `CIHS` |
+| The Sanctuary and Twenty-three Hundred Days | J.N. Andrews | 1853 | `AS23` |
+| The Three Messages of Revelation XIV | J.N. Andrews | 1892 ed. | `TMR14` |
+| The Opening Heavens | Joseph Bates | 1846 | `BP1` |
+| Second Advent Way Marks and High Heaps | Joseph Bates | 1847 | `BP2` |
+| A Seal of the Living God | Joseph Bates | 1849 | `SLG` |
+| An Explanation of the Typical and Anti-typical Sanctuary | Joseph Bates | 1850 | `BP3` |
+| Prophetic Expositions, 2 vols | Josiah Litch | 1842 | `PREX1`, `PREX2` |
+| The Probability of the Second Coming of Christ about A.D. 1843 | Josiah Litch | 1838 | `PSC` |
+| Memoirs of William Miller | Sylvester Bliss | 1853 | `MWM` |
+| "Come Out of Her, My People" | Charles Fitch | 1843 | `CHMP` |
+| The Church: Its Organization, Order and Discipline | J.N. Loughborough | 1907 | `COOD` |
+| The Saviour of the World | W.W. Prescott | 1929 | `SOTW` |
+| The Doctrine of Christ | W.W. Prescott | 1920 | `TDOC` |
+| Questions and Answers | M.C. Wilcox | 1911 | `QAWX` |
 
-Titles and years above come from general knowledge, not from a source in
-hand. Confirm each against the scan before ingesting.
+Also imported: `CGRJ` (Civil Government and Religion, A.T. Jones), `TODS` (Thoughts on the
+Prophecies of Daniel, U. Smith) and `NTMS` (The Nature and Tendency of Modern Spiritualism,
+J.H. Waggoner).
 
-**Ready-to-run acquisition:** [ACQUISITION-BRIEF.md](ACQUISITION-BRIEF.md)
-holds the agent prompts, the 24 reserved book codes (collision-checked
-2026-09-20) and the import runbook for these works plus the two already on
-disk but never catalogued.
+**Acquisition record:** [ACQUISITION-BRIEF.md](ACQUISITION-BRIEF.md)
+holds the agent prompts and the reserved → live code tables for these works.
 
 ## Periodicals and Bulletins — the largest prize, and the largest job
 
@@ -186,54 +190,26 @@ under the writer but the verse.
 
 ---
 
-## The title defect, fixed 2026-09-20
+## The title defect, resolved 2026-10-04
 
-**Symptom.** 48 of the 49 imported pioneer works came back from
-`sop_list_books(lang="en")` with `"titles": []`, so the whole shelf was
-invisible to every agent and looked like it had never been imported.
+**Symptom (2026-09-20).** 48 of the 49 imported pioneer works came back from
+`sop_list_books(lang="en")` with `"titles": []`, so the whole shelf looked as if it had
+never been imported.
 
-**Cause.** `sop_list_books` does not read titles from Qdrant. It reads the
-static table `qdrant/app/data/sop_books.json`, and
-`local-archive/scripts/qdrant/export_book_titles.py` built that table **only** from the generator's
-local mirror (`generator/data/sop/book_map.json` plus `en/<CODE>.json`). The
-pioneers were indexed straight into Qdrant and have no files in that mirror,
-so they got no entry. The import itself was fine: every point already carries
-`title`, `author`, `year` and `corpus` in its payload.
+**Cause.** Titles lived in a separate title table that the pioneer import never fed,
+while every point already carried `title`, `author`, `year` and `corpus` in its payload.
 
-**Fix.** `local-archive/scripts/qdrant/export_book_titles.py` now takes two further sources and
-merges them over the mirror:
-
-```bash
-# offline, from the build artifact
-python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
-    --merge local-archive/scripts/pd-books-pioneer-import/pioneers_corpus.jsonl
-
-# or source-agnostic, from whatever is actually indexed
-python3 local-archive/scripts/qdrant/export_book_titles.py /workspaces/sdarm/local-archive/imported/sop-indexes \
-    --qdrant-url "$QDRANT_URL"
-```
-
-`--dry-run` reports the per-language delta and writes nothing. Re-run it after
-**every** future import, from whichever pipeline.
-
-`app/data/sop_books.json` has been regenerated: **618 English codes, zero
-untitled**, with `author`, `year` and `corpus` recorded for the 49 pioneer
-works. `sop_list_books` now returns those three fields (patched in both
-`qdrant/app/sop_tools.py` and `local-archive/scripts/translator-stdio-mcp/sop_tools_mcp.py`, which are kept
-identical) and matches on author, so `search="haskell"` resolves to `SDP` and
-`SSP`. **No re-import is needed. The service has to be redeployed for it to
-take effect.**
+**Resolution.** The title table is gone. Qdrant is the only store: every point carries its
+book metadata and `sop_list_books` is derived live from it, so a book cannot be imported
+yet untitled. The `export_book_titles` instructions that used to be here are obsolete.
 
 ## Remaining repairs
 
-1. ~~**`page_kind` is not surfaced.**~~ **Fixed 2026-09-20.** `sop_lookup`,
-   `sop_book_paragraphs`, `sop_context` and `sop_by_bible_ref` now return
-   `corpus`, `author` and `page_kind` on every non-EGW hit (helper `_prov` in
-   `qdrant/app/sop_tools.py`, mirrored in `local-archive/scripts/translator-stdio-mcp/sop_tools_mcp.py`).
-   Ellen White hits carry none of those keys and their output is unchanged.
+1. ~~**`page_kind` is not surfaced.**~~ **Resolved.** Every SoP hit, Ellen White's
+   included, now returns `corpus`, `author` and `page_kind`.
    `page_kind: "print"` means `page.paragraph` is the printed reference and is
    citable; `page_kind: "chapter"` means `page` is a positional sequence
-   number and must not be cited as a page. Live after redeploy.
+   number and must not be cited as a page.
 2. **Page ranges do not start at 1.** `FCC` starts at page 7, `GSAM` at 3,
    `LSJW` at 4, `USLP` runs only 2-4, `GT` only 2-15. A `page_from=1` probe
    returns nothing and looks like a broken record. These books are fine.
@@ -245,66 +221,33 @@ take effect.**
 4. **`MND` and `SOD` are the same Uriah Smith book**, *The State of the Dead
    and the Destiny of the Wicked*, digitized twice. Deduplicate.
 5. **Re-OCR `SDP` and `SSP`** (Haskell). Both open on scrambled two-column
-   pages. The `--only <slug>` flag on `index_pioneers_qdrant.py` makes this a
-   single-work re-run.
-6. **`corpus` has no payload index yet.** `sop` carries indexes on `lang`,
-   `page`, `book_code` and `bible_refs` but not `corpus`, so every
-   corpus-filtered search is a full scan of 899,187 points. Create it:
-   `python3 scripts/split_corpus.py index-payload --execute`.
+   pages. The re-run is a fresh `.sopack` import of that book.
+6. ~~**`corpus` has no payload index yet.**~~ **Resolved 2026-10-04.** `corpus` is
+   a keyword payload index and every point carries a `corpus` value.
 
-## Splitting the collection
+## Splitting the collection — decided against
 
-Measured 2026-09-20 against the live instance: **899,187 points, of which
-59,965 are pioneers and 839,222 are Ellen White.**
+Measured 2026-09-20: 899,187 points, 59,965 of them pioneers. As of 2026-10-04 the `sop`
+collection holds 1,162,211 points in 1,222 books: `egw` 975,618, `pioneers` 87,264,
+`adventist` 95,908, `reference` 3,421. `split_corpus.py` is archived.
 
-`qdrant/scripts/split_corpus.py` (stdlib only, dry run by default) offers
-`index-payload`, `count`, `copy` and `delete`. A copy reads vectors from the
-source and writes them unchanged, so **nothing is re-embedded** — the 59,965
-pioneer points are a network transfer of minutes, not an embedding run.
-
-```bash
-export QDRANT_URL=http://10.10.10.10:6333
-python3 scripts/split_corpus.py index-payload --execute          # do this regardless
-python3 scripts/split_corpus.py copy --to pioneers --pioneers    # dry run
-python3 scripts/split_corpus.py copy --to pioneers --pioneers --execute
-python3 scripts/split_corpus.py count --pioneers --collection pioneers
-python3 scripts/split_corpus.py delete --pioneers --verify-in pioneers \
-    --execute --yes-i-verified-the-copy
-```
-
-`copy` mirrors the `lang` / `book_code` / `page` / `corpus` payload indexes
-onto the new collection. `delete` refuses unless `--verify-in` names a
-collection that already holds at least as many matching points.
-
-**Recommendation: do not split.** EGW points carry no `corpus` key at all, so
-`must_not corpus=pioneers` already gives an exact EGW-only search, and once
-`corpus` is indexed it costs nothing. One collection keeps a single ranked
-result list across both corpora, needs no change to `_COLLECTION` in
-`sop_tools.py`, and needs no second query and hand-written merge.
-
-The one argument for splitting is governance rather than performance: a
-filter is a promise in code, a separate collection is a promise in
-infrastructure. If the rule "a Spirit-of-Prophecy query must never be able to
-reach a pioneer paragraph" needs to hold even when someone forgets the
-filter, split. Otherwise index `corpus` and move on.
+One collection stays. Every point carries a `corpus` value (indexed), so an Ellen-White-only
+search is `corpus == "egw"`, with one ranked result list across all corpora. The rule for
+agents: quote as Spirit of Prophecy only when `corpus == "egw"`.
 
 ## Ingestion cautions
 
-- `build_sop_vector_index --lang en --resume`. **Never `--recreate`**: it drops
-  the German corpus.
+- Import only through the admin UI with a `.sopack`; there is no indexer script.
 - Point IDs are `uuid5(lang:code:para_key)`. Re-ingesting a book under a
   `book_code` that already exists will silently overwrite curated text with
-  duplicate lower-quality text wherever paragraph keys coincide. Check the code
-  is free before every run.
+  duplicate lower-quality text wherever paragraph keys coincide. The importer's
+  `preflight` refuses a taken code; check it in a dry run first.
 - Page numbers must be the printed page of the edition actually ingested, since
   that is what gets cited.
 - Check a sample page of OCR before committing a book to the collection.
 
-## Open decision for the user
+## Decision taken
 
-The collection is named `sop` and the tooling calls it "Spirit of Prophecy".
-Once the pioneers are a deliberate part of it, the name is wrong and, worse,
-it invites an agent to quote Uriah Smith as though he carried the same
-authority as Ellen White. Either rename to SoP+ and make the `corpus` tag
-load-bearing in every skill, or keep two collections. This should be settled
-before the first bulk ingestion, not after.
+The collection keeps the name `sop`, and the `corpus` tag is load-bearing: `egw` is the
+only corpus quotable as Spirit of Prophecy; `pioneers`, `adventist` and `reference` are
+returned with their corpus and author on every hit.

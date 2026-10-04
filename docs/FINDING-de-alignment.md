@@ -1,5 +1,7 @@
 # Finding: the German `aligned` field in the live `sop` collection is inverted
 
+> **2026-10-04:** the Python `sopack` package (`sopack/extract/…`) was removed; the correct direction lives in the Rust `sopack-extract` crate, and `book_pair` on the points is now the English code. This finding is historical; the live Qdrant host is 10.10.10.100:6333.
+>
 > **Status 2026-09-26: FIXED in code and in the live collection** (repair run with the user's go-ahead;
 > a follow-up dry run reports 0 points to change; live check: DE BH 5.1 → [7.1], EN SL 7.1 → [5.1]).
 > Step 1 is done: `build_sop_vector_index.alignment_maps()` reads `en_reverse` (and
@@ -8,7 +10,7 @@
 >
 > ```bash
 > PYTHONPATH=generator/src .venv/bin/python3.11 -m sdarm.tools.build_sop_vector_index \
->     --fix-aligned --dry-run --qdrant-url http://10.10.10.10:6333   # counts only
+>     --fix-aligned --dry-run --qdrant-url http://10.10.10.100:6333   # counts only
 > #   drop --dry-run to write; idempotent, only differing points are updated (~20 s)
 > ```
 >
@@ -108,5 +110,5 @@ own decision.
 Surfaced by the extraction agent while porting the alignment logic, which noticed the
 live indexer's lambda disagreed with the real data shape. Verified independently
 against the live collection and the source JSON before being written down here. The new
-pipeline's `sopack/extract/sop_json.py` + `book.py` implement the **correct** direction,
+pipeline's `sop_json` extractor and `book` model (Rust `sopack-extract` / `sopack-book`) implement the **correct** direction,
 so packs built by it are not affected.

@@ -58,10 +58,15 @@ knows nothing about what is already imported. Resolve every field yourself
 from the source and the acquisition records, per
 [references/metadata-rules.md](references/metadata-rules.md):
 
-- **Required**: `book_code`, `lang`, `title`; plus `author` and `year` for
-  every non-EGW work (`corpus` set). `extract` refuses (exit 4) without them.
-- **Optional**: `corpus`, `slug`, `acquired_from`, `rights`, `book_pair`,
-  `page_kind`.
+- **Always pass**: `book_code`, `lang`, `title`, `corpus`, `author`; plus `year`
+  for every non-EGW work, and `book_pair` (the plain English code, never
+  `BW/SC`) for a translation. `extract` refuses (exit 4) without the
+  required ones.
+- **Optional**: `slug`, `acquired_from`, `rights`, `page_kind`.
+
+All of this metadata ends up on every point in Qdrant, the only store. There
+is no title table, no `titles` import stage and no export step after import,
+and the Python `sopack` CLI no longer exists (Rust `sopack` only).
 
 Where to look: the title page and imprint (read the first spine documents
 of the EPUB yourself), the OPF metadata, the pd-books filename
@@ -83,8 +88,12 @@ title (*"… by the Scriptures"*).
   mnemonic (not a mechanical acronym). Do **not** try to work out on your
   own whether the book is already in the corpus — the importer decides that
   from the store's state at dry-run (§7).
-- **`corpus`**: absent entirely for Ellen G. White works; `"pioneers"` for
-  every other author.
+- **`corpus`**: always pass it. `"egw"` for Ellen G. White's works (and
+  `author = "Ellen G. White"`); `"pioneers"` (pre-1915 Adventist pioneers),
+  `"adventist"` (later Adventist authors) or `"reference"` (non-Adventist) otherwise.
+- **`book_pair`**: for a translation, the English original's plain code
+  (`de:BW` -> `SC`); never a compound like `BW/SC`. English books pair with
+  their own code.
 - **`slug`**: `{author_key}-{title_kebab}` (year/source dropped), trimmed for
   readability if you like, but traceable back to the source. For a book the
   user says is a re-import, use the slug it was imported with — the

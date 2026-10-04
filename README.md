@@ -15,9 +15,8 @@ writings (12 languages), offered in three parts:
 ```
 .
 ├── app/                    MCP server + admin UI (Python, Starlette, FastMCP)
-│   └── data/sop_books.json SoP book code → title tables (seed; the importer maintains /data/sop_books.json)
-├── sopack-rs/              `sopack` — Rust CLI that creates packs (Homebrew tap: Formula/)
-├── sopack/                 Python pack reader used by the import service (format.py, contract.py)
+│   └── pack/               stdlib-only .sopack reader used by the import service (format.py, contract.py)
+├── sopack-rs/              `sopack` — the Rust CLI, the only packer (Homebrew tap: Formula/)
 ├── Dockerfile, docker-compose.yml, requirements.txt
 ├── Formula/                sopack.rb — this repo is the Homebrew tap (Formula/README.md)
 ├── .github/workflows/      release-sopack.yml (GitHub Actions)
@@ -52,8 +51,16 @@ writings (12 languages), offered in three parts:
 
 Only read calls reach Qdrant (`points/search[/batch]`, `points/scroll`, `facet`),
 and every tool carries MCP's `readOnlyHint`. The server expects these payload
-indexes: `bible`, `osis` on `bibles`; `lang`, `book_code`, `page` on `sop`. The
-sdarm build scripts create them (`--indexes-only` for an existing collection).
+indexes: `bible`, `osis` on `bibles`; `lang`, `book_code`, `page`, `title`, `corpus`
+(+ `bible_refs`) on `sop`. The import service creates them.
+
+**Qdrant is the only data store.** Every `sop` point carries its book metadata
+(`title`, `author`, `year`, `corpus`, `book_pair`, `page_kind`; a key is absent only
+when unknown), and the contract fingerprint is in the collections' metadata
+(`config.metadata.contract_fingerprint`). There is no title table. `corpus` is `egw`
+(Ellen G. White's own writings, the only corpus quotable as Spirit of Prophecy),
+`pioneers`, `adventist` or `reference`. `sop_list_books` is derived live from Qdrant
+and cached until the next import, rollback or restore.
 
 ## Deploy
 
@@ -66,7 +73,8 @@ sdarm build scripts create them (`--indexes-only` for an existing collection).
    `ADMIN_PASSWORD`), or tunnel it with `ssh -L 8081:127.0.0.1:8081 <host>`.
 
 Update: `git pull && docker compose up -d --build`. Keys and the model cache
-live in the volume and survive rebuilds.
+live in the volume and survive rebuilds. The volume holds nothing else but the
+import pipeline's working dirs (`packs/`, `jobs/`, `uploads/`).
 
 ## Keys
 
@@ -123,7 +131,7 @@ verify` end to end and hands the finished pack to you; it never uploads
 or imports (step 3 is always a manual, confirmed action).
 
 **References:**
-- **[docs/IMPORT-PIPELINE-PLAN.md](docs/IMPORT-PIPELINE-PLAN.md)** — full design, stages,
+- **[docs/IMPORT-PIPELINE.md](docs/IMPORT-PIPELINE.md)** — full design, stages,
   canary probes, and rollback / restore
 - **[docs/IMPORT-API.md](docs/IMPORT-API.md)** — the server's import HTTP routes
 - **sopack CLI** — `brew tap theDeniZ/qdrant https://github.com/theDeniZ/qdrant && brew install
@@ -133,7 +141,7 @@ or imports (step 3 is always a manual, confirmed action).
 
 ```bash
 pip install -r requirements.txt
-QDRANT_URL=http://10.10.10.10:6333 ADMIN_PASSWORD=dev KEYS_DB=./keys.db \
+QDRANT_URL=http://10.10.10.100:6333 ADMIN_PASSWORD=dev KEYS_DB=./keys.db \
   MCP_PORT=8765 ADMIN_PORT=8081 python -m app.server
 ```
 
@@ -143,5 +151,7 @@ QDRANT_URL=http://10.10.10.10:6333 ADMIN_PASSWORD=dev KEYS_DB=./keys.db \
 `translator/*_tools_mcp.py` are retired and archived.)
 
 Books reach the corpus only as `.sopack` files through the admin UI's import service,
-which also updates the title table (`/data/sop_books.json`). The old title scripts
-(`export_book_titles.py`, `merge_corpus_titles.py`, `split_corpus.py`) are archived.
+which stores the book metadata on the points themselves (there is no title table).
+The old title scripts (`export_book_titles.py`, `merge_corpus_titles.py`,
+`split_corpus.py`) are archived. When packing, always pass `--corpus` (`egw` for
+Ellen White's works), `--author`, `--title` and, for a translation, `--book-pair <EN code>`.

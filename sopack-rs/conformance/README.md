@@ -1,7 +1,15 @@
 # conformance/
 
-Golden inputs and outputs both the Python (`qdrant/sopack/`) and Rust
-(`qdrant/sopack-rs/crates/`) implementations must reproduce identically.
+Golden inputs and outputs the Rust implementation (`qdrant/sopack-rs/crates/`)
+must reproduce identically.
+
+> **2026-10-04:** the Python `sopack` package (`qdrant/sopack/`) was removed, and with it the
+> Python generators and checkers (`make_extract_goldens.py`, `make_id_goldens.py`,
+> `check_pack_py.py`) and the Rust test that read Python-written packs. The goldens below
+> are **frozen fixtures**: they were produced by the Python reference and are no longer
+> regenerated. Passages about Python below are historical. The server reads packs with its
+> own reader, `qdrant/app/pack/` (`format.py`, `contract.py`).
+
 Plan: [`../../docs/SOPACK-1.0-PLAN.md`](../../docs/SOPACK-1.0-PLAN.md) §4.
 
 ## extract/ (M3)
@@ -14,16 +22,8 @@ under `qdrant/pd-books/converted/` (not copied here — different sizes:
 6.4 KB, 22 KB, 89 KB). Each entry names the extract `kind` and the metadata
 options passed to `extract()`.
 
-`extract/make_extract_goldens.py` is the **committed generator**. It writes
-the fixture sources deterministically (fixed content, no timestamps), then
-runs the real Python `sopack.extract.extract()` against every manifest
-entry (fixtures and real books alike) and writes `extract/goldens/<name
->.book.json` with `sopack.book.dump()`. Regenerate with:
-
-```bash
-cd qdrant
-PYTHONPATH=. /workspaces/sdarm/.venv/bin/python3.11 sopack-rs/conformance/extract/make_extract_goldens.py
-```
+The goldens in `extract/goldens/<name>.book.json` were written by the (now removed) Python
+`sopack.extract.extract()` and are frozen; there is no generator any more.
 
 The Rust side is
 [`crates/sopack-extract/tests/conformance_extract.rs`](../crates/sopack-extract/tests/conformance_extract.rs):
@@ -84,18 +84,11 @@ engine (`crates/sopack-contract/src/idrule.rs`: `{field}` substitution +
 `uuid5(NAMESPACE_DNS, uid)`) agrees with the Python reference
 (`sopack/contract.py`'s `_fmt_uid`/`point_id`), not just with itself.
 
-`ids/make_id_goldens.py` is the **committed generator**. It imports
-`sopack.contract` directly (the same module `pack.py`/`format.py` use — no
-duplicated id logic) and calls `uid_for`/`point_id` for a fixed list of
-cases covering every `[ids.rules]` template in
+`ids/golden.json` is a **frozen** file, produced by the removed Python
+`sopack.contract` (`uid_for`/`point_id`) for a fixed list of cases covering every `[ids.rules]` template in
 `contracts/e5-large-v1/contract.toml` (`sop/plain`, `sop/seq`, `bible/v1`),
 `seq` at `0` and non-zero, and Unicode in `book_code`/`para_key`/`bible`
-(German umlauts, Japanese, Korean, Russian Cyrillic). Regenerate with:
-
-```bash
-cd qdrant
-PYTHONPATH=. /workspaces/sdarm/.venv/bin/python3.11 sopack-rs/conformance/ids/make_id_goldens.py
-```
+(German umlauts, Japanese, Korean, Russian Cyrillic).
 
 **`seq` is deliberately never *absent* in these cases.** `contract._fmt_uid`
 is `template.format(**fields)` with no defaulting of any field, `seq`
@@ -117,70 +110,30 @@ Run it: `cargo test -p sopack-contract --test conformance_ids`
 
 **13/13** golden cases match byte-for-byte (uid string and id both).
 
-## packs/ (M2)
+## packs/
 
-Three directions, per SOPACK-1.0-PLAN.md §4 ("a small `.sopack` written by
-Rust that Python `verify` + `PackReader` accept, and the reverse"):
-
-### Direction 1 — Rust reads a real `sopack/1` pack
+Direction 1 (Rust reads a real `sopack/1` pack) remains an automated test:
 
 [`crates/sopack-format/tests/conformance_v1_read.rs`](../crates/sopack-format/tests/conformance_v1_read.rs)
-opens `qdrant/packs/wdys.sopack` (a real pack from the Python pipeline, 23
+opens `qdrant/packs/wdys.sopack` (a real pack from the old Python pipeline, 23
 points, profile `sop`) with `sopack_format::PackReader`, asserts
 `check()` is clean, streams every point through `batches()` with id
-verification on, and separately runs the library `verify()` — mirroring
-`sopack/1`'s reduced check surface (no `target`/`contract`/`embedding`
-cross-check against the store-neutral contract; those blocks use a
-different, retired vocabulary this crate no longer models — see
-SOPACK-AUTONOMY.md — while the schema-agnostic checks: sha256, byte counts,
-profile/id_rule validity, dim, still run in full).
-
-**Result: pass.** `check()` and `verify()` both report zero errors; all 23
-points stream and re-verify their ids.
+verification on, and separately runs the library `verify()`. **Result: pass.**
 
 Run it: `cargo test -p sopack-format --test conformance_v1_read`
 
-### Direction 2 — Python reads a Rust-written `sopack/2` pack
+`packs/rust_v2_sample.sopack` (3 points built from the committed calibration fixture, written by
+`crates/sopack-format/examples/make_v2_conformance_pack.rs`) is a frozen fixture. The former
+Python reader check (`check_pack_py.py`) and the Rust test reading Python-written `sopack/2` packs
+were removed with the Python package.
 
-`crates/sopack-format/examples/make_v2_conformance_pack.rs` writes
-`packs/rust_v2_sample.sopack`: 3 points built from the real, committed
-calibration fixture's own "sop"-profile entries (real text, real 1024-d
-vectors — reused verbatim rather than freshly embedded, since this proves
-the *format*, not a model run) under a synthetic `book_code` `"CONF"`, plus
-a probe covering **every** fixture entry (all profiles) with `self_check`
-computed by cosining those same reused vectors against themselves (exactly
-`1.0`, trivially clearing `pack_min_cosine`).
+### Server importer accepts a Rust pack
 
-`packs/check_pack_py.py` is the **committed Python check script**: it opens
-`rust_v2_sample.sopack` with the real `sopack.format.PackReader` (`check()`
-+ `batches()` with id verification) and `sopack.verify.verify()`.
-
-Regenerate the pack and re-run the check:
+`packs/check_import_probe.py` remains: it runs the **server's** `run_calibration_probe`
+(`app/import_service.py`, using the server's own `app.pack` reader) against
+`app.store_adapter.InMemoryAdapter` (no network) for a real, model-embedded pack built by
+`sopack pack`. Run from `qdrant/` with `PYTHONPATH=.`:
 
 ```bash
-cargo run -p sopack-format --example make_v2_conformance_pack
-cd /workspaces/sdarm/qdrant && PYTHONPATH=. /workspaces/sdarm/.venv/bin/python3.11 \
-    sopack-rs/conformance/packs/check_pack_py.py
+PYTHONPATH=. python3 sopack-rs/conformance/packs/check_import_probe.py <pack.sopack>
 ```
-
-**Result (2026-09-24): pass.** `sopack.format.py` already supports
-`sopack/2` (the concurrent Python-side migration landed before this leg was
-written, so this ran for real rather than being left as a stub — see the
-script's own docstring). Output: `check()` clean, all 3 points streamed and
-id-verified, `verify()` clean.
-
-### Direction 3 — Rust reads a Python-written `sopack/2` pack
-
-[`crates/sopack-format/tests/conformance_v2_read_python_written.rs`](../crates/sopack-format/tests/conformance_v2_read_python_written.rs)
-scans `qdrant/packs/*.sopack` at test time for one with `schema ==
-"sopack/2"` and a `created_by` that doesn't mention "rust" (i.e. one the
-*Python* CLI wrote, not `make_v2_conformance_pack`'s own output sitting in
-the neighboring `conformance/packs/` directory). If found, it runs the same
-`check()`/`batches()`/`verify()` trio as direction 1.
-
-**Status (2026-09-24): not yet available, not a failure.** Producing a real
-`sopack/2` pack from the Python side needs an actual model run
-(`sopack.pack`, fastembed + the ~2.2 GB model) — M1/M4 territory, not this
-crate's. The test detects this (prints a note, passes trivially) rather than
-failing, and needs **no code change** to start exercising real coverage the
-moment such a pack exists anywhere under `qdrant/packs/`.

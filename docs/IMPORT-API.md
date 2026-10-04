@@ -70,8 +70,13 @@ nothing about what is imported. `preflight` checks every book in the pack:
 | new `book_code`, but its `title` (and `author`, when both known) is live under another code | refused: most likely the same work under a stale code | `allow_same_title` (a separate volume or edition) |
 | new `book_code`, title not live | new book | — |
 
-EGW points carry no `title` payload, so the same-title check applies to pioneer
-(`corpus`) books only.
+Every `sop` point carries its `title` (and `corpus`, `author`, `year`, `book_pair`,
+`page_kind`), so the same-title check covers every corpus. Besides identity, `preflight`
+requires a `title` per book and a `book_pair` that is a plain English code (no `/`;
+English books without one get their own code). A book with no `corpus` is imported as
+`corpus: "egw"` (author defaults to Ellen G. White) — the legacy rule of packs built
+before 2026-10-04 — and `preflight` lists every book it stamps this way. A pack's
+`titles.json` is ignored.
 
 Destructive routes require the `confirm` field to equal the value named above; a
 mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirmation.
@@ -102,7 +107,6 @@ mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirma
     {"name": "undo",      "status": "skipped", "detail": "no overwrites"},
     {"name": "upsert",    "status": "running", "detail": "18432/60412"},
     {"name": "indexes",   "status": "pending"},
-    {"name": "titles",    "status": "pending"},
     {"name": "verify",    "status": "pending"},
     {"name": "report",    "status": "pending"}
   ],
@@ -119,7 +123,11 @@ mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirma
 Stage `status` ∈ `pending · running · ok · failed · skipped`.
 
 Stage names, in order, are exactly:
-`open · contract · probe · preflight · snapshot · undo · upsert · indexes · titles · verify · report`
+`open · contract · probe · preflight · snapshot · undo · upsert · indexes · verify · report`
+
+`verify` also checks that the stored points carry `title` and `corpus`. The `sop` payload
+indexes are `lang`, `book_code`, `page`, `title`, `corpus` (+ `bible_refs`). After an apply
+import, rollback or snapshot restore the server drops its cached book list.
 
 ### Log event (NDJSON, one per line in `log.ndjson`)
 
@@ -141,7 +149,6 @@ Stage names, in order, are exactly:
   log.ndjson              append-only
   undo.jsonl              {"id", "payload", "vector"} of every point overwritten
   created_ids.txt         one point id per line — the exact rollback set
-  sop_books.before.json   the title table as it was (sop profile only)
   report.md
 ```
 

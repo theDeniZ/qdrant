@@ -1,9 +1,9 @@
 """Round-trip acceptance test (SOPACK-AUTONOMY.md §5.4/§5.5): a real
-``sopack/2`` pack, written by ``sopack.pack.pack``, read back and run through
+``sopack/2`` pack, written by the test writer (``app/tests/packs.py``), read back and run through
 the SAME ``import_service.run_calibration_probe`` function against **two**
 different :class:`app.store_adapter.StoreAdapter` implementations — the
 Qdrant-shaped fake HTTP server and a plain-Python in-memory store. Neither
-``sopack/`` nor ``run_calibration_probe`` itself changes between the two: the
+the pack nor ``run_calibration_probe`` itself changes between the two: the
 same pack, the same code, a different backend — proving the store-neutral
 design rather than merely asserting it.
 
@@ -19,39 +19,30 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from sopack.tests import _helpers  # noqa: E402
-
-with _helpers.patched_book_module() as _book_mod:
-    from sopack import pack as pack_mod  # noqa: E402
-
-from sopack import contract  # noqa: E402
-from sopack.format import PackReader  # noqa: E402
+from app.pack import contract  # noqa: E402
+from app.pack.format import PackReader  # noqa: E402
 
 from app import import_service, store_adapter  # noqa: E402
+from app.tests import packs  # noqa: E402
 from app.tests.fake_qdrant import FakeQdrant  # noqa: E402
 
 DIM = contract.VECTOR_SIZE
 
 
 def _build_v2_pack(out_path, *, fixture_texts=("fixture a", "fixture b")):
-    """A real, checked ``sopack/2`` pack, built exactly the way
-    ``sopack.pack.pack`` builds one in production — just with a
-    ``FakeTextEmbedding`` in place of the real 2 GB model, and a calibration
-    fixture whose vectors are precomputed to match it (see
-    ``_helpers.fake_calibration``)."""
-    book = _helpers.make_book(_book_mod, lang="en", book_code="RTT", n_blocks=3,
-                              title="Round Trip Test", author="Tester", year=2020,
-                              corpus="pioneers", slug="round-trip-test")
-    calibration = _helpers.fake_calibration(list(fixture_texts), dim=DIM, profile="sop")
-    with mock.patch.object(pack_mod, "TextEmbedding",
-                           lambda model_name=None, **kw: _helpers.FakeTextEmbedding(
-                               model_name, dim=DIM)):
-        pack_mod.pack([(book, None)], out_path, calibration=calibration,
-                     workers=1, progress=lambda *_: None)
+    """A real, checked ``sopack/2`` pack, shaped the way the ``sopack`` CLI
+    builds one — with a deterministic fake embedding in place of the real
+    2 GB model, and a calibration fixture whose vectors are precomputed to
+    match it."""
+    calibration = packs.fake_calibration(list(fixture_texts), dim=DIM, profile="sop")
+    packs.build_sop_pack(out_path, lang="en", book_code="RTT", n_blocks=3,
+                         calibration=calibration,
+                         meta={"title": "Round Trip Test", "author": "Tester", "year": 2020,
+                               "corpus": "pioneers", "slug": "round-trip-test",
+                               "book_pair": "RTT"})
     return calibration
 
 
@@ -115,7 +106,7 @@ class RoundTripAcceptanceTests(unittest.TestCase):
         qdrant.create_collection(self.collection, store_adapter.QDRANT_VECTOR_NAME, DIM,
                                  store_adapter.QDRANT_DISTANCE)
         adapter = store_adapter.QdrantAdapter(
-            qdrant.url, fingerprint_path=str(Path(self._tmp.name) / "fp.json"))
+            qdrant.url)
 
         with self._open_checked() as reader:
             detail = import_service.run_calibration_probe(
@@ -146,14 +137,11 @@ class RoundTripAcceptanceTests(unittest.TestCase):
     # ── failure paths ────────────────────────────────────────────────────
 
     def test_refuses_a_pack_calibrated_against_a_different_fixture(self):
-        other_fixture = _helpers.fake_calibration(["totally different fixture text"], dim=DIM)
+        other_fixture = packs.fake_calibration(["totally different fixture text"], dim=DIM)
         out = Path(self._tmp.name) / "wrong-fixture.sopack"
-        book = _helpers.make_book(_book_mod, lang="en", book_code="WF", n_blocks=1)
-        with mock.patch.object(pack_mod, "TextEmbedding",
-                               lambda model_name=None, **kw: _helpers.FakeTextEmbedding(
-                                   model_name, dim=DIM)):
-            pack_mod.pack([(book, None)], out, calibration=other_fixture,
-                         workers=1, progress=lambda *_: None)
+        packs.build_sop_pack(out, lang="en", book_code="WF", n_blocks=1,
+                             calibration=other_fixture,
+                             meta={"title": "Wrong Fixture", "corpus": "pioneers", "book_pair": "WF"})
 
         adapter = store_adapter.InMemoryAdapter()
         adapter.seed_collection(self.collection, dim=DIM)

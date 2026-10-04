@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """M4 integration check (c): a real, model-embedded `sopack/2` pack built by
 the Rust `sopack pack` (e.g. on `qdrant/packs/wdys.book.json`) passes the
-Python importer's own `run_calibration_probe` — the same function
+server importer's own `run_calibration_probe` — the same function
 `app/import_service.py` runs against a live Qdrant collection, here run
 against `app.store_adapter.InMemoryAdapter` (no network), exactly like
 `app/tests/test_store_adapter.py`'s round-trip acceptance test does for a
@@ -18,7 +18,7 @@ Exit code 0 and "OK" on success; non-zero and a description otherwise.
 
 Run:
     PYTHONPATH=/workspaces/sdarm/qdrant /workspaces/sdarm/.venv/bin/python3.11 \\
-        qdrant/sopack-rs/conformance/packs/check_import_probe_py.py <pack.sopack>
+        qdrant/sopack-rs/conformance/packs/check_import_probe.py <pack.sopack>
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))  # .../qdrant
 
-from sopack import contract  # noqa: E402
-from sopack.format import PackReader  # noqa: E402
+from app.pack import contract  # noqa: E402
+from app.pack.format import PackReader  # noqa: E402
 
 from app import import_service, store_adapter  # noqa: E402
 

@@ -72,7 +72,7 @@ Then handle the misses one at a time. **Always pass `lang`** to the `sop_*` tool
    - Bible: say which translations were checked. For Romanian (no Bible index),
      try `sop_lookup(lang="ro")` on the verse; EGW's Romanian books quote
      Cornilescu.
-   - Pioneer authors (`corpus: "pioneers"`) exist in English only, so every
+   - Pioneer works (`corpus: "pioneers"`) exist in English only, so every
      other language needs a marked own translation.
    - Ellen White: translate faithfully and **mark it**, e.g. a note "(own
      translation; no published <language> edition in the corpus)", or follow the

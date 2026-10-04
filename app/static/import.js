@@ -9,7 +9,7 @@
   const RETRY_BASE_MS = 500;
   const POLL_MS = 1000;
   const STAGES = ["open", "contract", "probe", "preflight", "snapshot", "undo",
-                  "upsert", "indexes", "titles", "verify", "report"];
+                  "upsert", "indexes", "verify", "report"];
 
   // ── small helpers ──────────────────────────────────────────────────────
 

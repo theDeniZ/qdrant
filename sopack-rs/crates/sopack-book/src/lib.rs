@@ -28,7 +28,7 @@ pub use model::{Block, Book};
 pub use payload::{to_payload, uid};
 pub use validate::validate;
 
-/// `qdrant/sopack/schemas/book.schema.json`, embedded verbatim. Structural
+/// `qdrant/sopack-rs/schemas/book.schema.json`, embedded verbatim. Structural
 /// shape only — semantic rules live in [`validate`], not here, same
 /// division of responsibility as the Python reference.
-pub const SCHEMA_JSON: &str = include_str!("../../../../sopack/schemas/book.schema.json");
+pub const SCHEMA_JSON: &str = include_str!("../../../schemas/book.schema.json");

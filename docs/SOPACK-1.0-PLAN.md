@@ -1,5 +1,7 @@
 # sopack 1.0.0 — plan
 
+> **2026-10-04:** the Python `sopack` package and the title table were removed; see [DECISIONS.md](../../DECISIONS.md) (ADR-003). Mentions of Python `sopack`, `sop_books.json` and the title table below are historical. The server reads packs with `app/pack/`; the Rust CLI is the only packer.
+
 > **Superseded in part (2026-09-26):** `sopack propose` (P5, §3.5) and the offline
 > book-code registry (§3.2, M3) were removed before the 1.0.0 tag, by user decision —
 > the client never decides book identity; the importer does, from store state. The
@@ -13,7 +15,7 @@ referenced below). The store-independence design is taken as-is from
 [SOPACK-AUTONOMY.md](SOPACK-AUTONOMY.md) and is not repeated here.
 
 Related: [IMPORT-PIPELINE.md](IMPORT-PIPELINE.md) (R1–R13, failures #1–#15),
-[IMPORT-PIPELINE-PLAN.md](IMPORT-PIPELINE-PLAN.md), [../sopack/README.md](../sopack/README.md),
+[IMPORT-PIPELINE-PLAN.md](IMPORT-PIPELINE-PLAN.md),
 [../Formula/README.md](../Formula/README.md).
 
 ---

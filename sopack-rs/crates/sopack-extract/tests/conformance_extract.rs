@@ -1,8 +1,8 @@
 //! Conformance gate (`docs/SOPACK-1.0-PLAN.md` §4): every `book.json`
 //! [`sopack_extract::extract`] produces for
 //! `sopack-rs/conformance/extract/manifest.json`'s fixtures and real books
-//! must be byte-identical to the golden the Python reference wrote via
-//! `sopack-rs/conformance/extract/make_extract_goldens.py`. See
+//! must be byte-identical to the frozen golden the retired Python reference
+//! implementation wrote (its generator is in git history). See
 //! `sopack-rs/conformance/README.md` for any documented intended
 //! difference (there should be none).
 //!

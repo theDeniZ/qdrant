@@ -3,10 +3,8 @@
 //! against a committed JSON Schema (`sopack schema <name>` prints any of
 //! them)"). `qdrant/sopack-rs/schemas/<name>.v1.json`, one per command
 //! result, plus `error`, `progress-event`, and `book`
-//! (`sopack_book::SCHEMA_JSON`, which lives at
-//! `qdrant/sopack/schemas/book.schema.json` — the one schema not under this
-//! crate's own `schemas/` dir, since `sopack-book` already embeds and owns
-//! it).
+//! (`sopack_book::SCHEMA_JSON` — `qdrant/sopack-rs/schemas/book.schema.json`,
+//! embedded and owned by `sopack-book`).
 
 pub struct SchemaEntry {
     pub name: &'static str,

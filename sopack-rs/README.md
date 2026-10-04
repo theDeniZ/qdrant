@@ -17,8 +17,9 @@ name.sopack                    ← verify, then hand to an importer
 ```
 
 Design: [`../docs/SOPACK-1.0-PLAN.md`](../docs/SOPACK-1.0-PLAN.md). Format
-spec: [`../docs/SOPACK-2-FORMAT.md`](../docs/SOPACK-2-FORMAT.md). Python
-reference implementation (being retired): [`../sopack/`](../sopack/).
+spec: [`../docs/SOPACK-2-FORMAT.md`](../docs/SOPACK-2-FORMAT.md). The
+Python reference implementation was removed on 2026-10-04; this CLI is the only packer, and the
+server reads packs with its own reader, `../app/pack/`.
 
 ## Install
 
@@ -179,7 +180,7 @@ runs internally before touching any book. **Exit 5** on fail.
 Fully offline (no model, no network): checksums, streams every point with
 id re-verification, cross-checks per-book counts against the manifest, and
 — for `sopack/2` — recomputes the calibration probe against the contract's
-fixture. Reads both `sopack/1` (the old, Python-only format) and `sopack/2`
+fixture. Reads both `sopack/1` (the old format) and `sopack/2`
 packs. **Exit 0** clean, **exit 3** otherwise, with every problem listed.
 
 ### `sopack doctor [--quick]`
@@ -329,8 +330,7 @@ second, not-yet-released model, verified the same way (`sopack calibrate
 
 ## Conformance
 
-`conformance/` holds golden inputs/outputs both this Rust implementation
-and the Python reference must reproduce identically — extraction goldens,
-pack-format cross-checks (a Rust-written pack read by the Python reader and
-vice versa), and calibration comparisons. See
+`conformance/` holds frozen golden inputs/outputs this Rust implementation
+must reproduce identically — extraction goldens, id goldens, and pack-format
+checks (the Python generators and checkers were removed on 2026-10-04). See
 [`conformance/README.md`](conformance/README.md).

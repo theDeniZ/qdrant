@@ -1,12 +1,15 @@
 """SoP translation tools — MCP server.
 
 MCP exposing the Spirit-of-Prophecy lookup operations the translator agent
-needs. The server queries the ``sop`` Qdrant collection directly (built by
-``build_sop_vector_index.py``, which also creates the ``lang`` / ``book_code``
-/ ``page`` payload indexes these filters rely on); it embeds queries locally
-with fastembed and talks to Qdrant over its REST API. Runs over stdio when
-executed directly, or inside the networked ``qdrant/`` server.
-This mirrors ``bible_tools_mcp.py``.
+needs. The server queries the ``sop`` Qdrant collection directly (filled by
+``.sopack`` imports through the admin UI, which also maintain the payload
+indexes these filters rely on); it embeds queries locally with fastembed and
+talks to Qdrant over its REST API. Runs over stdio when executed directly, or
+inside the networked ``qdrant/`` server.
+
+Qdrant is the only store. Book metadata (``title``, ``author``, ``year``,
+``corpus``, ``book_pair``, ``page_kind``) sits on every point; the book list
+is derived from it and only cached in memory until the next import.
 
 Tools::
 
@@ -22,9 +25,9 @@ Configuration: set ``QDRANT_URL`` to override the default ``http://localhost:633
 
 from __future__ import annotations
 
-import json
 import os
-from pathlib import Path
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import requests
@@ -65,22 +68,24 @@ def _qdrant(path: str, body: dict) -> Any:
 
 
 # --- provenance -----------------------------------------------------------
-# Ellen White points carry none of these keys, so an EGW result is byte-for-byte
-# what it always was. Non-EGW points (``corpus: "pioneers"``) carry all three,
-# and `page_kind` is the one that changes how a hit may be cited:
+# Every point carries these. `corpus` says whose words a hit is:
 #
-#   "print"    `page`/`para` are the printed page.paragraph reference, lifted
-#              from the edition's own inline citation. Cite it as a page.
+#   "egw"        Ellen G. White — the only corpus quotable as Spirit of Prophecy
+#   "pioneers"   pre-1915 Adventist pioneers (Smith, Andrews, Waggoner, …)
+#   "adventist"  later Adventist authors: biographies, Estate papers, study guides
+#   "reference"  non-Adventist works (e.g. Edersheim) — background only
+#
+# `page_kind` changes how a hit may be cited:
+#
+#   "print"    `page`/`para` are the printed page.paragraph reference. Cite it.
 #   "chapter"  `page` is a POSITIONAL sequence number (chapter or file index),
 #              not a printed page. Citing it as a page number is wrong; cite
 #              the work and locate the passage some other way.
-#
-# EGW points have no `page_kind`; their `page` is always a printed page.
 _PROV_KEYS = ("corpus", "author", "page_kind")
 
 
 def _prov(payload: dict) -> dict:
-    """The provenance keys a non-EGW point carries, or ``{}`` for Ellen White."""
+    """The provenance keys of a point (those that are set)."""
     return {k: payload[k] for k in _PROV_KEYS if payload.get(k)}
 
 
@@ -161,10 +166,10 @@ def sop_lookup(query: str | None = None, codes: list[str] | None = None,
         Single: ``{"hits": [...], "fallbacks": [...]}``.
         Batch:  ``{"results": [{"query", "hits", "fallbacks"}, ...]}`` in input order.
         Each result carries ``book_code``, ``page``, ``para_key``, ``score``, ``text``.
-        Non-EGW results additionally carry ``corpus``, ``author`` and
-        ``page_kind``. **Check them before citing.** ``page_kind: "chapter"``
-        means ``page`` is a positional sequence number, not a printed page, and
-        quoting a pioneer is not quoting the Spirit of Prophecy.
+        Every result also carries ``corpus``, ``author`` and ``page_kind``.
+        **Check them before citing.** Only ``corpus: "egw"`` is Spirit of
+        Prophecy; ``page_kind: "chapter"`` means ``page`` is a positional
+        sequence number, not a printed page.
     """
     limit = max(1, min(20, int(limit)))
     batch = queries is not None
@@ -221,10 +226,10 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
 
     Returns:
         ``{"paragraphs": [{book_code, page, para, para_key, text}, ...]}``.
-        Non-EGW results additionally carry ``corpus``, ``author`` and
-        ``page_kind``. **Check them before citing.** ``page_kind: "chapter"``
-        means ``page`` is a positional sequence number, not a printed page, and
-        quoting a pioneer is not quoting the Spirit of Prophecy.
+        Every result also carries ``corpus``, ``author`` and ``page_kind``.
+        **Check them before citing.** Only ``corpus: "egw"`` is Spirit of
+        Prophecy; ``page_kind: "chapter"`` means ``page`` is a positional
+        sequence number, not a printed page.
         Large ranges are cut at a page boundary after ~400 paragraphs; the
         response then carries ``"truncated": true`` and ``"next_page_from"``
         — call again from that page to continue.
@@ -274,22 +279,60 @@ def sop_book_paragraphs(book_code: str, page_from: int, page_to: int | None = No
     return out
 
 
-def _book_titles() -> dict:
-    """Code → titles tables (``data/sop_books.json``, maintained by the import service)."""
-    global _titles
-    if _titles is None:
-        here = Path(__file__).resolve().parent
-        candidates = [os.environ.get("SOP_BOOKS_JSON", ""), here / "data" / "sop_books.json",
-                      here.parent / "qdrant" / "app" / "data" / "sop_books.json"]
-        _titles = {}
-        for c in candidates:
-            if c and Path(c).is_file():
-                _titles = json.loads(Path(c).read_text(encoding="utf-8"))
-                break
-    return _titles
+_BOOK_FIELDS = ["title", "author", "year", "corpus", "book_pair", "page_kind"]
+_books: dict | None = None
+_books_lock = threading.Lock()
 
 
-_titles: dict | None = None
+def invalidate_books() -> None:
+    """Forget the cached book list; the import service calls this after every
+    change to the collection, so the next read reflects Qdrant again."""
+    global _books
+    _books = None
+
+
+def _book_meta(lang: str, code: str) -> dict:
+    flt = {"must": [{"key": "lang", "match": {"value": lang}},
+                    {"key": "book_code", "match": {"value": code}}]}
+    pts = _qdrant("points/scroll", {"limit": 1, "with_payload": _BOOK_FIELDS,
+                                    "with_vector": False, "filter": flt}).get("points", [])
+    return (pts[0].get("payload") or {}) if pts else {}
+
+
+def _book_index() -> dict:
+    """``{lang: {book_code: {"paragraphs": n, title, author, year, corpus,
+    book_pair, page_kind}}}`` — read from Qdrant (paragraph counts from the
+    indexed facet, metadata from one point per book, which carries the same
+    book-level payload as every other point of that book). Cached in memory
+    only, until :func:`invalidate_books`."""
+    global _books
+    with _books_lock:
+        if _books is not None:
+            return _books
+        langs = [h["value"] for h in
+                 _qdrant("facet", {"key": "lang", "limit": 1000, "exact": True})["hits"]]
+        counts = {lg: {h["value"]: h["count"] for h in _qdrant("facet", {
+                       "key": "book_code", "limit": 10_000, "exact": True,
+                       "filter": {"must": [{"key": "lang", "match": {"value": lg}}]}})["hits"]}
+                  for lg in langs}
+        keys = [(lg, code) for lg, codes in counts.items() for code in codes]
+        with ThreadPoolExecutor(max_workers=16) as pool:
+            metas = list(pool.map(lambda k: _book_meta(*k), keys))
+        books: dict = {}
+        for (lg, code), meta in zip(keys, metas):
+            books.setdefault(lg, {})[code] = {"paragraphs": counts[lg][code],
+                                              **{f: meta.get(f) for f in _BOOK_FIELDS}}
+        _books = books
+        return books
+
+
+def warm_books() -> None:
+    """Build the book list in the background at startup; failures are left
+    for the first real call to surface."""
+    try:
+        _book_index()
+    except Exception:
+        pass
 
 
 @mcp.tool()
@@ -309,38 +352,32 @@ def sop_list_books(lang: str | None = None, search: str | None = None) -> dict:
 
     Returns:
         ``{"languages": [{lang, paragraphs}, ...]}`` or
-        ``{"books": [{lang, book_code, paragraphs, titles, en_code?, en_titles?}, ...]}``
-        sorted by language then code. ``titles`` are the edition's own titles
-        where known; ``en_titles`` give the English work for translated editions.
+        ``{"books": [{lang, book_code, paragraphs, titles, corpus, author?, year?,
+        en_code?, en_titles?}, ...]}`` sorted by language then code. ``titles``
+        is the edition's own title where known; ``en_code`` / ``en_titles`` give
+        the English original for a translated edition. ``corpus`` is ``egw``
+        (Spirit of Prophecy), ``pioneers``, ``adventist`` or ``reference``.
     """
-    titles = _book_titles()
     if not lang and not search:
         hits = _qdrant("facet", {"key": "lang", "limit": 1000, "exact": True})["hits"]
         return {"languages": [{"lang": h["value"], "paragraphs": h["count"]} for h in hits]}
 
-    langs = [lang] if lang else [h["value"] for h in
-                                 _qdrant("facet", {"key": "lang", "limit": 1000, "exact": True})["hits"]]
+    index = _book_index()
+    langs = [lang] if lang else sorted(index)
     needle = (search or "").casefold()
     books = []
     for lg in langs:
-        hits = _qdrant("facet", {"key": "book_code", "limit": 10_000, "exact": True,
-                                 "filter": {"must": [{"key": "lang", "match": {"value": lg}}]}})["hits"]
-        for h in hits:
-            code = h["value"]
-            own = titles.get(lg, {}).get(code, {})
-            en_code = own.get("en_code") or (code if lg != "de" else None)
-            book = {"lang": lg, "book_code": code, "paragraphs": h["count"],
-                    "titles": own.get("titles", [])}
+        for code, meta in index.get(lg, {}).items():
+            book = {"lang": lg, "book_code": code, "paragraphs": meta["paragraphs"],
+                    "titles": [meta["title"]] if meta.get("title") else []}
+            en_code = meta.get("book_pair")
             if lg != "en" and en_code:
                 book["en_code"] = en_code
-                book["en_titles"] = titles.get("en", {}).get(en_code, {}).get("titles", [])
-            if lg == "en":
-                book["titles"] = titles.get("en", {}).get(code, {}).get("titles", [])
-            # Non-EGW works carry these; Ellen White's do not. `corpus` is what
-            # tells an agent a hit may not be quoted as Spirit of Prophecy.
+                en_title = index.get("en", {}).get(en_code, {}).get("title")
+                book["en_titles"] = [en_title] if en_title else []
             for key in ("author", "year", "corpus"):
-                if own.get(key):
-                    book[key] = own[key]
+                if meta.get(key):
+                    book[key] = meta[key]
             haystack = " ".join([code, *book["titles"], *book.get("en_titles", []),
                                  str(book.get("author", "")),
                                  str(book.get("corpus", ""))]).casefold()
@@ -354,18 +391,15 @@ def sop_list_books(lang: str | None = None, search: str | None = None) -> dict:
     return out
 
 
-
 def _de_codes_for_en(en_code: str) -> list[str]:
-    """DE book codes whose ``en_code`` matches (can be >1 — e.g. BW and WZC
-    both map to SC)."""
-    titles = _book_titles()
-    return sorted(code for code, meta in titles.get("de", {}).items()
-                  if meta.get("en_code") == en_code)
+    """DE book codes paired with an English book (can be >1 — e.g. BW and
+    WZC both map to SC), from the points' own ``book_pair``."""
+    return sorted(code for code, meta in _book_index().get("de", {}).items()
+                  if meta.get("book_pair") == en_code)
 
 
 def _en_code_for_de(de_code: str) -> str | None:
-    titles = _book_titles()
-    return titles.get("de", {}).get(de_code, {}).get("en_code")
+    return _book_index().get("de", {}).get(de_code, {}).get("book_pair")
 
 
 @mcp.tool()

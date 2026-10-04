@@ -26,10 +26,20 @@ Say so when you do this.
 An absent Bible **is** provable: `bible_lookup(ref)` without `bible` returns
 every translation that has the verse.
 
-## Spirit of Prophecy — Ellen G. White, plus a pioneer shelf
+## Spirit of Prophecy — Ellen G. White, plus other shelves
 
-The `sop` corpus is mostly **Ellen G. White**, but it is *not* EGW only. It also
-holds **49 pre-1915 Adventist pioneer works** by 11 authors (English only):
+The `sop` corpus is mostly **Ellen G. White**, but it is *not* EGW only. Every
+book carries a `corpus` value, and every hit returns it:
+
+| `corpus` | Holds | Use |
+|---|---|---|
+| `egw` | Ellen G. White's own writings (compilations of her words included) | the **only** corpus quotable as Spirit of Prophecy |
+| `pioneers` | pre-1915 Adventist pioneers (Smith, Andrews, Waggoner, Jones, Bates, Haskell, Litch, Bliss, Fitch, Prescott, Wilcox, …) | quote as that author, never as EGW |
+| `adventist` | later Adventist authors: biographies, White Estate papers, study guides (`*-SG`), apologetics | quote as that author |
+| `reference` | non-Adventist works (Edersheim `BHOTV1-7`) | background only |
+
+The English pioneer works below are an earlier snapshot of the shelf, not the full list;
+use `sop_list_books(search="<author>")` or `search="pioneers"` for the live set.
 
 | Author | Works | Codes |
 |---|---:|---|
@@ -45,22 +55,20 @@ holds **49 pre-1915 Adventist pioneer works** by 11 authors (English only):
 | D. M. Canright | 1 | `MAS` |
 | G. I. Butler | 1 | `COS` |
 
-Every pioneer hit carries `corpus: "pioneers"` and `author`. EGW hits carry no
-`corpus` key at all. `sop_list_books` returns `author`, `year` and `corpus`, and
-matches on author, so `search="haskell"` works. `sop_lookup` cannot exclude
-pioneers, so in English, drop pioneer hits yourself when the user asked for Ellen White,
-or restrict `codes` to EGW works.
+`sop_list_books` returns `corpus` always, plus `author` and `year` where known, and
+matches on author and corpus, so `search="haskell"` works. `sop_lookup` cannot exclude
+non-EGW works, so in English, drop hits whose `corpus` is not `egw` yourself when the user
+asked for Ellen White, or restrict `codes` to EGW works.
 
-**Quoting a pioneer is not quoting the Spirit of Prophecy.** Check `corpus`
-before attributing a hit, and say whose words they are.
+**Quoting a pioneer, an `adventist` or a `reference` author is not quoting the Spirit of
+Prophecy.** Check `corpus` before attributing a hit (`egw` only), and say whose words they are.
 
 Three cautions:
 
-- **`page_kind`, returned on every non-EGW hit.** `print` means the printed
-  `page.paragraph` reference came from the text and is a real citation.
-  `chapter` means `page` is a positional sequence number and is **not** a
-  printed page: cite the work, not a page number. EGW hits carry no
-  `page_kind`; their `page` is always a printed page.
+- **`page_kind`, returned on every hit.** `print` means the printed
+  `page.paragraph` reference came from the text and is a real citation (all EGW
+  hits are `print`). `chapter` means `page` is a positional sequence number and is
+  **not** a printed page: cite the work, not a page number.
 - **Page ranges do not start at 1** for several works (`FCC` from 7, `GSAM`
   from 3, `LSJW` from 4, `USLP` only 2-4). A `page_from=1` probe returning
   nothing does not mean the book is missing.
@@ -68,7 +76,7 @@ Three cautions:
   any Haskell hit before quoting it. `WROM` duplicates `WOR` and `MND`
   duplicates `SOD`.
 
-**The pioneer shelf is English only.** `DAR` in `de` returns nothing at any
+**The pioneer works listed above are English only.** `DAR` in `de` returns nothing at any
 page, so a pioneer quotation has no canonical wording in de/ru/uk.
 
 An empty result for an *Ellen White* sentence still means "not in this
@@ -76,7 +84,7 @@ corpus", and still does **not** mean "no published translation exists".
 
 | lang | paragraphs | books | notes |
 |---|---:|---:|---|
-| en | 390,905 | 606 | EGW Estate corpus (letters/manuscripts compilations included) **plus the 49 pioneer works above** |
+| en | 390,905 | 606 | EGW Estate corpus (letters/manuscripts compilations included) **plus the non-EGW shelves above** |
 | de | 104,993 | 92 | **own DE codes** (`BW`, `WZC`, `DM`, `GK` …), several editions per work |
 | es | 67,784 | 49 | English codes |
 | pt | 63,050 | 47 | English codes |
@@ -92,7 +100,9 @@ corpus", and still does **not** mean "no published translation exists".
 **Book codes.** German uses its own codes, and one English work can have several
 German editions (Steps to Christ → `BW` and `WZC`; Desire of Ages → `DM` and `LJ`).
 Every other language uses the **English** code (`SC`, `DA`, `GC`). Resolve codes
-with `sop_list_books(search="<title>")`; do not guess.
+with `sop_list_books(search="<title>")`; do not guess. A translated edition's
+`book_pair` is the English code of its original (`de:BW` pairs with `SC`).
+251 translated editions have no own-language title (`titles: []`); use `en_titles`.
 
 **Coverage is per language and per book.** A language being present does not
 mean the book you need is present. The real negative signal is: unrelated hits

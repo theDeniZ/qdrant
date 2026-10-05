@@ -228,6 +228,13 @@
     const logView = document.getElementById("log-view");
     const packsBody = document.querySelector("#packs-table tbody");
     const jobsBody = document.querySelector("#jobs-table tbody");
+    const stageList = document.getElementById("stage-list");
+    const delLang = document.getElementById("del-lang");
+    const delCodes = document.getElementById("del-codes");
+    const delLookupBtn = document.getElementById("del-lookup-btn");
+    const delPreview = document.getElementById("del-preview");
+    const delAllowPaired = document.getElementById("del-allow-paired");
+    const delBtn = document.getElementById("del-btn");
 
     if (!dropzone) return; // not on the import page
 
@@ -347,6 +354,12 @@
       if (job.stage) jobStatus.appendChild(el("span", { text: ` (stage: ${job.stage})` }));
       if (job.error) jobStatus.appendChild(el("div", { class: "warn", text: job.error }));
 
+      // An import and a book delete run different stage lists.
+      const names = (job.stages || []).map((st) => st.name);
+      if (names.join() !== Array.from(stageList.children).map((li) => li.id.slice(6)).join()) {
+        stageList.innerHTML = "";
+        for (const n of names) stageList.appendChild(el("li", { id: `stage-${n}`, class: "stage pending", text: n }));
+      }
       for (const st of job.stages || []) setStage(st.name, st.status, st.detail);
 
       const prog = job.progress || {};
@@ -391,6 +404,70 @@
       }
       pollTimer = setTimeout(pollJob, POLL_MS);
     }
+
+    // -- book delete --------------------------------------------------------------
+
+    let delBooks = [];
+
+    function delLabel(b) { return `${b.lang}:${b.book_code}`; }
+
+    async function lookupBooks() {
+      delBtn.disabled = true;
+      delBooks = [];
+      delPreview.innerHTML = "";
+      const lang = delLang.value.trim();
+      const codes = delCodes.value.split(",").map((c) => c.trim()).filter(Boolean);
+      if (!lang || !codes.length) return;
+      let data;
+      try {
+        data = await fetchJSON(`/import/books?lang=${encodeURIComponent(lang)}&codes=${encodeURIComponent(codes.join(","))}`);
+      } catch (err) {
+        delPreview.textContent = `Lookup failed: ${err.message}`;
+        return;
+      }
+      const rows = data.books.map((b) => el("tr", {}, [
+        el("td", {}, [el("code", { text: delLabel(b) })]),
+        el("td", { text: b.title || "—" }),
+        el("td", { text: b.author || "—" }),
+        el("td", { text: String(b.year ?? "—") }),
+        el("td", { text: b.corpus || "—" }),
+        el("td", { class: b.points ? "" : "warn", text: b.points ? String(b.points) : "not found" }),
+        el("td", { class: b.paired.length ? "warn" : "", text: b.paired.join(", ") || "—" }),
+      ]));
+      delPreview.appendChild(el("div", { class: "manifest" }, [el("table", {}, [
+        el("tr", {}, ["Book", "Title", "Author", "Year", "Corpus", "Points", "Paired translations"]
+          .map((h) => el("th", { text: h }))),
+        ...rows,
+      ])]));
+      delBooks = data.books.filter((b) => b.points).map((b) => ({ lang: b.lang, book_code: b.book_code }));
+      delBtn.disabled = !delBooks.length || delBooks.length !== data.books.length;
+    }
+
+    async function deleteBooks() {
+      const want = delBooks.map(delLabel).join(",");
+      const typed = prompt(`Type the books to confirm the delete:\n${want}`);
+      if (typed !== want) { if (typed !== null) alert("Did not match — nothing deleted."); return; }
+      delBtn.disabled = true;
+      logView.textContent = "";
+      logAfter = 0;
+      try {
+        const created = await fetchJSON("/import/deletes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ books: delBooks, confirm: typed, allow_paired: !!delAllowPaired.checked }),
+        });
+        currentJobId = created.job_id;
+        pollJob();
+      } catch (err) {
+        jobStatus.textContent = `Failed to start delete: ${err.message}`;
+        delBtn.disabled = false;
+      }
+    }
+
+    delLookupBtn.addEventListener("click", lookupBooks);
+    delCodes.addEventListener("input", () => { delBtn.disabled = true; });
+    delLang.addEventListener("input", () => { delBtn.disabled = true; });
+    delBtn.addEventListener("click", deleteBooks);
 
     // -- packs table ------------------------------------------------------------
 
@@ -501,8 +578,9 @@
         const actionsCell = el("td", {}, actions);
         jobsBody.appendChild(el("tr", {}, [
           el("td", {}, [el("code", { text: j.job_id })]),
-          el("td", {}, [el("code", { text: j.pack_id })]),
-          el("td", { text: j.mode }),
+          el("td", {}, [el("code", { text: j.kind === "delete"
+            ? (j.books || []).map(delLabel).join(", ") : j.pack_id })]),
+          el("td", { text: j.kind === "delete" ? "delete" : j.mode }),
           el("td", { text: j.status }),
           el("td", { text: j.stage || "—" }),
           el("td", { text: fmtTime(j.created_at) }),

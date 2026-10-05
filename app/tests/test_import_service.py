@@ -576,5 +576,94 @@ class TestCancel(ImportServiceTestCase):
             self.assertEqual(len(self.qdrant.points("sop")), 1)  # only the canary
 
 
+class TestDeleteBooks(ImportServiceTestCase):
+    """Book delete: a ``kind: "delete"`` job removes every point of a
+    lang + book_code, after a snapshot and an undo ledger; rollback puts the
+    book back byte for byte."""
+
+    def _seed_book(self, code, n=3, lang="en", title="Old Copy", **extra):
+        for i in range(n):
+            self.qdrant.put_point("sop", f"{lang}-{code}-{i}",
+                                  {"lang": lang, "book_code": code, "para_key": f"1.{i}",
+                                   "raw_text": f"{code} {i}", "title": title,
+                                   "author": "Tester", "corpus": "pioneers", **extra},
+                                  _vec(900 + i))
+
+    def _wait_status(self, job_id, statuses, timeout=10.0):
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            job = import_service.get_job(job_id)
+            if job["status"] in statuses:
+                return job
+            time.sleep(0.02)
+        self.fail(f"job {job_id} stuck at {job['status']!r}")
+
+    def test_delete_removes_only_that_book_and_rollback_restores_it(self):
+        self._seed_book("OLD", 3)
+        self._seed_book("NEW", 2, title="Old Copy")
+        self._seed_book("OLD", 2, lang="de", book_pair="OLD")  # same code, other language
+        before = self.qdrant.snapshot_of("sop")
+
+        job_id = import_service.start_delete([{"lang": "en", "book_code": "OLD"}], "tester",
+                                             allow_paired=True)
+        job = self._wait_terminal(job_id)
+        self.assertEqual(job["status"], "ok", job.get("error"))
+        self.assertEqual(job["kind"], "delete")
+        self.assertEqual([s["name"] for s in job["stages"]], jobs.DELETE_STAGES)
+        self.assertEqual(job["counts"]["deleted"], 3)
+        self.assertIsNotNone(job["snapshot"])
+        left = {p["payload"]["lang"] + ":" + p["payload"]["book_code"]
+                for p in self.qdrant.points("sop").values()}
+        self.assertEqual(left, {"en:NEW", "de:OLD"})
+        report = (jobs.job_dir(job_id) / "report.md").read_text(encoding="utf-8")
+        self.assertIn("# Delete report", report)
+        self.assertIn("en:OLD", report)
+
+        import_service.rollback(job_id)
+        job = self._wait_status(job_id, ("rolled_back", "failed"))
+        self.assertEqual(job["status"], "rolled_back", job.get("error"))
+        self.assertEqual(self.qdrant.snapshot_of("sop"), before)
+
+    def test_unknown_book_refuses_and_deletes_nothing(self):
+        self._seed_book("OLD", 2)
+        before = self.qdrant.snapshot_of("sop")
+        job_id = import_service.start_delete([{"lang": "en", "book_code": "OLD"},
+                                              {"lang": "en", "book_code": "TYPO"}], "tester")
+        job = self._wait_terminal(job_id)
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("en:TYPO has no points", jobs.stage_entry(job, "preflight")["detail"])
+        self.assertEqual(self.qdrant.snapshot_of("sop"), before)
+
+    def test_original_of_a_live_translation_needs_allow_paired(self):
+        self._seed_book("OLD", 2)
+        self._seed_book("OLD", 1, lang="es", book_pair="OLD")
+        self._seed_book("OLDR", 1, lang="ru", book_pair="OLD")
+        job_id = import_service.start_delete([{"lang": "en", "book_code": "OLD"}], "tester")
+        job = self._wait_terminal(job_id)
+        self.assertEqual(job["status"], "failed")
+        detail = jobs.stage_entry(job, "preflight")["detail"]
+        self.assertIn("allow_paired", detail)
+        self.assertIn("es:OLD", detail)
+        self.assertIn("ru:OLDR", detail)
+        self.assertEqual(len(self.qdrant.points("sop")), 4)
+
+    def test_describe_books_reads_the_store(self):
+        self._seed_book("OLD", 3, year=1868)
+        self._seed_book("OLD", 1, lang="es", book_pair="OLD")
+        got = import_service.describe_books([{"lang": "en", "book_code": "OLD"},
+                                             {"lang": "en", "book_code": "NONE"}])
+        self.assertEqual(got[0]["points"], 3)
+        self.assertEqual(got[0]["title"], "Old Copy")
+        self.assertEqual(got[0]["year"], 1868)
+        self.assertEqual(got[0]["paired"], ["es:OLD"])
+        self.assertEqual(got[1]["points"], 0)
+
+    def test_bad_book_spec_is_a_value_error(self):
+        with self.assertRaises(ValueError):
+            import_service.start_delete([], "tester")
+        with self.assertRaises(ValueError):
+            import_service.start_delete([{"lang": "en"}], "tester")
+
+
 if __name__ == "__main__":
     unittest.main()

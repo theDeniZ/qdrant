@@ -261,7 +261,21 @@ def _import_html() -> HTMLResponse:
 <th>Books</th><th>Size</th><th>Uploaded</th><th>Imported by</th><th></th></tr></thead>
 <tbody><tr><td colspan="9"><small class="muted">Loading…</small></td></tr></tbody></table>
 
-<h2>4. Jobs</h2>
+<h2>4. Delete books</h2>
+<p><small class="muted">Removes every point of a book (one language). A snapshot and an undo
+ledger are taken first, so the job's <b>Rollback</b> puts the books back.</small></p>
+<div class="row">
+  <label>Language <input id="del-lang" value="en" size="4"></label>
+  <label>Book codes <input id="del-codes" placeholder="BAB, MON, MSp, SYPT" size="32"></label>
+  <button id="del-lookup-btn">Look up</button>
+</div>
+<div id="del-preview"></div>
+<div class="row">
+  <label title="Delete an English book even though a translation names it as its book_pair"><input type="checkbox" id="del-allow-paired"> Allow deleting the original of a live translation</label>
+  <button id="del-btn" disabled>Delete books</button>
+</div>
+
+<h2>5. Jobs</h2>
 <table id="jobs-table"><thead><tr><th>Job</th><th>Pack</th><th>Mode</th><th>Status</th>
 <th>Stage</th><th>Created</th><th>Operator</th><th></th></tr></thead>
 <tbody><tr><td colspan="8"><small class="muted">Loading…</small></td></tr></tbody></table>
@@ -426,6 +440,44 @@ async def jobs_create(request: Request) -> Response:
     return JSONResponse({"job_id": job_id}, status_code=202)
 
 
+# ── import: book delete ──────────────────────────────────────────────────────
+
+def _book_label(b: dict) -> str:
+    return f"{str(b.get('lang') or '').strip()}:{str(b.get('book_code') or '').strip()}"
+
+
+async def books_describe(request: Request) -> Response:
+    if (resp := _guard(request)) is not None:
+        return resp
+    lang = request.query_params.get("lang", "").strip()
+    codes = [c.strip() for c in request.query_params.get("codes", "").split(",") if c.strip()]
+    try:
+        books = import_service.describe_books([{"lang": lang, "book_code": c} for c in codes])
+    except Exception as exc:
+        code, detail, status = _map_exc(exc)
+        return _err(code, detail, status)
+    return JSONResponse({"books": books})
+
+
+async def deletes_create(request: Request) -> Response:
+    if (resp := _guard(request, mutating=True)) is not None:
+        return resp
+    body = await _json_body(request)
+    books = body.get("books")
+    if not isinstance(books, list) or not books:
+        return _err("bad_request", "books must be a non-empty list of {lang, book_code}")
+    want = ",".join(_book_label(b) for b in books if isinstance(b, dict))
+    if body.get("confirm") != want:
+        return _err("confirm_mismatch", f"confirm must equal {want!r}", 400)
+    try:
+        job_id = import_service.start_delete(books, _operator(request),
+                                             allow_paired=bool(body.get("allow_paired", False)))
+    except Exception as exc:
+        code, detail, status = _map_exc(exc)
+        return _err(code, detail, status)
+    return JSONResponse({"job_id": job_id}, status_code=202)
+
+
 async def jobs_list(request: Request) -> Response:
     if (resp := _guard(request)) is not None:
         return resp
@@ -546,6 +598,9 @@ app = Starlette(routes=[
     Route("/import/packs", packs_list, methods=["GET"]),
     Route("/import/packs/{pack_id}", packs_get, methods=["GET"]),
     Route("/import/packs/{pack_id}", packs_delete, methods=["DELETE"]),
+
+    Route("/import/books", books_describe, methods=["GET"]),
+    Route("/import/deletes", deletes_create, methods=["POST"]),
 
     Route("/import/jobs", jobs_create, methods=["POST"]),
     Route("/import/jobs", jobs_list, methods=["GET"]),

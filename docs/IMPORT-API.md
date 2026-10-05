@@ -81,6 +81,23 @@ before 2026-10-04 — and `preflight` lists every book it stamps this way. A pac
 Destructive routes require the `confirm` field to equal the value named above; a
 mismatch is `400 {"error": "confirm_mismatch"}`. This is the UI's typed confirmation.
 
+### Book delete
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| `GET` | `/import/books?lang=en&codes=BAB,MON` | — | `{"books": [{"lang", "book_code", "points", "title", "author", "year", "corpus", "paired": ["es:BAB", …]}]}` |
+| `POST` | `/import/deletes` | `{"books": [{"lang", "book_code"}, …], "confirm": "en:BAB,en:MON", "allow_paired": bool}` | `{"job_id": str}` (202) |
+
+Removes every point of each `lang` + `book_code` (e.g. a stale copy left live after the same
+work was imported under its proper code). `confirm` is the books as `lang:code`, comma-joined
+in request order. It runs as an ordinary job (`"kind": "delete"`, `"pack_id": null`, under the
+same lock) with its own stages:
+`preflight · snapshot · undo · delete · verify · report`.
+`preflight` refuses a book with no points, and an English book that a live translation names
+as its `book_pair` unless `allow_paired`. `undo` captures every point (payload and vector)
+before anything is deleted, so `POST /import/jobs/{job_id}/rollback` re-inserts the books
+exactly. The job carries `books` and `allow_paired`; `counts` is `{"deleted", "books"}`.
+
 ### Job object
 
 ```jsonc

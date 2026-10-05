@@ -5,6 +5,13 @@ Stages, exactly in this order::
     open · contract · probe · preflight · snapshot · undo · upsert ·
     indexes · verify · report
 
+A book-delete job (``kind: "delete"``, no pack) runs its own, shorter list::
+
+    preflight · snapshot · undo · delete · verify · report
+
+Its ``undo`` captures every point it is about to delete (payload and vector),
+so the ordinary :func:`rollback` puts the books back exactly.
+
 Book metadata (``title``, ``author``, ``year``, ``corpus``, ``book_pair``,
 ``page_kind``) travels on every point's payload — Qdrant is the only store of
 it. Preflight refuses a ``sop`` pack whose books lack a title (a missing
@@ -15,6 +22,8 @@ Each stage asserts its own output and refuses to hand a half-result to the
 next (R8). Public entry points for the admin UI::
 
     start_job(pack_id, mode, allow_overwrite, operator, allow_same_title=False) -> job_id
+    describe_books(books) -> list[dict]
+    start_delete(books, operator, allow_paired=False) -> job_id
     get_job(job_id) -> dict
     list_jobs() -> list[dict]
     read_log(job_id, after) -> {"events": [...], "next": int}
@@ -137,6 +146,9 @@ class _Ctx:
     def __init__(self, job_id: str, adapter: store_adapter.StoreAdapter | None = None):
         job = jobs.load(job_id)
         self.job_id = job_id
+        self.kind = job.get("kind", "import")
+        self.books = job.get("books") or []
+        self.allow_paired = bool(job.get("allow_paired", False))
         self.pack_id = job["pack_id"]
         self.mode = job["mode"]
         self.collection = job["collection"]
@@ -542,23 +554,29 @@ def _stage_undo(ctx: _Ctx, job_id: str) -> dict:
     overwrite_ids = _overwrite_ids(job_id)
     if not overwrite_ids:
         return {"skipped": True, "detail": "no overwrites"}
+    captured = _capture_undo(ctx, job_id, overwrite_ids, "overwritten")
+    return {"detail": f"captured {captured} point(s) for rollback"}
 
+
+def _capture_undo(ctx: _Ctx, job_id: str, ids: list[str], what: str) -> int:
+    """Write the current payload + vector of every point in *ids* to the
+    job's ``undo.jsonl`` — what :func:`rollback` re-upserts."""
     path = jobs.job_dir(job_id) / "undo.jsonl"
     captured = 0
     with path.open("w", encoding="utf-8") as fh:
-        for i in range(0, len(overwrite_ids), _UNDO_BATCH):
+        for i in range(0, len(ids), _UNDO_BATCH):
             _check_cancel(job_id)
-            chunk = overwrite_ids[i:i + _UNDO_BATCH]
+            chunk = ids[i:i + _UNDO_BATCH]
             result = ctx.adapter.retrieve(ctx.collection, chunk, with_payload=True, with_vector=True)
             for p in result:
                 fh.write(json.dumps({"id": p["id"], "payload": p.get("payload") or {},
                                      "vector": p.get("vector")}, ensure_ascii=False) + "\n")
                 captured += 1
 
-    if captured != len(overwrite_ids):
-        raise StageFailure("undo", f"captured prior state for {captured}/{len(overwrite_ids)} "
-                                   "overwritten point(s) — refusing an incomplete undo ledger")
-    return {"detail": f"captured {captured} point(s) for rollback"}
+    if captured != len(ids):
+        raise StageFailure("undo", f"captured prior state for {captured}/{len(ids)} "
+                                   f"{what} point(s) — refusing an incomplete undo ledger")
+    return captured
 
 
 def _upsert_with_retry(adapter: store_adapter.StoreAdapter, collection: str,
@@ -688,15 +706,28 @@ def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
 def _stage_report(ctx: _Ctx, job_id: str) -> dict:
     job = jobs.load(job_id)
     d = jobs.job_dir(job_id)
+    if ctx.kind == "delete":
+        head = [
+            f"# Delete report — {job_id}",
+            "",
+            f"- books: {', '.join(_book_label(b) for b in ctx.books)}",
+            f"- profile / collection: `{job['profile']}` / `{ctx.collection}`",
+            f"- operator: {job['operator']}",
+            f"- allow_paired: {ctx.allow_paired}",
+        ]
+    else:
+        head = [
+            f"# Import report — {job_id}",
+            "",
+            f"- pack: `{job['pack_id']}`",
+            f"- profile / collection: `{job['profile']}` / `{ctx.target_collection}`",
+            f"- mode: {job['mode']}",
+            f"- operator: {job['operator']}",
+            f"- allow_overwrite: {job['allow_overwrite']}",
+            f"- allow_same_title: {job.get('allow_same_title', False)}",
+        ]
     lines = [
-        f"# Import report — {job_id}",
-        "",
-        f"- pack: `{job['pack_id']}`",
-        f"- profile / collection: `{job['profile']}` / `{ctx.target_collection}`",
-        f"- mode: {job['mode']}",
-        f"- operator: {job['operator']}",
-        f"- allow_overwrite: {job['allow_overwrite']}",
-        f"- allow_same_title: {job.get('allow_same_title', False)}",
+        *head,
         f"- started: {job.get('started_at')}",
         f"- counts: {json.dumps(job.get('counts', {}))}",
         f"- progress: {json.dumps(job.get('progress', {}))}",
@@ -728,6 +759,157 @@ _PIPELINE = [
 ]
 
 
+# ── book delete ──────────────────────────────────────────────────────────────
+#
+# Removes whole books (every point of a ``lang`` + ``book_code``) — e.g. a
+# stale copy left live after the same work was imported under its proper
+# code. Same job machinery, lock, snapshot and rollback as an import.
+
+_PAIRED_SAMPLE = 256
+
+
+def _book_label(b: dict) -> str:
+    return f"{b.get('lang')}:{b.get('book_code')}"
+
+
+def _book_filter(b: dict) -> dict:
+    return {"must": [{"key": "book_code", "match": {"value": b["book_code"]}},
+                     {"key": "lang", "match": {"value": b["lang"]}}]}
+
+
+def _paired_translations(adapter: store_adapter.StoreAdapter, collection: str,
+                         b: dict) -> list[str]:
+    """``lang:book_code`` of every translation whose ``book_pair`` names the
+    English book *b* — deleting *b* would leave them paired to nothing.
+    Non-English books are never anyone's pair. One scroll per language found
+    (each round excludes the languages already seen)."""
+    if b["lang"] != "en":
+        return []
+    seen_langs = ["en"]
+    out: list[str] = []
+    while True:
+        flt = {"must": [{"key": "book_pair", "match": {"value": b["book_code"]}}],
+               "must_not": [{"key": "lang", "match": {"any": list(seen_langs)}}]}
+        rows = adapter.scroll(collection, flt, _PAIRED_SAMPLE, with_payload=True)
+        if not rows:
+            return out
+        langs_now = []
+        for row in rows:
+            payload = row.get("payload", {})
+            label = f"{payload.get('lang')}:{payload.get('book_code')}"
+            if label not in out:
+                out.append(label)
+            if payload.get("lang") not in langs_now:
+                langs_now.append(payload.get("lang"))
+        new_langs = [lg for lg in langs_now if lg and lg not in seen_langs]
+        if not new_langs:
+            return out
+        seen_langs.extend(new_langs)
+
+
+def _describe(adapter: store_adapter.StoreAdapter, collection: str, b: dict) -> dict:
+    n = adapter.count(collection, _book_filter(b))
+    rows = adapter.scroll(collection, _book_filter(b), 1, with_payload=True) if n else []
+    payload = rows[0].get("payload", {}) if rows else {}
+    return {"lang": b["lang"], "book_code": b["book_code"], "points": n,
+            "title": payload.get("title"), "author": payload.get("author"),
+            "year": payload.get("year"), "corpus": payload.get("corpus"),
+            "paired": _paired_translations(adapter, collection, b) if n else []}
+
+
+def _clean_books(books) -> list[dict]:
+    """``[{"lang", "book_code"}, …]``, stripped and de-duplicated; ValueError
+    on anything else."""
+    if not isinstance(books, list) or not books:
+        raise ValueError("books must be a non-empty list of {lang, book_code}")
+    out: list[dict] = []
+    for b in books:
+        if not isinstance(b, dict):
+            raise ValueError(f"not a book: {b!r}")
+        lang, code = str(b.get("lang") or "").strip(), str(b.get("book_code") or "").strip()
+        if not lang or not code:
+            raise ValueError(f"book needs lang and book_code: {b!r}")
+        if {"lang": lang, "book_code": code} not in out:
+            out.append({"lang": lang, "book_code": code})
+    return out
+
+
+def _stage_delete_preflight(ctx: _Ctx, job_id: str) -> dict:
+    found, problems, paired = [], [], []
+    ids: list[str] = []
+    for b in ctx.books:
+        info = _describe(ctx.adapter, ctx.collection, b)
+        if not info["points"]:
+            problems.append(f"{_book_label(b)} has no points")
+            continue
+        rows = ctx.adapter.scroll(ctx.collection, _book_filter(b), info["points"] + 1,
+                                  with_payload=False)
+        if len(rows) != info["points"]:
+            problems.append(f"{_book_label(b)}: counted {info['points']} point(s), "
+                            f"listed {len(rows)}")
+        ids.extend(r["id"] for r in rows)
+        if info["paired"]:
+            paired.append(f"{_book_label(b)} ← {', '.join(info['paired'])}")
+        found.append(f"{_book_label(b)} {info['title']!r} ({info['points']})")
+    if problems:
+        raise StageFailure("preflight", "refusing: " + "; ".join(problems))
+    if paired and not ctx.allow_paired:
+        raise StageFailure("preflight", f"{len(paired)} book(s) are the English original of a "
+                                        "live translation, refusing without allow_paired: "
+                                        + "; ".join(paired))
+    (jobs.job_dir(job_id) / "delete_ids.txt").write_text("\n".join(ids), encoding="utf-8")
+    jobs.update(job_id, progress={"points_total": len(ids), "points_written": 0, "batches": 0})
+    detail = f"{len(ids)} point(s) in {len(found)} book(s): " + "; ".join(found)
+    if paired:
+        detail += "; translations left unpaired: " + "; ".join(paired)
+    return {"detail": detail}
+
+
+def _delete_ids(job_id: str) -> list[str]:
+    p = jobs.job_dir(job_id) / "delete_ids.txt"
+    return [ln for ln in p.read_text(encoding="utf-8").splitlines() if ln] if p.is_file() else []
+
+
+def _stage_delete_undo(ctx: _Ctx, job_id: str) -> dict:
+    captured = _capture_undo(ctx, job_id, _delete_ids(job_id), "to-be-deleted")
+    return {"detail": f"captured {captured} point(s) for rollback"}
+
+
+def _stage_delete(ctx: _Ctx, job_id: str) -> dict:
+    ids = _delete_ids(job_id)
+    done = 0
+    for i in range(0, len(ids), _UPSERT_BATCH):
+        _check_cancel(job_id)
+        chunk = ids[i:i + _UPSERT_BATCH]
+        try:
+            ctx.adapter.delete_points(ctx.collection, chunk)
+        except store_adapter.AdapterError as exc:
+            raise StageFailure("delete", f"after {done} point(s): {exc}") from exc
+        done += len(chunk)
+        jobs.update(job_id, progress={"points_total": len(ids), "points_written": done,
+                                      "batches": i // _UPSERT_BATCH + 1})
+    jobs.update(job_id, counts={**jobs.load(job_id)["counts"], "deleted": done})
+    return {"detail": f"{done} point(s) deleted from {ctx.collection}"}
+
+
+def _stage_delete_verify(ctx: _Ctx, job_id: str) -> dict:
+    left = [f"{_book_label(b)}: {n} point(s) left" for b in ctx.books
+            if (n := ctx.adapter.count(ctx.collection, _book_filter(b)))]
+    if left:
+        raise StageFailure("verify", "; ".join(left))
+    return {"detail": f"{len(ctx.books)} book(s) gone"}
+
+
+_DELETE_PIPELINE = [
+    ("preflight", _stage_delete_preflight),
+    ("snapshot", _stage_snapshot),
+    ("undo", _stage_delete_undo),
+    ("delete", _stage_delete),
+    ("verify", _stage_delete_verify),
+    ("report", _stage_report),
+]
+
+
 # ── orchestration ────────────────────────────────────────────────────────────
 
 def _cleanup(ctx: _Ctx, job_id: str) -> None:
@@ -751,8 +933,9 @@ def _finish(job_id: str, ctx: _Ctx, *, status: str, error: str | None = None) ->
 def _run(job_id: str) -> None:
     jobs.update(job_id, status="running", started_at=jobs.now_iso())
     ctx = _Ctx(job_id)
+    pipeline = _DELETE_PIPELINE if ctx.kind == "delete" else _PIPELINE
     try:
-        for name, fn in _PIPELINE:
+        for name, fn in pipeline:
             job = jobs.load(job_id)
             entry = jobs.stage_entry(job, name)
             if entry["status"] == "ok" and name not in _ALWAYS_RERUN:
@@ -832,6 +1015,34 @@ def start_job(pack_id: str, mode: str, allow_overwrite: bool, operator: str,
         raise
 
     t = threading.Thread(target=_run, args=(job_id,), name=f"import-{job_id}", daemon=True)
+    t.start()
+    return job_id
+
+
+def describe_books(books) -> list[dict]:
+    """What a delete of *books* would remove, read from the store: point
+    count, title/author/year/corpus, and the translations paired to each."""
+    adapter = _make_adapter()
+    collection = store_adapter.collection_for("sop")
+    return [_describe(adapter, collection, b) for b in _clean_books(books)]
+
+
+def start_delete(books, operator: str, allow_paired: bool = False) -> str:
+    """Delete whole ``sop`` books (``[{"lang", "book_code"}, …]``) as a job:
+    snapshot, undo ledger, delete, verify. Rollback re-inserts them."""
+    books = _clean_books(books)
+    job_id = jobs.new_job_id()
+    if not jobs.try_acquire_import_lock(job_id):
+        raise Busy("another import job is already running")
+    try:
+        jobs.create(job_id, pack_id=None, mode="apply", profile="sop",
+                    collection=store_adapter.collection_for("sop"), operator=operator,
+                    allow_overwrite=False, kind="delete", books=books,
+                    allow_paired=allow_paired)
+    except Exception:
+        jobs.release_import_lock()
+        raise
+    t = threading.Thread(target=_run, args=(job_id,), name=f"delete-{job_id}", daemon=True)
     t.start()
     return job_id
 

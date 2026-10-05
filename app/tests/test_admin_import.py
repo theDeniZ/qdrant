@@ -77,6 +77,12 @@ _fake_import_service = types.ModuleType("app.import_service")
 _fake_import_service.Busy = _Busy
 _fake_import_service.start_job = _fake_start_job
 _fake_import_service.get_job = _fake_get_job
+_fake_deletes: list = []
+_fake_import_service.start_delete = (
+    lambda books, operator, allow_paired=False: _fake_deletes.append(books) or "job-delete")
+_fake_import_service.describe_books = lambda books: [
+    {**b, "points": 1, "title": "T", "author": None, "year": None, "corpus": None,
+     "paired": []} for b in books]
 _fake_import_service.list_jobs = lambda: list(_fake_jobs.values())
 _fake_import_service.read_log = lambda job_id, after: {"events": [], "next": after}
 _fake_import_service.cancel = lambda job_id: _fake_get_job(job_id).__setitem__("status", "cancelled")
@@ -287,6 +293,30 @@ class AdminImportTests(unittest.TestCase):
         )
         self.assertEqual(good.status_code, 200, good.text)
         self.assertEqual(good.json(), {"status": "restoring"})
+
+    # ── book delete ──────────────────────────────────────────────────────
+
+    def test_books_lookup(self):
+        r = self.client.get("/import/books?lang=en&codes=BAB,%20MON", headers=AUTH)
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual([b["book_code"] for b in r.json()["books"]], ["BAB", "MON"])
+
+    def test_delete_requires_typed_confirmation(self):
+        books = [{"lang": "en", "book_code": "BAB"}, {"lang": "en", "book_code": "MON"}]
+        bad = self.client.post("/import/deletes", json={"books": books, "confirm": "en:BAB"},
+                               headers=AUTH)
+        self.assertEqual(bad.status_code, 400)
+        self.assertEqual(bad.json()["error"], "confirm_mismatch")
+        good = self.client.post("/import/deletes",
+                                json={"books": books, "confirm": "en:BAB,en:MON"}, headers=AUTH)
+        self.assertEqual(good.status_code, 202, good.text)
+        self.assertEqual(good.json(), {"job_id": "job-delete"})
+
+    def test_delete_rejects_bad_origin(self):
+        r = self.client.post("/import/deletes",
+                             json={"books": [{"lang": "en", "book_code": "X"}], "confirm": "en:X"},
+                             headers={**AUTH, "Origin": "http://evil.example"})
+        self.assertEqual(r.status_code, 403)
 
 
 def tearDownModule():

@@ -25,6 +25,8 @@ from pathlib import Path
 
 STAGES = ["open", "contract", "probe", "preflight", "snapshot", "undo",
           "upsert", "indexes", "verify", "report"]
+# A book-delete job (``kind: "delete"``) runs these instead.
+DELETE_STAGES = ["preflight", "snapshot", "undo", "delete", "verify", "report"]
 
 STAGE_STATUSES = {"pending", "running", "ok", "failed", "skipped"}
 JOB_STATUSES = {"queued", "running", "ok", "failed", "cancelled", "cancelling",
@@ -86,10 +88,15 @@ def _atomic_write(path: Path, text: str) -> None:
 # ── job CRUD ─────────────────────────────────────────────────────────────────
 
 def create(job_id: str, *, pack_id: str, mode: str, profile: str, collection: str,
-           operator: str, allow_overwrite: bool, allow_same_title: bool = False) -> dict:
-    """Create a new job directory + job.json in status 'queued'."""
+           operator: str, allow_overwrite: bool, allow_same_title: bool = False,
+           kind: str = "import", books: list[dict] | None = None,
+           allow_paired: bool = False) -> dict:
+    """Create a new job directory + job.json in status 'queued'. *kind* is
+    ``import`` (a pack) or ``delete`` (*books*, no pack)."""
+    stages = DELETE_STAGES if kind == "delete" else STAGES
     job = {
         "job_id": job_id,
+        "kind": kind,
         "pack_id": pack_id,
         "mode": mode,
         "profile": profile,
@@ -103,13 +110,17 @@ def create(job_id: str, *, pack_id: str, mode: str, profile: str, collection: st
         "allow_overwrite": bool(allow_overwrite),
         "allow_same_title": bool(allow_same_title),
         "stages": [{"name": n, "status": "pending", "started_at": None,
-                    "finished_at": None, "detail": None} for n in STAGES],
+                    "finished_at": None, "detail": None} for n in stages],
         "progress": {},
         "snapshot": None,
         "counts": {"created": 0, "overwritten": 0, "books": 0},
         "error": None,
         "rollback": {"available": False, "performed_at": None},
     }
+    if kind == "delete":
+        job["books"] = books or []
+        job["allow_paired"] = bool(allow_paired)
+        job["counts"] = {"deleted": 0, "books": len(job["books"])}
     save(job_id, job)
     _log_path(job_id).touch(exist_ok=True)
     return job

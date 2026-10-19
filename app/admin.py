@@ -298,7 +298,8 @@ async def static_import_js(request: Request) -> Response:
         content = path.read_text(encoding="utf-8")
     except FileNotFoundError:
         return Response("not found", status_code=404)
-    return Response(content, media_type="text/javascript")
+    # no-cache: a redeployed import.js must reach an already-open admin tab
+    return Response(content, media_type="text/javascript", headers={"Cache-Control": "no-cache"})
 
 
 # ── import: uploads ──────────────────────────────────────────────────────────

@@ -17,9 +17,12 @@
     return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
   }
 
-  // crypto.subtle exists only in secure contexts (HTTPS or localhost); the
-  // admin UI is usually opened over plain http on the LAN, so fall back to a
-  // pure-JS SHA-256 there.
+  // Incremental SHA-256, fed the file one slice at a time. Never hash
+  // `await file.arrayBuffer()`: materialising a whole 100 MB–1 GB pack as one
+  // buffer crashes Chromium-based browsers' browser process (a CHECK in the
+  // blob reader — seen with a 130 MB bible pack in Whale). crypto.subtle has
+  // no incremental API and exists only in secure contexts anyway (the admin
+  // UI is usually plain http on the LAN), so this is pure JS.
   const K256 = new Uint32Array([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -31,29 +34,33 @@
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
   ]);
 
-  function sha256Js(buf) {
-    const src = new Uint8Array(buf);
-    const len = src.length;
-    const total = Math.ceil((len + 9) / 64) * 64;
-    const data = new Uint8Array(total);
-    data.set(src);
-    data[len] = 0x80;
-    const dv = new DataView(data.buffer);
-    dv.setUint32(total - 8, Math.floor(len / 0x20000000), false); // bit length, high word
-    dv.setUint32(total - 4, (len * 8) >>> 0, false);              // bit length, low word
-    const h = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-                               0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
-    const w = new Uint32Array(64);
-    for (let off = 0; off < total; off += 64) {
-      for (let i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4, false);
-      for (let i = 16; i < 64; i++) {
-        const a = w[i - 15], b = w[i - 2];
-        const s0 = ((a >>> 7) | (a << 25)) ^ ((a >>> 18) | (a << 14)) ^ (a >>> 3);
-        const s1 = ((b >>> 17) | (b << 15)) ^ ((b >>> 19) | (b << 13)) ^ (b >>> 10);
+  class Sha256 {
+    constructor() {
+      this.h = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+                                0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
+      this.w = new Uint32Array(64);
+      this.tail = new Uint8Array(64); // bytes not yet forming a whole block
+      this.tailLen = 0;
+      this.len = 0;                   // total bytes fed
+    }
+
+    block(src, off) {
+      const w = this.w;
+      const h = this.h;
+      for (let i = 0; i < 16; i += 1) {
+        const j = off + i * 4;
+        w[i] = ((src[j] << 24) | (src[j + 1] << 16) | (src[j + 2] << 8) | src[j + 3]) >>> 0;
+      }
+      for (let i = 16; i < 64; i += 1) {
+        const x = w[i - 15];
+        const y = w[i - 2];
+        const s0 = ((x >>> 7) | (x << 25)) ^ ((x >>> 18) | (x << 14)) ^ (x >>> 3);
+        const s1 = ((y >>> 17) | (y << 15)) ^ ((y >>> 19) | (y << 13)) ^ (y >>> 10);
         w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;
       }
-      let [a, b, c, d, e, f, g, hh] = h;
-      for (let i = 0; i < 64; i++) {
+      let a = h[0]; let b = h[1]; let c = h[2]; let d = h[3];
+      let e = h[4]; let f = h[5]; let g = h[6]; let hh = h[7];
+      for (let i = 0; i < 64; i += 1) {
         const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));
         const t1 = (hh + S1 + ((e & f) ^ (~e & g)) + K256[i] + w[i]) >>> 0;
         const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));
@@ -64,17 +71,48 @@
       h[0] += a; h[1] += b; h[2] += c; h[3] += d;
       h[4] += e; h[5] += f; h[6] += g; h[7] += hh;
     }
-    const out = new DataView(new ArrayBuffer(32));
-    h.forEach((v, i) => out.setUint32(i * 4, v, false));
-    return out.buffer;
+
+    update(bytes) {
+      let off = 0;
+      this.len += bytes.length;
+      if (this.tailLen) {
+        const take = Math.min(64 - this.tailLen, bytes.length);
+        this.tail.set(bytes.subarray(0, take), this.tailLen);
+        this.tailLen += take;
+        off = take;
+        if (this.tailLen < 64) return;
+        this.block(this.tail, 0);
+        this.tailLen = 0;
+      }
+      for (; off + 64 <= bytes.length; off += 64) this.block(bytes, off);
+      this.tail.set(bytes.subarray(off), 0);
+      this.tailLen = bytes.length - off;
+    }
+
+    hex() {
+      const len = this.len;
+      const pad = new Uint8Array(((this.tailLen + 9 + 63) >> 6) << 6);
+      pad.set(this.tail.subarray(0, this.tailLen));
+      pad[this.tailLen] = 0x80;
+      const dv = new DataView(pad.buffer);
+      dv.setUint32(pad.length - 8, Math.floor(len / 0x20000000), false); // bit length, high word
+      dv.setUint32(pad.length - 4, (len * 8) >>> 0, false);              // bit length, low word
+      for (let off = 0; off < pad.length; off += 64) this.block(pad, off);
+      const out = new DataView(new ArrayBuffer(32));
+      this.h.forEach((v, i) => out.setUint32(i * 4, v, false));
+      return bytesToHex(out.buffer);
+    }
   }
 
-  async function sha256File(file) {
-    const buf = await file.arrayBuffer();
-    const digest = (globalThis.crypto && crypto.subtle)
-      ? await crypto.subtle.digest("SHA-256", buf)
-      : sha256Js(buf);
-    return bytesToHex(digest);
+  async function sha256File(file, onProgress) {
+    const hasher = new Sha256();
+    for (let start = 0; start < file.size; start += PART_SIZE) {
+      const end = Math.min(start + PART_SIZE, file.size);
+      // eslint-disable-next-line no-await-in-loop
+      hasher.update(new Uint8Array(await file.slice(start, end).arrayBuffer()));
+      if (onProgress) onProgress(end, file.size);
+    }
+    return hasher.hex();
   }
 
   function fmtBytes(n) {
@@ -178,7 +216,7 @@
     return `sdarm-import-upload:${file.name}:${file.size}`;
   }
 
-  async function uploadFile(file, onProgress) {
+  async function uploadFile(file, onProgress, onHashProgress) {
     const key = resumeKey(file);
     const savedId = localStorage.getItem(key);
 
@@ -196,7 +234,7 @@
       }
     }
 
-    const sha256 = await sha256File(file);
+    const sha256 = await sha256File(file, onHashProgress);
     const created = await fetchJSON("/import/uploads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -278,7 +316,11 @@
       };
 
       try {
-        const result = await uploadFile(file, onProgress);
+        const onHashProgress = (done, total) => {
+          progressBar.value = Math.round((done / total) * 100);
+          progressLabel.textContent = `Hashing ${file.name}… ${fmtBytes(done)} / ${fmtBytes(total)}`;
+        };
+        const result = await uploadFile(file, onProgress, onHashProgress);
         progressBar.value = 100;
         progressLabel.textContent = `Uploaded ${file.name} — pack ${result.pack_id}`;
         currentPackId = result.pack_id;

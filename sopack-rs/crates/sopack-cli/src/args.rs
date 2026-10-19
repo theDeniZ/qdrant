@@ -94,6 +94,9 @@ pub enum KindOpt {
     /// that names it, rather than clap's default kebab-case `sop-json`.
     #[value(name = "sop_json")]
     SopJson,
+    /// `--kind bible_json` — a flat OSIS-keyed Bible (`{"Gen.1.1": "…"}`).
+    #[value(name = "bible_json")]
+    BibleJson,
 }
 
 impl KindOpt {
@@ -103,6 +106,7 @@ impl KindOpt {
             KindOpt::Markdown => sopack_extract::Kind::Markdown,
             KindOpt::Text => sopack_extract::Kind::Text,
             KindOpt::SopJson => sopack_extract::Kind::SopJson,
+            KindOpt::BibleJson => sopack_extract::Kind::BibleJson,
         }
     }
 }
@@ -142,7 +146,8 @@ pub struct ExtractArgs {
     pub source: PathBuf,
 
     /// Source format; default: inferred from the file extension
-    /// (.epub/.md,.markdown/.json/anything else -> text).
+    /// (.epub/.md,.markdown/anything else -> text; .json -> bible_json when
+    /// every key is an OSIS verse reference, else sop_json).
     #[arg(long, value_enum)]
     pub kind: Option<KindOpt>,
 

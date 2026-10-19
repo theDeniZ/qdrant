@@ -18,6 +18,11 @@ use crate::model::Book;
 /// text, a `para_key` whose `seq` values are not dense from 0, and blocks
 /// that do not partition into whole paragraphs of `chunks` pieces.
 ///
+/// A `bible` book additionally needs a valid bible id as `book_code`, no
+/// sop-only metadata (a bible point carries only `bible`/`osis`/`text`, so
+/// it would be silently lost), and one unsplit block per verse keyed by its
+/// OSIS reference with `page`/`para` = chapter/verse — see [`crate::osis`].
+///
 /// A `para_key` carrying several *paragraphs* is legitimate and is not an
 /// error — see [`crate::model::Block`].
 pub fn validate(book: &Book) -> Vec<String> {
@@ -54,11 +59,16 @@ pub fn validate(book: &Book) -> Vec<String> {
         }
     }
 
-    let is_egw = match book.book.get("corpus") {
-        None => true,
-        Some(v) if v.is_null() => true,
-        Some(v) => v.as_str() == Some("egw"),
-    };
+    if profile.name == "bible" {
+        bible_problems(book, &meta_truthy, &mut errors);
+    }
+
+    let is_egw = profile.name == "bible"
+        || match book.book.get("corpus") {
+            None => true,
+            Some(v) if v.is_null() => true,
+            Some(v) => v.as_str() == Some("egw"),
+        };
     if !is_egw {
         for key in ["author", "year"] {
             if !meta_truthy(key) {
@@ -171,4 +181,77 @@ pub fn validate(book: &Book) -> Vec<String> {
     }
 
     errors
+}
+
+/// Book metadata a `bible` point does not carry (its payload is
+/// `bible`/`osis`/`text` only) — given on a bible book, it would be dropped.
+const NOT_FOR_BIBLES: [&str; 6] = ["book_pair", "author", "year", "slug", "corpus", "page_kind"];
+
+/// At most this many per-block problems of one kind are listed; the rest are
+/// counted, so a wholly wrong source does not print 31 000 lines.
+const MAX_LISTED: usize = 10;
+
+fn bible_problems(book: &Book, meta_truthy: &dyn Fn(&str) -> bool, errors: &mut Vec<String>) {
+    if let Some(code) = book.book.get("book_code").and_then(|v| v.as_str()) {
+        if !code.is_empty() && !crate::osis::is_bible_id(code) {
+            errors.push(format!(
+                "book.book_code {code:?} is not a valid bible id \
+                 (lowercase letters and digits, '-'/'_' after the first, e.g. \"luther1912\")"
+            ));
+        }
+    }
+    for key in NOT_FOR_BIBLES {
+        if meta_truthy(key) {
+            errors.push(format!(
+                "book.{key} is not used by the bible profile (a bible point carries only \
+                 bible/osis/text) — remove it"
+            ));
+        }
+    }
+
+    let mut bad_key = Vec::new();
+    let mut bad_pos = Vec::new();
+    let mut split = Vec::new();
+    for b in &book.blocks {
+        match crate::osis::parse_verse(&b.para_key) {
+            None => bad_key.push(format!("{:?}", b.para_key)),
+            Some(v) if (b.page, b.para) != (v.chapter, v.verse) => bad_pos.push(format!(
+                "{:?} (page={}, para={})",
+                b.para_key, b.page, b.para
+            )),
+            Some(_) => {}
+        }
+        if b.seq != 0 || b.chunks != 1 {
+            split.push(format!(
+                "{:?} (seq={}, chunks={})",
+                b.para_key, b.seq, b.chunks
+            ));
+        }
+    }
+    let mut report = |items: Vec<String>, what: &str| {
+        if items.is_empty() {
+            return;
+        }
+        let more = items.len().saturating_sub(MAX_LISTED);
+        let mut listed = items
+            .into_iter()
+            .take(MAX_LISTED)
+            .collect::<Vec<_>>()
+            .join(", ");
+        if more > 0 {
+            listed.push_str(&format!(" … and {more} more"));
+        }
+        errors.push(format!("{what}: {listed}"));
+    };
+    report(
+        bad_key,
+        "para_key is not an OSIS verse reference (Book.Chapter.Verse[!grain], one of the 66 \
+         canonical OSIS books)",
+    );
+    report(bad_pos, "page/para do not match the OSIS chapter/verse");
+    report(
+        split,
+        "a verse must be one block (seq=0, chunks=1): bible/v1 ids carry no seq, so a split \
+         verse would overwrite itself",
+    );
 }

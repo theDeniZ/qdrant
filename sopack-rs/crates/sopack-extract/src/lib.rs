@@ -3,7 +3,7 @@
 //! `qdrant/docs/SOPACK-1.0-PLAN.md` §3.1, §3.5, §4, §6.
 //!
 //! [`extract`] dispatches on [`Kind`]: `epub`, `markdown`, `text`,
-//! `sop_json` (`pdf` is left room for — see `Kind`'s doc comment). Every
+//! `sop_json`, `bible_json` (`pdf` is left room for — see `Kind`'s doc comment). Every
 //! extractor never invents metadata (rule #9) — what it cannot read from
 //! the source is left `None` in `Book.book` and reported missing by
 //! `sopack_book::validate`.
@@ -18,6 +18,7 @@
 //! [`ExtractError`]s with a `code`/`message`/`hint`/`field`, and a
 //! [`ProgressSink`] hook for the read/parse/chunk/gate stages.
 
+mod bible_json;
 pub mod chunk;
 mod common;
 mod epub;
@@ -62,5 +63,19 @@ pub fn extract(
         Kind::Markdown => markdown::extract(source_path, opts, progress),
         Kind::Text => text::extract(source_path, opts, progress),
         Kind::SopJson => sop_json::extract(source_path, opts, progress),
+        Kind::BibleJson => bible_json::extract(source_path, opts, progress),
+    }
+}
+
+/// The kind of a `.json` source: `bible_json` when it is a flat object of
+/// OSIS verse keys, else `sop_json`. Unreadable or invalid JSON is
+/// `sop_json`, whose extractor then reports the real problem.
+pub fn json_kind(source_path: &Path) -> Kind {
+    let data = std::fs::read_to_string(source_path)
+        .ok()
+        .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok());
+    match data {
+        Some(serde_json::Value::Object(m)) if bible_json::looks_like_bible(&m) => Kind::BibleJson,
+        _ => Kind::SopJson,
     }
 }

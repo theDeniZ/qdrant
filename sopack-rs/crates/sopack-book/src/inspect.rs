@@ -27,6 +27,56 @@ pub struct InspectReport {
     pub book_code: Option<Value>,
     pub lang: Option<Value>,
     pub title: Option<Value>,
+    /// `bible` profile only: what the verse keys cover.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bible: Option<BibleSummary>,
+}
+
+/// Coverage of a `bible` book's OSIS verse keys — what to eyeball before
+/// packing (a missing book, a Testament-only edition, split verses).
+#[derive(Debug, Clone, Serialize)]
+pub struct BibleSummary {
+    pub books: usize,
+    pub chapters: usize,
+    pub verses: usize,
+    /// Canonical OSIS books with no verse at all, in canonical order.
+    pub missing_books: Vec<String>,
+    /// Keys with an OSIS grain (`Exod.22.3!a`).
+    pub split_verses: usize,
+    /// Keys that are not OSIS verse references (`validate` refuses these).
+    pub invalid_keys: usize,
+}
+
+impl BibleSummary {
+    fn from_book(book: &Book) -> Self {
+        use crate::osis::{parse_verse, OSIS_BOOKS};
+        let mut books = std::collections::BTreeSet::new();
+        let mut chapters = std::collections::BTreeSet::new();
+        let (mut split, mut invalid) = (0, 0);
+        for b in &book.blocks {
+            match parse_verse(&b.para_key) {
+                Some(v) => {
+                    books.insert(v.book);
+                    chapters.insert((v.book, v.chapter));
+                    if v.grain.is_some() {
+                        split += 1;
+                    }
+                }
+                None => invalid += 1,
+            }
+        }
+        BibleSummary {
+            books: books.len(),
+            chapters: chapters.len(),
+            verses: book.blocks.len(),
+            missing_books: (0..OSIS_BOOKS.len())
+                .filter(|i| !books.contains(i))
+                .map(|i| OSIS_BOOKS[i].to_string())
+                .collect(),
+            split_verses: split,
+            invalid_keys: invalid,
+        }
+    }
 }
 
 impl InspectReport {
@@ -59,6 +109,7 @@ impl InspectReport {
             book_code: book.book.get("book_code").cloned(),
             lang: book.book.get("lang").cloned(),
             title: book.book.get("title").cloned(),
+            bible: (book.profile == "bible").then(|| BibleSummary::from_book(book)),
         }
     }
 
@@ -84,6 +135,15 @@ impl InspectReport {
             python_str_opt(self.lang.as_ref()),
             python_repr_value(self.title.as_ref().unwrap_or(&Value::Null)),
         ));
+        if let Some(b) = &self.bible {
+            out.push_str(&format!(
+                "bible: {} books, {} chapters, {} verses ({} split, {} invalid keys)\n",
+                b.books, b.chapters, b.verses, b.split_verses, b.invalid_keys
+            ));
+            if !b.missing_books.is_empty() {
+                out.push_str(&format!("  missing books: {}\n", b.missing_books.join(" ")));
+            }
+        }
         out
     }
 }

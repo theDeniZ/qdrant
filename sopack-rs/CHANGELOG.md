@@ -6,6 +6,21 @@ pre-release milestones on the way to the cut-over described in
 
 ## Unreleased
 
+- **Bibles: `extract --kind bible_json`** (auto-detected for a `.json` whose every key
+  is an OSIS verse reference). Reads the flat `{"Gen.1.1": "…"}` shape of
+  `generator/data/bibles/`, emits profile `bible` / id_rule `bible/v1`, one block per
+  verse in canonical order. `book_code` = bible id (defaults to the file stem); `lang`
+  and `title` required; sop-only metadata refused. All 11 live Bible files extract with
+  their live verse counts.
+- **`validate` checks `bible` books**: a lowercase bible id, no sop-only metadata
+  (`book_pair`/`author`/`year`/`slug`/`corpus`/`page_kind` — a bible point carries only
+  `bible`/`osis`/`text`), OSIS verse keys (66 canonical books, optional `!grain`),
+  `page`/`para` = chapter/verse, and unsplit verses (`seq` 0, `chunks` 1). Corpus rules
+  no longer apply to bibles.
+- **`inspect` reports a `bible` summary** for bible books (books, chapters, verses,
+  missing books, split verses, invalid keys) — `inspect.v1.json` gained the optional key.
+- **`extract.v1.json` no longer requires `book_code_collision`**, which the CLI stopped
+  writing in 1.0.0.
 - **Corpus `egw` is exempt from the author/year validation**, like a book with no
   corpus: Ellen G. White's own writings need no per-book author or year.
 - **`book.schema.json` moved** into `sopack-rs/schemas/` (embedded by `sopack-book`).

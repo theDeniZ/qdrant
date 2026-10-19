@@ -21,7 +21,7 @@
       "properties": {
         "file": {"type": "string"},
         "sha256": {"type": ["string", "null"]},
-        "kind": {"type": "string", "enum": ["epub", "markdown", "text", "sop_json"]},
+        "kind": {"type": "string", "enum": ["epub", "markdown", "text", "sop_json", "bible_json"]},
         "acquired_from": {"type": ["string", "null"]},
         "rights": {"type": ["string", "null"]}
       }

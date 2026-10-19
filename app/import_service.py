@@ -366,6 +366,12 @@ def _stage_probe_v2(ctx: _Ctx, job_id: str) -> dict:
     return {"detail": detail}
 
 
+def _manifest_code(profile, b: dict):
+    """A manifest book's identity value. sopack-rs records every book as
+    ``book_code`` (also a bible's, whose payload identity is ``bible``)."""
+    return b.get(profile.identity) or b.get("book_code")
+
+
 def _identity_probe(adapter: store_adapter.StoreAdapter, collection: str, profile, code,
                     lang) -> tuple[bool, str | None]:
     """Does (code[, lang]) already exist? For the sop profile also returns a
@@ -456,7 +462,7 @@ def _stage_preflight(ctx: _Ctx, job_id: str) -> dict:
     collisions, reindexed, new_books, same_title = [], [], [], []
 
     for b in books:
-        code = b.get(profile.identity)
+        code = _manifest_code(profile, b)
         lang = b.get("lang")
         exists, existing_slug = _identity_probe(ctx.adapter, ctx.collection, profile, code, lang)
         if not exists:
@@ -679,7 +685,7 @@ def _stage_verify(ctx: _Ctx, job_id: str) -> dict:
     books = ctx.reader.manifest.get("books") or []
     problems = []
     for b in books:
-        code = b.get(ctx.profile.identity)
+        code = _manifest_code(ctx.profile, b)
         lang = b.get("lang")
         want = int(b.get("points", 0))
         got = _points_count(ctx.adapter, ctx.target_collection, ctx.profile, code, lang)

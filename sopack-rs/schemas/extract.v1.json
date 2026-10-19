@@ -7,7 +7,7 @@
     {
       "type": "object",
       "title": "single-file result",
-      "required": ["out", "book_code", "lang", "id_rule", "stats", "year_from_source_note", "book_code_collision"],
+      "required": ["out", "book_code", "lang", "id_rule", "stats", "year_from_source_note"],
       "additionalProperties": false,
       "properties": {
         "out": { "type": "string" },
@@ -25,8 +25,7 @@
             "dropped_detail": { "type": "array" }
           }
         },
-        "year_from_source_note": { "type": ["string", "null"] },
-        "book_code_collision": { "type": ["boolean", "null"] }
+        "year_from_source_note": { "type": ["string", "null"] }
       }
     },
     {

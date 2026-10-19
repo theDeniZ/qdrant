@@ -530,3 +530,174 @@ fn test_uid_feeds_a_stable_point_id() {
     let pid2 = point_id(&book.id_rule, &f).unwrap();
     assert_eq!(pid1, pid2);
 }
+
+// ── bible profile ────────────────────────────────────────────────────────
+
+fn plain_bible_book(overrides: &[(&str, Value)], blocks: Vec<Block>) -> Book {
+    let mut meta =
+        obj(json!({"book_code": "cep", "lang": "cs", "title": "Český ekumenický překlad"}));
+    for (k, v) in overrides {
+        meta.insert((*k).to_string(), v.clone());
+    }
+    Book {
+        schema: SCHEMA_BOOK.to_string(),
+        profile: "bible".to_string(),
+        source: obj(
+            json!({"file": "cep.json", "sha256": "abc", "kind": "bible_json",
+                           "acquired_from": null, "rights": null}),
+        ),
+        book: meta,
+        id_rule: "bible/v1".to_string(),
+        alignment: None,
+        stats: obj(
+            json!({"blocks_in": 2, "blocks_out": 2, "dropped": 0, "damage": 0.0,
+                          "words": 4, "dropped_detail": []}),
+        ),
+        blocks,
+    }
+}
+
+fn verses() -> Vec<Block> {
+    vec![
+        Block::new("Gen.1.1", 1, 1, 0, 1, "Na počátku stvořil Bůh", 4, None),
+        Block::new("Exod.22.3!a", 22, 3, 0, 1, "split verse", 2, None),
+    ]
+}
+
+#[test]
+fn test_valid_bible_book_has_no_errors() {
+    assert_eq!(
+        validate(&plain_bible_book(&[], verses())),
+        Vec::<String>::new()
+    );
+}
+
+#[test]
+fn test_bible_needs_a_lowercase_bible_id() {
+    let errors = validate(&plain_bible_book(
+        &[("book_code", json!("CzeCEP"))],
+        verses(),
+    ));
+    assert!(
+        errors.iter().any(|e| e.contains("not a valid bible id")),
+        "{errors:?}"
+    );
+}
+
+#[test]
+fn test_bible_refuses_sop_only_metadata_and_ignores_corpus_rules() {
+    let book = plain_bible_book(
+        &[("corpus", json!("reference")), ("year", json!(1979))],
+        verses(),
+    );
+    let errors = validate(&book);
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.starts_with("book.corpus is not used")),
+        "{errors:?}"
+    );
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.starts_with("book.year is not used")),
+        "{errors:?}"
+    );
+    // a set corpus must not turn into "author is required for non-EGW works"
+    assert!(
+        !errors.iter().any(|e| e.contains("is required")),
+        "{errors:?}"
+    );
+}
+
+#[test]
+fn test_bible_refuses_non_osis_keys_and_wrong_positions() {
+    let errors = validate(&plain_bible_book(
+        &[],
+        vec![
+            Block::new("1.1", 1, 1, 0, 1, "sop-style key", 2, None),
+            Block::new("Gen.1.2", 1, 3, 0, 1, "para is not the verse", 4, None),
+        ],
+    ));
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.contains("not an OSIS verse reference") && e.contains("\"1.1\"")),
+        "{errors:?}"
+    );
+    assert!(
+        errors
+            .iter()
+            .any(|e| e.contains("do not match") && e.contains("Gen.1.2")),
+        "{errors:?}"
+    );
+}
+
+#[test]
+fn test_bible_refuses_split_verses() {
+    let errors = validate(&plain_bible_book(
+        &[],
+        vec![
+            Block::new("Gen.1.1", 1, 1, 0, 2, "first half", 2, Some(0)),
+            Block::new("Gen.1.1", 1, 1, 1, 2, "second half", 2, Some(1)),
+        ],
+    ));
+    assert!(
+        errors.iter().any(|e| e.contains("must be one block")),
+        "{errors:?}"
+    );
+}
+
+#[test]
+fn test_bible_lists_at_most_ten_bad_keys() {
+    let blocks = (1..=25)
+        .map(|i| Block::new(format!("x.{i}"), 1, i, 0, 1, "t", 1, None))
+        .collect();
+    let errors = validate(&plain_bible_book(&[], blocks));
+    let e = errors.iter().find(|e| e.contains("not an OSIS")).unwrap();
+    assert!(e.ends_with("… and 15 more"), "{e}");
+}
+
+#[test]
+fn test_bible_payload_and_uid() {
+    let book = plain_bible_book(&[], verses());
+    let payload = to_payload(&book, &book.blocks[0]).unwrap();
+    assert_eq!(
+        Value::Object(payload.clone()),
+        json!({"bible": "cep", "osis": "Gen.1.1", "text": "Na počátku stvořil Bůh"})
+    );
+    assert_eq!(
+        validate_payload(get_profile("bible").unwrap(), &payload),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        uid(&book, &book.blocks[1]).unwrap(),
+        "bible:cep:Exod.22.3!a"
+    );
+}
+
+#[test]
+fn test_bible_inspect_reports_coverage() {
+    let report =
+        sopack_book::InspectReport::from_book("cep.book.json", &plain_bible_book(&[], verses()));
+    let b = report.bible.clone().expect("bible summary");
+    assert_eq!(
+        (
+            b.books,
+            b.chapters,
+            b.verses,
+            b.split_verses,
+            b.invalid_keys
+        ),
+        (2, 2, 2, 1, 0)
+    );
+    assert_eq!(b.missing_books.len(), 64);
+    assert!(report
+        .to_text()
+        .contains("bible: 2 books, 2 chapters, 2 verses (1 split, 0 invalid keys)"));
+    assert!(
+        sopack_book::InspectReport::from_book("x", &plain_sop_book(&[]))
+            .bible
+            .is_none()
+    );
+}

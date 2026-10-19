@@ -17,12 +17,13 @@ mod error;
 mod inspect;
 mod io;
 mod model;
+pub mod osis;
 mod payload;
 mod validate;
 
 pub use contract_bridge::{get_profile, point_id, uid_for, validate_payload, Profile, SCHEMA_BOOK};
 pub use error::BookError;
-pub use inspect::InspectReport;
+pub use inspect::{BibleSummary, InspectReport};
 pub use io::{book_sha256, dump, load};
 pub use model::{Block, Book};
 pub use payload::{to_payload, uid};

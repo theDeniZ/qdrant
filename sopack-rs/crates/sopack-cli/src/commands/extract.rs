@@ -51,7 +51,7 @@ fn infer_kind(source: &Path) -> Kind {
     match ext.as_deref() {
         Some("epub") => Kind::Epub,
         Some("md") | Some("markdown") => Kind::Markdown,
-        Some("json") => Kind::SopJson,
+        Some("json") => sopack_extract::json_kind(source),
         _ => Kind::Text,
     }
 }

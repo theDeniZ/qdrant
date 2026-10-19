@@ -23,6 +23,7 @@ pub enum Kind {
     Markdown,
     Text,
     SopJson,
+    BibleJson,
 }
 
 impl Kind {
@@ -32,6 +33,7 @@ impl Kind {
             Kind::Markdown => "markdown",
             Kind::Text => "text",
             Kind::SopJson => "sop_json",
+            Kind::BibleJson => "bible_json",
         }
     }
 
@@ -63,9 +65,13 @@ impl Kind {
             "acquired_from",
             "rights",
         ];
+        // A bible point carries only bible/osis/text: the bible id, its
+        // language and title (manifest-level), and provenance.
+        const BIBLE_JSON: &[&str] = &["book_code", "lang", "title", "acquired_from", "rights"];
         match self {
             Kind::Epub | Kind::Markdown | Kind::Text => CHUNKABLE,
             Kind::SopJson => SOP_JSON,
+            Kind::BibleJson => BIBLE_JSON,
         }
     }
 }
@@ -79,6 +85,7 @@ impl FromStr for Kind {
             "markdown" => Ok(Kind::Markdown),
             "text" => Ok(Kind::Text),
             "sop_json" => Ok(Kind::SopJson),
+            "bible_json" => Ok(Kind::BibleJson),
             _ => Err(()),
         }
     }

@@ -155,6 +155,8 @@ pub fn required_fields(kind: Kind) -> &'static [&'static str] {
         Kind::Markdown | Kind::Text => &["book_code", "lang", "title"],
         Kind::Epub => &["book_code"],
         Kind::SopJson => &[],
+        // book_code falls back to the file stem; lang and title never are in the file.
+        Kind::BibleJson => &["lang", "title"],
     }
 }
 

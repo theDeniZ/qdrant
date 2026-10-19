@@ -727,3 +727,156 @@ fn test_sop_json_book() {
     let book = extract(&path, Kind::SopJson, &opts(), &mut NoopProgress).unwrap();
     assert_book_payloads_and_uids_valid(&book);
 }
+
+// ── bible_json ───────────────────────────────────────────────────────────
+
+fn bible_file(name: &str, body: &str) -> std::path::PathBuf {
+    let path = tmp_path(name);
+    std::fs::write(&path, body).unwrap();
+    path
+}
+
+fn bible_opts() -> ExtractOptions {
+    ExtractOptions {
+        lang: Some("cs".into()),
+        title: Some("Český ekumenický překlad".into()),
+        ..ExtractOptions::default()
+    }
+}
+
+#[test]
+fn test_bible_json_one_block_per_verse_in_canonical_order() {
+    let path = bible_file(
+        "cep.json",
+        r#"{"Rev.22.21": "Milost Pána Ježíše se všemi!", "Gen.1.2": " Země byla pustá. ",
+            "Gen.1.1": "Na počátku stvořil Bůh nebe a zemi.", "Gen.1.10": "Souš nazval zemí.",
+            "Ps.51.3": "Smiluj se nade mnou, Bože"}"#,
+    );
+    let book = extract(&path, Kind::BibleJson, &bible_opts(), &mut NoopProgress).unwrap();
+    assert_eq!(book.profile, "bible");
+    assert_eq!(book.id_rule, "bible/v1");
+    assert_eq!(book.source["kind"], "bible_json");
+    assert_eq!(book.book["book_code"], "cep"); // file stem
+    let keys: Vec<&str> = book.blocks.iter().map(|b| b.para_key.as_str()).collect();
+    assert_eq!(
+        keys,
+        ["Gen.1.1", "Gen.1.2", "Gen.1.10", "Ps.51.3", "Rev.22.21"]
+    );
+    let ps = &book.blocks[3];
+    assert_eq!(
+        (ps.page, ps.para, ps.seq, ps.chunks, ps.chunk),
+        (51, 3, 0, 1, 0)
+    );
+    assert_eq!(book.blocks[1].text, "Země byla pustá."); // trimmed only
+    assert_eq!(validate(&book), Vec::<String>::new());
+}
+
+#[test]
+fn test_bible_json_keeps_split_verses() {
+    let path = bible_file(
+        "ja.json",
+        r#"{"Exod.22.3!b": "b", "Exod.22.3!a": "a", "Exod.22.2": "x"}"#,
+    );
+    let book = extract(&path, Kind::BibleJson, &bible_opts(), &mut NoopProgress).unwrap();
+    let keys: Vec<&str> = book.blocks.iter().map(|b| b.para_key.as_str()).collect();
+    assert_eq!(keys, ["Exod.22.2", "Exod.22.3!a", "Exod.22.3!b"]);
+    assert_eq!((book.blocks[1].page, book.blocks[1].para), (22, 3));
+    assert_eq!(validate(&book), Vec::<String>::new());
+}
+
+#[test]
+fn test_bible_json_book_code_flag_wins_over_stem() {
+    let path = bible_file("CzeCEP.json", r#"{"Gen.1.1": "x"}"#);
+    let opts = ExtractOptions {
+        book_code: Some("cep".into()),
+        ..bible_opts()
+    };
+    let book = extract(&path, Kind::BibleJson, &opts, &mut NoopProgress).unwrap();
+    assert_eq!(book.book["book_code"], "cep");
+}
+
+#[test]
+fn test_bible_json_rejects_non_osis_keys() {
+    let path = bible_file(
+        "bad.json",
+        r#"{"Gen.1.1": "x", "Gen.1": "chapter", "Tob.1.1": "deutero"}"#,
+    );
+    let err = extract(&path, Kind::BibleJson, &bible_opts(), &mut NoopProgress).unwrap_err();
+    assert_eq!(err.code, sopack_extract::ErrorCode::InputInvalid);
+    assert!(err.message.contains("2 key(s)"), "{}", err.message);
+    assert!(err.message.contains("\"Tob.1.1\""), "{}", err.message);
+}
+
+#[test]
+fn test_bible_json_rejects_non_string_verses() {
+    let path = bible_file("bad.json", r#"{"Gen.1.1": {"text": "x"}}"#);
+    let err = extract(&path, Kind::BibleJson, &bible_opts(), &mut NoopProgress).unwrap_err();
+    assert_eq!(err.code, sopack_extract::ErrorCode::InputInvalid);
+}
+
+#[test]
+fn test_bible_json_drops_and_records_empty_verses() {
+    let path = bible_file(
+        "net.json",
+        r#"{"Matt.17.20": "x", "Matt.17.21": "  ", "Matt.17.22": "y"}"#,
+    );
+    let book = extract(&path, Kind::BibleJson, &bible_opts(), &mut NoopProgress).unwrap();
+    assert_eq!(book.blocks.len(), 2);
+    assert_eq!(book.stats["dropped"], 1);
+    assert_eq!(book.stats["dropped_detail"][0]["para_key"], "Matt.17.21");
+}
+
+#[test]
+fn test_bible_json_needs_lang_and_title() {
+    let path = bible_file("kjv.json", r#"{"Gen.1.1": "x"}"#);
+    let book = extract(&path, Kind::BibleJson, &opts(), &mut NoopProgress).unwrap();
+    let errors = validate(&book);
+    assert!(
+        errors.contains(&"book.lang is required".to_string()),
+        "{errors:?}"
+    );
+    assert!(
+        errors.contains(&"book.title is required".to_string()),
+        "{errors:?}"
+    );
+}
+
+#[test]
+fn test_bible_json_refuses_sop_metadata() {
+    let path = bible_file("kjv.json", r#"{"Gen.1.1": "x"}"#);
+    for opts in [
+        ExtractOptions {
+            author: Some("x".into()),
+            ..bible_opts()
+        },
+        ExtractOptions {
+            year: Some(1611),
+            ..bible_opts()
+        },
+        ExtractOptions {
+            corpus: Some("reference".into()),
+            ..bible_opts()
+        },
+        ExtractOptions {
+            book_pair: Some("kjv".into()),
+            ..bible_opts()
+        },
+    ] {
+        let err = extract(&path, Kind::BibleJson, &opts, &mut NoopProgress).unwrap_err();
+        assert_eq!(err.code, sopack_extract::ErrorCode::Usage);
+    }
+}
+
+#[test]
+fn test_json_kind_tells_a_bible_from_a_sop_json_book() {
+    let bible = bible_file("kjv.json", r#"{"Gen.1.1": "x", "John.3.16": "y"}"#);
+    let sop = bible_file(
+        "SC.json",
+        r#"{"meta": {"en_code": "SC"}, "en": {"1.1": {"text": "x"}}}"#,
+    );
+    let broken = bible_file("broken.json", "{");
+    assert_eq!(sopack_extract::json_kind(&bible), Kind::BibleJson);
+    assert_eq!(sopack_extract::json_kind(&sop), Kind::SopJson);
+    assert_eq!(sopack_extract::json_kind(&broken), Kind::SopJson);
+    assert_eq!(Kind::from_str("bible_json"), Ok(Kind::BibleJson));
+}

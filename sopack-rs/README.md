@@ -1,13 +1,13 @@
 # sopack
 
 A single Rust binary that turns a book (EPUB, Markdown, plain text, or a
-`sop_json` file) into a **`.sopack`** — a portable, verifiable bundle of
+`sop_json` file) or a Bible (an OSIS-keyed `bible_json` file) into a **`.sopack`** — a portable, verifiable bundle of
 embedded paragraphs ready to import into a vector store. No Python, no
 Qdrant connection required to build or verify a pack; the only network
 action is fetching the embedding model, and only when you ask for it.
 
 ```
-source (.epub/.md/.txt/sop_json)
+source (.epub/.md/.txt/sop_json/bible_json)
    │  sopack extract           deterministic, no model, no network
    ▼
 book.json                      ← reviewable, diffable, the thing you check in
@@ -88,7 +88,8 @@ document on stdout (see [Agent / scripting use](#agent--scripting-use)).
 
 Deterministic, no-LLM extraction into a `book.json` you can review and diff.
 `--kind` defaults to whatever the file extension implies
-(`.epub`/`.md`,`.markdown`/`.json` → `sop_json`/anything else → `text`).
+(`.epub`/`.md`,`.markdown`/anything else → `text`; `.json` → `bible_json`
+when every key is an OSIS verse reference, else `sop_json`).
 
 Metadata flags (which ones a given `--kind` accepts varies — `sop_json`
 derives most of its own metadata from the file's `meta` block and refuses
@@ -118,6 +119,36 @@ all, the run refuses with **exit 4** (needs metadata) and lists exactly
 which fields; any other validation problem (a bad `--id-rule`, structurally
 broken blocks) is **exit 3** (input invalid). Nothing is ever written on
 either failure.
+
+**Bibles (`--kind bible_json`, profile `bible`):** the source is a flat JSON
+object of OSIS verse keys in the edition's **own** numbering — the shape of
+`generator/data/bibles/<id>.json`, which the live `bibles` collection was
+built from:
+
+```json
+{"Gen.1.1": "Na počátku stvořil Bůh nebe a zemi.", "Ps.51.3": "Smiluj se nade mnou, Bože…"}
+```
+
+- Keys: `Book.Chapter.Verse`, one of the 66 canonical OSIS book names
+  (`Gen` … `Rev`), plus an optional grain for a split verse (`Exod.22.3!a`).
+  Any other key, or a non-string value, refuses the file (exit 3) — a wrong
+  key would silently mis-number a verse. Empty verses are dropped and listed
+  in `dropped_detail`.
+- One block per verse, never chunked (`bible/v1` ids are `bible:{bible}:{osis}`
+  — no `seq`), sorted canonically; text is trimmed, otherwise verbatim, so
+  re-packing a live Bible's file reproduces its points.
+- Metadata: `book_code` is the bible id (lowercase letters/digits, `-`/`_`,
+  e.g. `luther1912`; defaults to the file stem), `lang` and `title` are
+  required, `acquired_from`/`rights` optional. Nothing else is accepted —
+  a bible point carries only `bible`/`osis`/`text` (exit 2 for a flag, exit 3
+  for `--page-kind` or a sidecar/book.json value).
+- `inspect` adds a `bible` summary: books, chapters, verses, missing canonical
+  books, split verses.
+
+```bash
+sopack extract cep.json --lang cs --title "Český ekumenický překlad" -o cep.book.json
+sopack pack cep.book.json -o bible-cep.sopack --pack-id bible-cep
+```
 
 **Folder batch mode:**
 

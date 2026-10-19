@@ -17,6 +17,20 @@
     "split_blocks": { "type": "integer", "minimum": 0 },
     "book_code": {},
     "lang": {},
-    "title": {}
+    "title": {},
+    "bible": {
+      "description": "Present for profile \"bible\" only: coverage of the OSIS verse keys.",
+      "type": "object",
+      "required": ["books", "chapters", "verses", "missing_books", "split_verses", "invalid_keys"],
+      "additionalProperties": false,
+      "properties": {
+        "books": { "type": "integer", "minimum": 0 },
+        "chapters": { "type": "integer", "minimum": 0 },
+        "verses": { "type": "integer", "minimum": 0 },
+        "missing_books": { "type": "array", "items": { "type": "string" } },
+        "split_verses": { "type": "integer", "minimum": 0 },
+        "invalid_keys": { "type": "integer", "minimum": 0 }
+      }
+    }
   }
 }

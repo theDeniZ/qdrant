@@ -54,6 +54,7 @@ without `--meta`.
 | `epub` | `book_code` | `author`, `year` |
 | `markdown` / `text` | `book_code`, `lang`, `title` | `author`, `year` |
 | `sop_json` | *(none — all fall back to file structure)* | — |
+| `bible_json` | `lang`, `title` (`book_code` falls back to the file stem) | — (no corpus for bibles) |
 
 This is a **preflight convenience**, not the final check — `sopack_book`'s
 own `validate()` (run before every write) is authoritative and additionally
@@ -61,13 +62,28 @@ rejects: an `id_rule` not valid for the book's `profile`, duplicate
 `(para_key, seq)` pairs, empty block text, non-dense `seq` per `para_key`.
 `validate()`'s own required-field rule: `book_code`/`lang`/`title` always;
 `author`/`year` only when `book.corpus` is set and is not `"egw"` (`corpus = "egw"`
-is exempt, like no corpus). Always pass `--corpus`, `--author`, `--title`, and for a
+is exempt, like no corpus — **unreleased**: the 1.0.1 release still requires
+`year` for `corpus = "egw"`, so EGW books packed with Homebrew's 1.0.1 need one). Always pass `--corpus`, `--author`, `--title`, and for a
 translation `--book-pair <English code>`.
 
 Metadata flags: `--book-code --lang --title --author --year --corpus --slug
 --book-pair --acquired-from --rights --page-kind --id-rule`.
-`sop_json` refuses all of these as redundant (exit 2) — its metadata comes
-from the file's own `meta` block.
+Each kind refuses the flags it would silently drop (exit 2): `sop_json`
+takes its `book_code`/`title`/`year` from the file's own `meta` block (it
+accepts `--lang --author --corpus --slug --book-pair --acquired-from
+--rights`); `bible_json` accepts only `--book-code --lang --title
+--acquired-from --rights`.
+
+**Bibles (`bible_json`, profile `bible`, id_rule `bible/v1`).** Kind inference:
+a `.json` whose every key is an OSIS verse reference is `bible_json`, any other
+`.json` is `sop_json`. Source: `{"Gen.1.1": "…", "Exod.22.3!a": "…"}` in the
+edition's own numbering (66 canonical OSIS books, optional `!grain`); a bad key
+or non-string value is exit 3, an empty verse is dropped into `dropped_detail`.
+`validate()` additionally requires, for every `bible` book: a bible id as
+`book_code` (lowercase letters/digits, `-`/`_` after the first), none of
+`book_pair`/`author`/`year`/`slug`/`corpus`/`page_kind` (a bible point carries
+only `bible`/`osis`/`text`), OSIS verse `para_key`s with `page`/`para` =
+chapter/verse, and `seq` 0 / `chunks` 1 per verse.
 
 Result schema `extract` (single-file):
 `{"out","book_code","lang","id_rule","stats":{"blocks_in","blocks_out",
@@ -78,7 +94,8 @@ per source; the run only fails outright if **every** file failed.
 
 ### `sopack inspect <book.json>`
 
-No model. Result schema `inspect`: `{"file","profile","id_rule","blocks",
+No model. Bible books add `"bible": {"books","chapters","verses","missing_books",
+"split_verses","invalid_keys"}`. Result schema `inspect`: `{"file","profile","id_rule","blocks",
 "stats","paragraphs","collided_para_keys","split_blocks","book_code","lang",
 "title"}`. Use this as the review gate before packing: `stats.damage` (0–1,
 fraction of input blocks dropped) should be small — the `WDYS` golden runs

@@ -1,6 +1,6 @@
 ---
 name: corpus-prep
-description: Turn a raw book source (EPUB, Markdown, text or sop_json) into a verified .sopack ready for the bible-sop corpus, using the sopack CLI's extract -> inspect -> pack -> verify loop, with every metadata field resolved and evidenced by research (not guessed). Use when asked to prepare, pack or import a book into the SoP/Bible corpus, to make a .sopack, to work out metadata (book code, author form, year, rights) for a pioneer or Ellen G. White book, or to run sopack on a source file or a folder of sources.
+description: Turn a raw book source (EPUB, Markdown, text or sop_json) or a Bible (OSIS-keyed bible_json) into a verified .sopack ready for the bible-sop corpus, using the sopack CLI's extract -> inspect -> pack -> verify loop, with every metadata field resolved and evidenced by research (not guessed). Use when asked to prepare, pack or import a book into the SoP/Bible corpus, to make a .sopack, to work out metadata (book code, author form, year, rights) for a pioneer or Ellen G. White book, or to run sopack on a source file or a folder of sources, or to add a Bible translation.
 ---
 
 # Corpus prep: source book -> verified `.sopack`
@@ -221,6 +221,36 @@ Compute the pack's own sha256 (`sha256sum <out.sopack>` / `shasum -a 256
     if it is a separate volume/edition, the user ticks *Allow same title*.
   - *point(s) already exist; refusing without allow_overwrite*: a re-index
     of the same book → the user ticks *Allow overwrite* if that is intended.
+
+## Bibles
+
+A Bible goes through the same loop with profile `bible`; only the source and
+the metadata differ.
+
+1. **Source**: a flat `bible_json` file, `{"Gen.1.1": "…", …}` — the shape of
+   `generator/data/bibles/<id>.json`. Keys are OSIS verse references in the
+   **edition's own numbering** (Hebrew psalm superscriptions as verse 1, Czech/
+   German `Joel.4`, Septuagint psalm numbers where the edition uses them). Never
+   remap to KJV: every live Bible is stored in its own numbering and the read
+   tools remap at query time. Converting from another format (EGW app dump:
+   `egw2/egw_import.py bible <code> --code <id>`), check book order, verse
+   numbers against the source's own labels, and the total against the
+   edition's known verse count.
+2. **Metadata** (`<id>.json.meta.toml`): `lang`, `title` (the edition's own
+   name), `acquired_from`, `rights`; `book_code` only if the file stem is not
+   the bible id. The bible id is short, lowercase and stable (`kjv`,
+   `luther1912`, `cep`) — it is the `bible` value every lookup uses and part of
+   every point id, so it cannot change after import. Nothing else applies (no
+   `corpus`/`author`/`year`/`book_pair`). Check the edition's copyright and
+   record it truthfully in `rights` — modern translations are rarely public
+   domain.
+3. `sopack extract <id>.json -o <id>.book.json` (kind auto-detected), then
+   `sopack inspect` — read the `bible` summary: 66 books (or say why not, e.g.
+   NT-only), `missing_books`, `split_verses`, and a verse count close to 31 102
+   (editions differ by tens to a few hundred).
+4. `sopack pack … --pack-id bible-<id>`, `sopack verify`, hand off as in §7. A
+   Bible re-import is normal (`reimport_is_normal`): the dry-run's "points
+   already exist" just needs *Allow overwrite*.
 
 ## Folder batches, end to end
 

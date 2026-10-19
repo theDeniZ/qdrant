@@ -101,7 +101,8 @@ def _write_v1_pack(path, *, profile="sop", pack_id="test-pack", book_code="TST",
                                        ensure_ascii=False))
         vectors_bytes += _f32(_vec(point_seed_offset + i))
 
-    book = {prof.identity: book_code, "points": n_points, "first_id": first_id,
+    # sopack-rs names every book by book_code, a bible's too
+    book = {"book_code": book_code, "points": n_points, "first_id": first_id,
            "title": f"{book_code} Title", "author": author, "year": 2020,
            "id_rule": id_rule}
     if profile == "sop":
@@ -472,6 +473,19 @@ class TestPreflightSameTitle(ImportServiceTestCase):
         job = self._wait_terminal(import_service.start_job("test-pack", "apply", False, "tester"))
 
         self.assertEqual(job["status"], "ok", job.get("error"))
+
+
+class TestBiblePack(ImportServiceTestCase):
+    def test_bible_pack_imports_by_its_manifest_book_code(self):
+        cid, vec = "canary-b", _vec(1)
+        self.qdrant.put_point("bibles", cid, {"bible": "kjv", "osis": "Gen.1.1", "text": "c"}, vec)
+        _build_pack(self._pack_path(), profile="bible", book_code="cep", lang="cs",
+                   canary_ids=[cid], canary_vectors=[vec], n_points=3)
+        job = self._wait_terminal(import_service.start_job("test-pack", "apply", False, "tester"))
+        self.assertEqual(job["status"], "ok", job.get("error"))
+        stored = [pt for pt in self.qdrant.collections["bibles"]["points"].values()
+                  if pt["payload"].get("bible") == "cep"]
+        self.assertEqual(len(stored), 3)
 
 
 class TestRollbackRestoresExactly(ImportServiceTestCase):

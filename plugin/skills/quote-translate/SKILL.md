@@ -21,7 +21,7 @@ Use the user's or project's rule if one is given. Otherwise:
 
 - Bible: the language's standard translation in the corpus (de `luther1912`,
   then `schlachter`; ru `synodal`; uk `ukrogienko`; es `spanish`; ja `japkougo`;
-  ko `korean`; en as the source text uses). Check with `bible_list_translations`.
+  ko `korean`; cs `bkr` for SBL lessons, else `cep`; en as the source text uses). Check with `bible_list_translations`.
 - Ellen White: the edition the corpus returns for the target `lang`. German often
   has two editions of one work; prefer the one the user names, otherwise report
   both codes and use the closer match.

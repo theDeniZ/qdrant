@@ -18,6 +18,8 @@ Figures are from September 2026. Call `bible_list_translations()` /
 | `spanish` | Reina-Valera | es | verify Psalms / Jonah |
 | `japkougo` | 口語訳 (1955) | ja | verify |
 | `korean` | 개역한글 (KRV 1961, *not* 개역개정) | ko | verify |
+| `cep` | Český ekumenický překlad | cs | own numbering; verify Psalms |
+| `bkr` | Bible kralická (1613), getbible text | cs | **KJV numbering** (psalm titles merged into verse 1); the SBL Czech house text (imported 2026-10-21) |
 
 **No Romanian Bible.** For ro, the Romanian SoP corpus quotes Scripture often:
 `sop_lookup(lang="ro")` on the verse text often recovers the Cornilescu wording.

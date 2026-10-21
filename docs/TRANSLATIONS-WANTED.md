@@ -42,6 +42,39 @@ that are fresh translations today (≈ 220 of 282 in 2026-4).
 | 13 | 7ABC | EGW SDA Bible Commentary | 66 | Біблійний коментар АСД [з коментарів Е.Г. Уайт] |
 | 14 | MB | Thoughts From the Mount of Blessing | 65 | Блаженства, промовлені на горі |
 
+## Priority for Czech (17 books on 2026-10-20: AA, CCh, CM, CME, COL, DA, EP, Ed, GC/VS, LDE, MB, MH, PK, PP, SC, SJ, SS)
+
+Added 2026-10-20 with the Czech profile (`generator/docs/STYLE-cs.md`). The Czech
+editions already cover 2,731 of the 5,309 citations in the 2020–2026 EN quarters (51 %),
+but a Testimonies-heavy quarter far less (2026-4: 114 of 282 quotes resolved, 40 %). No
+official Czech title is given below: the official Czech quarters since 2021 cite the
+English book, and the 2020 quarters name editions (*Svědectví pro církev*, *Rané spisy*,
+*Vybraná poselství*) that are not in the corpus. **Page numbering differs from RU/UK:**
+Czech editions keep their **own** pagination (`page.para` of the Czech book, not EN
+keys); after an import add the book to `_CS_EDITIONS` in
+`generator/src/sdarm/translation/quarter/profile.py` and STYLE-cs §2.
+
+| # | EN code | book | cites 2020–2026 |
+|---|---|---|---|
+| 1 | 5T | Testimonies for the Church, vol. 5 | 202 |
+| 2 | 4T | Testimonies for the Church, vol. 4 | 118 |
+| 3 | 2T | Testimonies for the Church, vol. 2 | 111 |
+| 4 | 6T | Testimonies for the Church, vol. 6 | 109 |
+| 5 | 1SM | Selected Messages, bk. 1 | 96 |
+| 6 | EW | Early Writings | 85 |
+| 7 | 6BC | EGW SDA Bible Commentary, vol. 6 | 85 |
+| 8 | 1T | Testimonies for the Church, vol. 1 | 81 |
+| 9 | TM | Testimonies to Ministers | 75 |
+| 10 | 3T | Testimonies for the Church, vol. 3 | 72 |
+| 11 | 7ABC | EGW SDA Bible Commentary, vol. 7A | 66 |
+| 12 | GW | Gospel Workers | 55 |
+| 13 | Ev | Evangelism | 50 |
+| 14 | 9T | Testimonies for the Church, vol. 9 | 49 |
+| 15 | CS | Counsels on Stewardship | 48 |
+
+*Rady pro církev* (CCh) already holds many Testimonies paragraphs; the pipeline offers
+them as cross-attributed candidates.
+
 ## All languages — the 45 most-cited books
 
 ✓ = in the corpus, — = missing. Periodicals (RH, ST, YI, …) have no translated

@@ -1,6 +1,6 @@
 ---
 name: corpus-research
-description: Research what Scripture and Ellen G. White say on a topic, or what Ellen White writes about a given Bible verse, using the bible-sop corpus with batched multi-angle queries, and present verbatim, cited findings grouped by theme. Use when the user asks what the Bible or Ellen White teaches about a subject, wants supporting passages for a study, sermon or article, asks "what does EGW say about <verse>", or wants to explore a theme across Scripture and the Spirit of Prophecy.
+description: Research what Scripture and Ellen G. White say on a topic, or what Ellen White writes about a given Bible verse, using the bible-sop corpus with batched multi-angle queries, and present verbatim, cited findings grouped by theme. Use when the user asks what the Bible or Ellen White teaches about a subject, wants supporting passages for a study, sermon or article, asks "what does EGW say about this verse", or wants to explore a theme across Scripture and the Spirit of Prophecy.
 ---
 
 # Topical research in the Bible and Ellen G. White

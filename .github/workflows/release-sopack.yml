@@ -35,6 +35,9 @@ concurrency:
 env:
   ORT_VERSION: "1.30.0"
   CARGO_TERM_COLOR: always
+  # macos-14 runners are retired; build on macos-15 but keep the binary loadable on
+  # macOS 14 (Formula: depends_on macos: :sonoma; release notes: "14+").
+  MACOSX_DEPLOYMENT_TARGET: "14.0"
 
 jobs:
   build:
@@ -54,7 +57,7 @@ jobs:
             ort_plat: linux-aarch64
             ort_sha256: e16a27a8ed330bbc698df7330b0cf56e722f354e3bcc92118682c74ef3c3e3da
             model_run: false
-          - runner: macos-14
+          - runner: macos-15
             target: aarch64-apple-darwin
             ort_plat: osx-arm64
             ort_sha256: 6ebb5062a934537c352937821f9fe9718e7de1a2db1122a93dd363ffd53a7012
@@ -218,7 +221,7 @@ jobs:
 
   brew:
     needs: build
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

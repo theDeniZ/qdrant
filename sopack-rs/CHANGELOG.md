@@ -4,7 +4,10 @@ All notable changes to the `sopack` Rust CLI. Versions before `1.0.0` are
 pre-release milestones on the way to the cut-over described in
 [`../docs/SOPACK-1.0-PLAN.md`](../docs/SOPACK-1.0-PLAN.md).
 
-## Unreleased
+## 1.0.2 — 2026-11-09
+
+No change to the pack format or the vector space for existing profiles; adds the
+`bible` profile.
 
 - **Bibles: `extract --kind bible_json`** (auto-detected for a `.json` whose every key
   is an OSIS verse reference). Reads the flat `{"Gen.1.1": "…"}` shape of
